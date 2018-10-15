@@ -1,0 +1,12 @@
+<Project>
+
+  <PropertyGroup>
+    <Authors>Galaxy Software Services Corporation</Authors>
+    <PackageProjectUrl>https://github.com/akunzai/GSS.Authorization.OAuth</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseUrl>https://github.com/akunzai/GSS.Authorization.OAuth/blob/master/LICENSE.md</PackageLicenseUrl>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+</Project>
