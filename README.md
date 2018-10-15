@@ -11,8 +11,6 @@ OAuth authorized HttpClient, friendly with HttpClientFactory
 
 ## Installation
 
-OWIN
-
 ```shell
 # Package Manager
 Install-Package GSS.Authorization.OAuth2.HttpClient
