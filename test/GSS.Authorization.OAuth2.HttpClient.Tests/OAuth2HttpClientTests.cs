@@ -16,19 +16,18 @@ namespace GSS.Authorization.OAuth2
     {
         private readonly OAuth2HttpClient _client;
         private readonly MockHttpMessageHandler _mockHttp;
-        private readonly AuthorizerOptions _options;
         private readonly Uri _resourceEndpoint;
 
         public OAuth2HttpClientTests(OAuth2HttpClientFixture fixture)
         {
             _client = fixture.Services.GetRequiredService<OAuth2HttpClient>();
-            _options = fixture.Services.GetService<IOptions<AuthorizerOptions>>().Value;
+            var options = fixture.Services.GetService<IOptions<AuthorizerOptions>>().Value;
             var configuration = fixture.Services.GetRequiredService<IConfiguration>();
             _resourceEndpoint = configuration.GetValue<Uri>("OAuth2:ResourceEndpoint");
             _mockHttp = fixture.Services.GetService<MockHttpMessageHandler>();
-            _mockHttp?.When(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-                .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
-                .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
+            _mockHttp?.When(HttpMethod.Post, options.AccessTokenEndpoint.AbsoluteUri)
+                .WithFormData(AuthorizerDefaults.ClientId, options.ClientId)
+                .WithFormData(AuthorizerDefaults.ClientSecret, options.ClientSecret)
                 .Respond("application/json", JsonConvert.SerializeObject(new AccessToken
                 {
                     Token = Guid.NewGuid().ToString(),
