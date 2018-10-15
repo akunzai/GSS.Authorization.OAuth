@@ -7,6 +7,8 @@
     <PackageLicenseUrl>https://github.com/akunzai/GSS.Authorization.OAuth/blob/master/LICENSE.md</PackageLicenseUrl>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <LangVersion>latest</LangVersion>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/akunzai/GSS.Authorization.OAuth</RepositoryUrl>
   </PropertyGroup>
 
 </Project>
