@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D66CE79E-F02F-464C-BCCD-EBC45D3BF8DD}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		CHANGELOG.md = CHANGELOG.md
 		Directory.Build.props = Directory.Build.props
 		LICENSE.md = LICENSE.md
 		README.md = README.md
@@ -25,7 +26,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GSS.Authorization.OAuth2.Ht
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{F0FA418E-E9E8-4A7F-835D-A00476B78754}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OAuth2HttpClientSample", "samples\OAuth2HttpClientSample\OAuth2HttpClientSample.csproj", "{D67C5C98-4344-4E1F-B809-5A91551C90EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OAuth2HttpClientSample", "samples\OAuth2HttpClientSample\OAuth2HttpClientSample.csproj", "{D67C5C98-4344-4E1F-B809-5A91551C90EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
