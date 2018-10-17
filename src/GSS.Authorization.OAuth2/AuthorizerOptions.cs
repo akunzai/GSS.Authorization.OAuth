@@ -18,5 +18,10 @@ namespace GSS.Authorization.OAuth2
         /// Resource Owner Credentials
         /// </summary>
         public NetworkCredential Credentials { get; set; }
+
+        /// <summary>
+        /// AuthorizerHttpClient request error handler
+        /// </summary>
+        public Action<HttpStatusCode, string> OnError { get; set; }
     }
 }

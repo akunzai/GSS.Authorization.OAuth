@@ -48,8 +48,15 @@ namespace GSS.Authorization.OAuth2
                 Content = new FormUrlEncodedContent(formData)
             };
             var response = await Client.HttClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                if (Options.OnError != null)
+                {
+                    var errorMessage = response.Content == null ? null : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    Options.OnError(response.StatusCode, string.IsNullOrWhiteSpace(errorMessage) ? response.ReasonPhrase : errorMessage);
+                }
+                return null;
+            }
             var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return JsonConvert.DeserializeObject<AccessToken>(json);
         }
