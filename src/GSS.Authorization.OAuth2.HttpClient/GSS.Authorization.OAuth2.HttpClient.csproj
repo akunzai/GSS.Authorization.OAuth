@@ -1,18 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>OAuth 2.0 authorized HttpClient, friendly with HttpClientFactory</Description>
     <PackageTags>OAuth;OAuth2;HttpClient;HttpHandler</PackageTags>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(Configuration)'=='Debug' ">
     <ProjectReference Include="..\GSS.Authorization.OAuth2\GSS.Authorization.OAuth2.csproj" />
   </ItemGroup>
 
-  <ItemGroup  Condition=" '$(Configuration)'=='Release' ">
+  <ItemGroup Condition=" '$(Configuration)'=='Release' ">
     <PackageReference Include="GSS.Authorization.OAuth2" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.1" />
   </ItemGroup>
 
 </Project>
