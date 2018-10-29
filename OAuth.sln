@@ -22,6 +22,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GSS.Authorization.OAuth2.HttpClient", "src\GSS.Authorization.OAuth2.HttpClient\GSS.Authorization.OAuth2.HttpClient.csproj", "{4D4AD240-111E-4283-B84F-483446D23130}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0FBB9903-CA58-47C0-B7EC-D0BE157CBC0D}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+		test\Directory.Build.targets = test\Directory.Build.targets
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GSS.Authorization.OAuth2.Tests", "test\GSS.Authorization.OAuth2.Tests\GSS.Authorization.OAuth2.Tests.csproj", "{71341403-F120-4E02-A34C-06B5CB2A18CC}"
 EndProject
