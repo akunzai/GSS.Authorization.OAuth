@@ -29,7 +29,7 @@ Currently, only `Client-Credentials` grant flow and `Resource-Owner-Credentials`
 
 Named OAuth2 HttpClients
 
-```
+```csharp
 services.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("oauth2",(resolver, options) =>
 {
     var configuration = resolver.GetRequiredService<IConfiguration>();
