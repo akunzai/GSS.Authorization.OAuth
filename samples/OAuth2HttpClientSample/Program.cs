@@ -47,10 +47,11 @@ namespace OAuth2HttpClientSample
 
             if (Configuration.GetValue("OAuth2:GrantFlow", "ResourceOwnerCredentials").Equals("ClientCredentials"))
             {
+                // override the IAuthorizer
                 services.AddTransient<IAuthorizer, ClientCredentialsAuthorizer>();
             }
-            
-            services.AddOAuth2HttpClient((resolver, options) =>
+
+            services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>((resolver, options) =>
             {
                 var configuration = resolver.GetRequiredService<IConfiguration>();
                 options.AccessTokenEndpoint = configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");

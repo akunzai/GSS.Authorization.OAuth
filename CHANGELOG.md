@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## 2018-11-30
+## 2018-12-01
 
 ### GSS.Authorization.OAuth2 1.2.0
 
@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### GSS.Authorization.OAuth2.HttpClient 1.2.0
 
-- Add AddOAuth2HttpClient extension method for IServiceCollection
+- Add AddOAuth2HttpClient extension methods for IServiceCollection
 
 ## 2018-10-17
 

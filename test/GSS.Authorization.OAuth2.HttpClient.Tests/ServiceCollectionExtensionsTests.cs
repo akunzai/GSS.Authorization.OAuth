@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -17,7 +18,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             var collection = new ServiceCollection();
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => collection.AddOAuth2HttpClient(null));
+            Assert.Throws<ArgumentNullException>(() => collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(null));
         }
 
         [Fact]
@@ -27,7 +28,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             var collection = new ServiceCollection();
 
             // Act
-            var builder = collection.AddOAuth2HttpClient((resolver, options) => { });
+            var builder = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) => { });
 
             // Assert
             Assert.NotNull(builder);
@@ -39,7 +40,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var builder = collection.AddOAuth2HttpClient((resolver, options) => { });
+            var builder = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) => { });
 
             // Act
             var descriptor = builder.Services.Where(x => x.ServiceType == typeof(IAuthorizer)).FirstOrDefault();
@@ -53,7 +54,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient((resolver, options) => { }).Services.BuildServiceProvider();
+            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) => { }).Services.BuildServiceProvider();
 
             // Act
             var ex = Assert.Throws<ValidationException>(() => services.GetRequiredService<IOptions<AuthorizerOptions>>().Value);
@@ -68,7 +69,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient((resolver, options) =>
+            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
             }).Services.BuildServiceProvider();
@@ -86,7 +87,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient((resolver, options) =>
+            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
@@ -105,7 +106,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient((resolver, options) =>
+            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
@@ -124,7 +125,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient((resolver, options) =>
+            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>((resolver, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
@@ -143,7 +144,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient((resolver, options) =>
+            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>((resolver, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
@@ -159,12 +160,12 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         }
 
         [Fact]
-        public void AddOAuth2HttpClient_AfterAddClientCredentialsAuthorizer_ShouldNotThrows()
+        public void AddOAuth2HttpClient_AfterAddClientCredentialsAuthorizer_ShouldReplaceResourceOwnerCredentialsAuthorizer()
         {
             // Arrange
             var collection = new ServiceCollection();
             collection.AddTransient<IAuthorizer, ClientCredentialsAuthorizer>();
-            var services = collection.AddOAuth2HttpClient((resolver, options) =>
+            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>((resolver, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
@@ -176,6 +177,75 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
 
             // Assert
             Assert.IsType<ClientCredentialsAuthorizer>(authorizer);
+        }
+
+        [Fact]
+        public void AddOAuth2HttpClient_WithClientCredentialsAuthorizer_ShouldAddInServiceProvider()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) =>
+            {
+                options.AccessTokenEndpoint = new Uri("https://example.com");
+                options.ClientId = "foo";
+                options.ClientSecret = "bar";
+            }).Services.BuildServiceProvider();
+
+            // Act
+            var client = services.GetService<OAuth2HttpClient>();
+
+            // Assert
+            Assert.NotNull(client);
+        }
+
+        [Fact]
+        public void AddNamedOAuth2HttpClient_WithClientCredentialsAuthorizer_ShouldAddInHttpClientFactory()
+        {
+            // Arrange
+            var name = "demo";
+            var collection = new ServiceCollection();
+            var services = collection.AddOAuth2HttpClient<ClientCredentialsAuthorizer>(name, (resolver, options) =>
+            {
+                options.AccessTokenEndpoint = new Uri("https://example.com");
+                options.ClientId = "foo";
+                options.ClientSecret = "bar";
+            }).Services.BuildServiceProvider();
+            var factory = services.GetRequiredService<IHttpClientFactory>();
+
+            // Act
+            var client = factory.CreateClient(name);
+
+            // Assert
+            Assert.NotNull(client);
+        }
+
+        private class DemoOAuthClient
+        {
+            private readonly System.Net.Http.HttpClient _client;
+
+            public DemoOAuthClient(System.Net.Http.HttpClient client)
+            {
+                _client = client;
+            }
+        }
+
+        [Fact]
+        public void AddTypedOAuth2HttpClient_WithClientCredentialsAuthorizer_ShouldAddInServiceProvider()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            var services = collection.AddOAuth2HttpClient<DemoOAuthClient, ClientCredentialsAuthorizer>((resolver, options) =>
+            {
+                options.AccessTokenEndpoint = new Uri("https://example.com");
+                options.ClientId = "foo";
+                options.ClientSecret = "bar";
+            }).Services.BuildServiceProvider();
+
+            // Act
+            var client = services.GetService<DemoOAuthClient>();
+
+            // Assert
+            Assert.NotNull(client);
         }
     }
 }

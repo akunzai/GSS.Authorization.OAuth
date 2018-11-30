@@ -1,6 +1,6 @@
 # GSS.Authorization.OAuth
 
-OAuth authorized HttpClient, friendly with HttpClientFactory
+OAuth authorized HttpClient, friendly with [HttpClientFactory](https://docs.microsoft.com/aspnet/core/fundamentals/http-requests)
 
 [![Build status](https://ci.appveyor.com/api/projects/status/9s6628wsosi4a6gu?svg=true)](https://ci.appveyor.com/project/akunzai/gss-authorization-oauth)
 
@@ -23,74 +23,34 @@ dotnet add package GSS.Authorization.OAuth2.HttpClient
 
 Currently, only `Client-Credentials` grant flow and `Resource-Owner-Credentials` grant flow are supported, You can implement `GSS.Authorization.OAuth2.IAuthorizer` to support more grant flows.
 
-## Getting Started
+## Usage
 
-Use AddOAuth2HttpClient extension method to register OAuth2HttpClient service
+> please read [HttpClientFactory usage](https://docs.microsoft.com/aspnet/core/fundamentals/http-requests) first.
 
-```csharp
-...
-using GSS.Authorization.OAuth2;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-...
+Named OAuth2 HttpClients
 
-public void ConfigureServices(IServiceCollection services)
+```
+services.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("oauth2",(resolver, options) =>
 {
-    services.AddOAuth2HttpClient((resolver, options) =>
-    {
-        var configuration = resolver.GetRequiredService<IConfiguration>();
-        options.AccessTokenEndpoint = configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
-        options.ClientId = configuration["OAuth2:ClientId"];
-        options.ClientSecret = configuration["OAuth2:ClientSecret"];
-        options.Credentials = new NetworkCredential(configuration["OAuth2:Credentials:UserName"], configuration["OAuth2:Credentials:Password"]);
-        options.Scopes = configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
-    });
-}
+    var configuration = resolver.GetRequiredService<IConfiguration>();
+    options.AccessTokenEndpoint = configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
+    options.ClientId = configuration["OAuth2:ClientId"];
+    options.ClientSecret = configuration["OAuth2:ClientSecret"];
+    options.Credentials = new NetworkCredential(configuration["OAuth2:Credentials:UserName"], configuration["OAuth2:Credentials:Password"]);
+    options.Scopes = configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
+});
 ```
 
-default grant flow is `Resource-Owner-Credentials`, you can override it by register `IAuthorizer` before AddOAuth2HttpClient
+Typed OAuth2 HttpClients
 
 ```csharp
-...
-using GSS.Authorization.OAuth2;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-...
-
-public void ConfigureServices(IServiceCollection services)
+services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>((resolver, options) =>
 {
-    services.AddTransient<IAuthorizer, ClientCredentialsAuthorizer>();
-
-    services.AddOAuth2HttpClient((resolver, options) =>
-    {
-        var configuration = resolver.GetRequiredService<IConfiguration>();
-        options.AccessTokenEndpoint = configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
-        options.ClientId = configuration["OAuth2:ClientId"];
-        options.ClientSecret = configuration["OAuth2:ClientSecret"];
-        options.Credentials = new NetworkCredential(configuration["OAuth2:Credentials:UserName"], configuration["OAuth2:Credentials:Password"]);
-        options.Scopes = configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
-    });
-}
-```
-
-Finally, your can use the HttpClient to access protected resource by OAUTH2 protocol, it will transparently exchange and cache the access token before HttpClientFactory disposing it. 
-
-```csharp
-...
-using GSS.Authorization.OAuth2;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-...
-
-namespace OAuth2HttpClientSample
-{
-    public static async Task Main()
-    {
-        ...
-        var oauth2Client = provider.GetRequiredService<OAuth2HttpClient>();
-        var response = await oauth2Client.HttpClient.GetAsync(Configuration["OAuth2:ResourceEndpoint"]).ConfigureAwait(false);
-        ...
-    }
-}
-...
+    var configuration = resolver.GetRequiredService<IConfiguration>();
+    options.AccessTokenEndpoint = configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
+    options.ClientId = configuration["OAuth2:ClientId"];
+    options.ClientSecret = configuration["OAuth2:ClientSecret"];
+    options.Credentials = new NetworkCredential(configuration["OAuth2:Credentials:UserName"], configuration["OAuth2:Credentials:Password"]);
+    options.Scopes = configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
+});
 ```

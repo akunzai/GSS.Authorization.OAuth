@@ -30,6 +30,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
                 logging.AddConfiguration(Configuration.GetSection("Logging"));
                 logging.AddDebug();
             });
+
             if (Configuration.GetValue("HttpClient:Mock", true))
             {
                 services.AddSingleton(new MockHttpMessageHandler());
@@ -37,21 +38,22 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
 
             if (Configuration.GetValue("OAuth2:GrantFlow", "ResourceOwnerCredentials").Equals("ClientCredentials"))
             {
+                // override the IAuthorizer
                 services.AddTransient<IAuthorizer, ClientCredentialsAuthorizer>();
             }
 
-            services.AddOAuth2HttpClient((resolver, options) =>
-            {
-                var configuration = resolver.GetRequiredService<IConfiguration>();
-                options.AccessTokenEndpoint = configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
-                options.ClientId = configuration["OAuth2:ClientId"];
-                options.ClientSecret = configuration["OAuth2:ClientSecret"];
-                options.Credentials = new NetworkCredential(configuration["OAuth2:Credentials:UserName"], configuration["OAuth2:Credentials:Password"]);
-                options.Scopes = configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
-            }, configureAuthorizerHttpClient: authorizer =>
-            {
-                authorizer.ConfigurePrimaryHttpMessageHandler(resolver => resolver.GetService<MockHttpMessageHandler>() as HttpMessageHandler ?? new HttpClientHandler());
-            })
+            services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>((resolver, options) =>
+             {
+                 var configuration = resolver.GetRequiredService<IConfiguration>();
+                 options.AccessTokenEndpoint = configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
+                 options.ClientId = configuration["OAuth2:ClientId"];
+                 options.ClientSecret = configuration["OAuth2:ClientSecret"];
+                 options.Credentials = new NetworkCredential(configuration["OAuth2:Credentials:UserName"], configuration["OAuth2:Credentials:Password"]);
+                 options.Scopes = configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
+             }, configureAuthorizerHttpClient: authorizer =>
+             {
+                 authorizer.ConfigurePrimaryHttpMessageHandler(resolver => resolver.GetService<MockHttpMessageHandler>() as HttpMessageHandler ?? new HttpClientHandler());
+             })
             .ConfigurePrimaryHttpMessageHandler(resolver => resolver.GetService<MockHttpMessageHandler>() as HttpMessageHandler ?? new HttpClientHandler());
 
             return services.BuildServiceProvider();

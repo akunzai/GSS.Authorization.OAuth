@@ -37,7 +37,6 @@ namespace GSS.Authorization.OAuth2.Tests
             }
 
             services.AddSingleton<AuthorizerError>();
-
             services.AddOptions<AuthorizerOptions>().Configure<IConfiguration, AuthorizerError>((options, configuration, errorState) =>
             {
                 options.AccessTokenEndpoint = configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
