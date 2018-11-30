@@ -1,59 +1,27 @@
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using RichardSzalay.MockHttp;
 using Xunit;
 
-namespace GSS.Authorization.OAuth2
+namespace GSS.Authorization.OAuth2.Tests
 {
-    public class ResourceOwnerCredentialsAuthorizerTests
+    public class ResourceOwnerCredentialsAuthorizerTests : IClassFixture<AuthorizerFixture>
     {
         private readonly IAuthorizer _authorizer;
         private readonly MockHttpMessageHandler _mockHttp;
         private readonly AuthorizerOptions _options;
-        private HttpStatusCode _errorStatusCode;
-        private string _errorMessage;
+        private readonly AuthorizerError _error;
 
-        public ResourceOwnerCredentialsAuthorizerTests()
+        public ResourceOwnerCredentialsAuthorizerTests(AuthorizerFixture fixture)
         {
-            var env = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "Production";
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .AddJsonFile($"appsettings.{env}.json", optional: true)
-                .Build();
-            if (configuration.GetValue("HttpClient:Mock", true))
-            {
-                _mockHttp = new MockHttpMessageHandler();
-            }
-            var services = new ServiceCollection()
-            .AddLogging(logging =>
-            {
-                logging.AddConfiguration(configuration.GetSection("Logging"));
-                logging.AddDebug();
-            })
-            .AddOptions<AuthorizerOptions>().Configure(options =>
-            {
-                options.AccessTokenEndpoint = configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
-                options.ClientId = configuration["OAuth2:ClientId"];
-                options.ClientSecret = configuration["OAuth2:ClientSecret"];
-                options.Credentials = new NetworkCredential(configuration["OAuth2:Credentials:UserName"], configuration["OAuth2:Credentials:Password"]);
-                options.Scopes = configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
-                options.OnError = (c, m) =>
-                {
-                    _errorStatusCode = c;
-                    _errorMessage = m;
-                };
-            })
-            .Services.AddHttpClient<AuthorizerHttpClient>()
-                .ConfigurePrimaryHttpMessageHandler(sp => _mockHttp as HttpMessageHandler ?? new HttpClientHandler())
-             .Services.BuildServiceProvider();
+            var services = fixture.BuildServiceProvider();
+            _mockHttp = services.GetService<MockHttpMessageHandler>();
+            _error = services.GetRequiredService<AuthorizerError>();
             _options = services.GetService<IOptions<AuthorizerOptions>>().Value;
             _authorizer = ActivatorUtilities.CreateInstance<ResourceOwnerCredentialsAuthorizer>(services);
         }
@@ -148,8 +116,8 @@ namespace GSS.Authorization.OAuth2
             await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
 
             // Assert
-            Assert.Equal(HttpStatusCode.InternalServerError, _errorStatusCode);
-            Assert.Equal(expectedErrorMessage, _errorMessage);
+            Assert.Equal(HttpStatusCode.InternalServerError, _error.StatusCode);
+            Assert.Equal(expectedErrorMessage, _error.Message);
             _mockHttp.VerifyNoOutstandingExpectation();
         }
     }

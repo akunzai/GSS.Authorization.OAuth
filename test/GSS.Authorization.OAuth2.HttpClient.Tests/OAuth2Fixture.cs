@@ -1,55 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
-using GSS.Authorization.OAuth2;
+using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using RichardSzalay.MockHttp;
 
-namespace OAuth2HttpClientSample
+namespace GSS.Authorization.OAuth2.HttpClient.Tests
 {
-    public class Program
+    public class OAuth2Fixture
     {
-        public static async Task Main()
+        public OAuth2Fixture()
         {
             Configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "Production"}.json", optional: true)
                 .Build();
-            var services = new ServiceCollection();
-            ConfigureServices(services);
-            var provider = services.BuildServiceProvider();
-
-            Console.WriteLine("Creating a client...");
-            var oauth2Client = provider.GetRequiredService<OAuth2HttpClient>();
-
-            Console.WriteLine("Sending a request...");
-            var response = await oauth2Client.HttpClient.GetAsync(Configuration["OAuth2:ResourceEndpoint"]).ConfigureAwait(false);
-            var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            Console.WriteLine("Response data:");
-            Console.WriteLine(data);
-
-            Console.WriteLine("Press the ANY key to exit...");
-            Console.ReadKey();
         }
 
-        private static IConfiguration Configuration { get; set; }
+        public IConfiguration Configuration { get; }
 
-        private static void ConfigureServices(IServiceCollection services)
+        public IServiceProvider BuildServiceProvider()
         {
+            var services = new ServiceCollection();
             services.AddSingleton(Configuration);
             services.AddLogging(logging =>
             {
                 logging.AddConfiguration(Configuration.GetSection("Logging"));
                 logging.AddDebug();
             });
+            if (Configuration.GetValue("HttpClient:Mock", true))
+            {
+                services.AddSingleton(new MockHttpMessageHandler());
+            }
 
             if (Configuration.GetValue("OAuth2:GrantFlow", "ResourceOwnerCredentials").Equals("ClientCredentials"))
             {
                 services.AddTransient<IAuthorizer, ClientCredentialsAuthorizer>();
             }
-            
+
             services.AddOAuth2HttpClient((resolver, options) =>
             {
                 var configuration = resolver.GetRequiredService<IConfiguration>();
@@ -58,7 +48,13 @@ namespace OAuth2HttpClientSample
                 options.ClientSecret = configuration["OAuth2:ClientSecret"];
                 options.Credentials = new NetworkCredential(configuration["OAuth2:Credentials:UserName"], configuration["OAuth2:Credentials:Password"]);
                 options.Scopes = configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
-            });
+            }, configureAuthorizerHttpClient: authorizer =>
+            {
+                authorizer.ConfigurePrimaryHttpMessageHandler(resolver => resolver.GetService<MockHttpMessageHandler>() as HttpMessageHandler ?? new HttpClientHandler());
+            })
+            .ConfigurePrimaryHttpMessageHandler(resolver => resolver.GetService<MockHttpMessageHandler>() as HttpMessageHandler ?? new HttpClientHandler());
+
+            return services.BuildServiceProvider();
         }
     }
 }

@@ -1,69 +1,31 @@
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using RichardSzalay.MockHttp;
 using Xunit;
 
-namespace GSS.Authorization.OAuth2
+namespace GSS.Authorization.OAuth2.HttpClient.Tests
 {
-    public class OAuth2HttpClientTests
+    public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
     {
         private readonly OAuth2HttpClient _client;
         private readonly MockHttpMessageHandler _mockHttp;
         private readonly Uri _resourceEndpoint;
         private readonly AuthorizerOptions _options;
 
-        public OAuth2HttpClientTests()
+        public OAuth2HttpClientTests(OAuth2Fixture fixture)
         {
-            var env = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "Production";
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .AddJsonFile($"appsettings.{env}.json", optional: true)
-                .Build();
-            if (configuration.GetValue("HttpClient:Mock", true))
-            {
-                _mockHttp = new MockHttpMessageHandler();
-            }
-            var services = new ServiceCollection()
-            .AddLogging(logging =>
-            {
-                logging.AddConfiguration(configuration.GetSection("Logging"));
-                logging.AddDebug();
-            })
-            .AddTransient<IAuthorizer>(sp =>
-            {
-                var grantType = configuration.GetValue("OAuth2:GrantFlow", "ClientCredentials");
-                if (grantType.Contains("ResourceOwner"))
-                {
-                    return ActivatorUtilities.CreateInstance<ResourceOwnerCredentialsAuthorizer>(sp);
-                }
-                return ActivatorUtilities.CreateInstance<ClientCredentialsAuthorizer>(sp);
-            })
-            .AddOptions<AuthorizerOptions>().Configure(options =>
-            {
-                options.AccessTokenEndpoint = configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
-                options.ClientId = configuration["OAuth2:ClientId"];
-                options.ClientSecret = configuration["OAuth2:ClientSecret"];
-                options.Credentials = new NetworkCredential(configuration["OAuth2:Credentials:UserName"], configuration["OAuth2:Credentials:Password"]);
-                options.Scopes = configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
-            })
-            .Services.AddHttpClient<AuthorizerHttpClient>()
-                .ConfigurePrimaryHttpMessageHandler(sp => _mockHttp as HttpMessageHandler ?? new HttpClientHandler())
-            .Services.AddHttpClient<OAuth2HttpClient>()
-                .AddHttpMessageHandler(sp => ActivatorUtilities.CreateInstance<OAuth2HttpHandler>(sp))
-                .ConfigurePrimaryHttpMessageHandler(sp => _mockHttp as HttpMessageHandler ?? new HttpClientHandler())
-             .Services.BuildServiceProvider();
+            var services = fixture.BuildServiceProvider();
             _client = services.GetRequiredService<OAuth2HttpClient>();
-            _options = services.GetService<IOptions<AuthorizerOptions>>().Value;
-            _resourceEndpoint = configuration.GetValue<Uri>("OAuth2:ResourceEndpoint");
+            _options = services.GetRequiredService<IOptions<AuthorizerOptions>>().Value;
+            _mockHttp = services.GetService<MockHttpMessageHandler>();
+            _resourceEndpoint = fixture.Configuration.GetValue<Uri>("OAuth2:ResourceEndpoint");
         }
 
         [Fact]
@@ -75,6 +37,7 @@ namespace GSS.Authorization.OAuth2
                 Token = Guid.NewGuid().ToString(),
                 ExpiresInSeconds = 10
             };
+            _mockHttp?.ResetExpectations();
             _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
@@ -99,6 +62,7 @@ namespace GSS.Authorization.OAuth2
 
             // Arrange
             var invalidToken = "TEST";
+            _mockHttp?.ResetExpectations();
             _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
                 .WithHeaders("Authorization", $"{AuthorizerDefaults.Bearer} {invalidToken}")
                 .Respond(HttpStatusCode.Forbidden);
@@ -120,6 +84,7 @@ namespace GSS.Authorization.OAuth2
             Skip.If(_mockHttp == null);
 
             // Arrange
+            _mockHttp?.ResetExpectations();
             _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
                 .Respond(HttpStatusCode.Forbidden);
 
@@ -138,6 +103,7 @@ namespace GSS.Authorization.OAuth2
             Skip.If(_mockHttp == null);
 
             // Arrange
+            _mockHttp?.ResetExpectations();
             _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
                 .Respond(HttpStatusCode.Unauthorized);
             var accessToken = new AccessToken
@@ -171,6 +137,7 @@ namespace GSS.Authorization.OAuth2
                 Token = Guid.NewGuid().ToString(),
                 ExpiresInSeconds = 10
             };
+            _mockHttp?.ResetExpectations();
             _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
@@ -209,6 +176,7 @@ namespace GSS.Authorization.OAuth2
                 Token = Guid.NewGuid().ToString(),
                 ExpiresInSeconds = 2
             };
+            _mockHttp?.ResetExpectations();
             _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
