@@ -54,6 +54,7 @@ end_of_line = lf
 # C# files
 # https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference#language-conventions
 [*.{cs,csx,cake}]
+charset = utf-8-bom
 # New line preferences
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true
