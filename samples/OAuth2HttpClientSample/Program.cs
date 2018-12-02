@@ -47,19 +47,29 @@ namespace OAuth2HttpClientSample
 
             if (Configuration.GetValue("OAuth2:GrantFlow", "ResourceOwnerCredentials").Equals("ClientCredentials"))
             {
-                // override the IAuthorizer
-                services.AddTransient<IAuthorizer, ClientCredentialsAuthorizer>();
+                services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) =>
+                {
+                    ConfigureAuthorizerOptions(options);
+                });
             }
-
-            services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>((resolver, options) =>
+            else
             {
-                var configuration = resolver.GetRequiredService<IConfiguration>();
-                options.AccessTokenEndpoint = configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
-                options.ClientId = configuration["OAuth2:ClientId"];
-                options.ClientSecret = configuration["OAuth2:ClientSecret"];
-                options.Credentials = new NetworkCredential(configuration["OAuth2:Credentials:UserName"], configuration["OAuth2:Credentials:Password"]);
-                options.Scopes = configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
-            });
+                services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>((resolver, options) =>
+                {
+                    ConfigureAuthorizerOptions(options);
+                });
+            }
+        }
+
+        private static void ConfigureAuthorizerOptions(AuthorizerOptions options)
+        {
+            options.AccessTokenEndpoint = Configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
+            options.ClientId = Configuration["OAuth2:ClientId"];
+            options.ClientSecret = Configuration["OAuth2:ClientSecret"];
+            options.Credentials = new NetworkCredential(
+                Configuration["OAuth2:Credentials:UserName"],
+                Configuration["OAuth2:Credentials:Password"]);
+            options.Scopes = Configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -22,9 +23,9 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         public OAuth2HttpClientTests(OAuth2Fixture fixture)
         {
             var services = fixture.BuildServiceProvider();
+            _mockHttp = services.GetService<MockHttpMessageHandler>();
             _client = services.GetRequiredService<OAuth2HttpClient>();
             _options = services.GetRequiredService<IOptions<AuthorizerOptions>>().Value;
-            _mockHttp = services.GetService<MockHttpMessageHandler>();
             _resourceEndpoint = fixture.Configuration.GetValue<Uri>("OAuth2:ResourceEndpoint");
         }
 

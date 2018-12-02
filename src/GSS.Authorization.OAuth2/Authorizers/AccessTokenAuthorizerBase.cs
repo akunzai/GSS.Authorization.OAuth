@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -8,11 +8,10 @@ using Newtonsoft.Json;
 
 namespace GSS.Authorization.OAuth2
 {
-    public abstract class AccessTokenAuthorizerBase : IAuthorizer
+    public abstract class AccessTokenAuthorizerBase : Authorizer
     {
-        protected AccessTokenAuthorizerBase(AuthorizerHttpClient client, IOptions<AuthorizerOptions> options)
+        protected AccessTokenAuthorizerBase(HttpClient client, IOptions<AuthorizerOptions> options) : base(client)
         {
-            Client = client;
             Options = options.Value;
             if (string.IsNullOrWhiteSpace(Options.ClientId))
             {
@@ -28,10 +27,9 @@ namespace GSS.Authorization.OAuth2
             }
         }
 
-        protected AuthorizerHttpClient Client { get; }
         protected AuthorizerOptions Options { get; }
 
-        public virtual async Task<AccessToken> GetAccessTokenAsync(CancellationToken cancellationToken = default)
+        public override async Task<AccessToken> GetAccessTokenAsync(CancellationToken cancellationToken = default)
         {
             var formData = new Dictionary<string, string>
             {
@@ -47,7 +45,7 @@ namespace GSS.Authorization.OAuth2
             {
                 Content = new FormUrlEncodedContent(formData)
             };
-            var response = await Client.HttClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            var response = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
                 if (Options.OnError != null)

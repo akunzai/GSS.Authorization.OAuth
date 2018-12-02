@@ -36,20 +36,6 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         }
 
         [Fact]
-        public void AddOAuth2HttpClient_WithConfigureOptions_ShouldAddDefaultAuthorizorToCollection()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-            var builder = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) => { });
-
-            // Act
-            var descriptor = builder.Services.Where(x => x.ServiceType == typeof(IAuthorizer)).FirstOrDefault();
-
-            // Assert
-            Assert.NotNull(descriptor);
-        }
-
-        [Fact]
         public void AddOAuth2HttpClient_WithEmptyConfigureOptions_ShouldThrowsOnAccessOptionValue()
         {
             // Arrange
@@ -133,7 +119,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             }).Services.BuildServiceProvider();
 
             // Act
-            var ex = Assert.Throws<ArgumentNullException>(() => services.GetRequiredService<IAuthorizer>());
+            var ex = Assert.Throws<ArgumentNullException>(() => services.GetRequiredService<ResourceOwnerCredentialsAuthorizer>());
 
             // Assert
             Assert.Equal(nameof(AuthorizerOptions.Credentials), ex.ParamName);
@@ -153,30 +139,11 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             }).Services.BuildServiceProvider();
 
             // Act
-            var authorizer = services.GetRequiredService<IAuthorizer>();
+            var authorizer = services.GetService<ResourceOwnerCredentialsAuthorizer>();
 
             // Assert
-            Assert.IsType<ResourceOwnerCredentialsAuthorizer>(authorizer);
-        }
-
-        [Fact]
-        public void AddOAuth2HttpClient_AfterAddClientCredentialsAuthorizer_ShouldReplaceResourceOwnerCredentialsAuthorizer()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-            collection.AddTransient<IAuthorizer, ClientCredentialsAuthorizer>();
-            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>((resolver, options) =>
-            {
-                options.AccessTokenEndpoint = new Uri("https://example.com");
-                options.ClientId = "foo";
-                options.ClientSecret = "bar";
-            }).Services.BuildServiceProvider();
-
-            // Act
-            var authorizer = services.GetRequiredService<IAuthorizer>();
-
-            // Assert
-            Assert.IsType<ClientCredentialsAuthorizer>(authorizer);
+            Assert.NotNull(authorizer);
+            Assert.IsAssignableFrom<Authorizer>(authorizer);
         }
 
         [Fact]
@@ -246,6 +213,33 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
 
             // Assert
             Assert.NotNull(client);
+        }
+
+        [Fact]
+        public void AddOAuth2HttpClients_WithDifferenctAuthorizers_ShouldAddAuthroizersInServiceProvider()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            var services = collection.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("client1", (resolver, options) =>
+            {
+                options.AccessTokenEndpoint = new Uri("https://example.com");
+                options.ClientId = "foo";
+                options.ClientSecret = "bar";
+            }).Services.AddOAuth2HttpClient<ResourceOwnerCredentialsAuthorizer>("client2", (resolver, options) =>
+            {
+                options.AccessTokenEndpoint = new Uri("https://example.com");
+                options.ClientId = "foo";
+                options.ClientSecret = "bar";
+                options.Credentials = new NetworkCredential("name", "pass");
+            }).Services.BuildServiceProvider();
+
+            // Act
+            var authorizer1 = services.GetService<ClientCredentialsAuthorizer>();
+            var authorizer2 = services.GetService<ResourceOwnerCredentialsAuthorizer>();
+
+            // Assert
+            Assert.NotNull(authorizer1);
+            Assert.NotNull(authorizer2);
         }
     }
 }

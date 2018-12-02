@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
@@ -27,8 +28,8 @@ namespace GSS.Authorization.OAuth2.Tests
             services.AddSingleton(Configuration);
             services.AddLogging(logging =>
             {
-                 logging.AddConfiguration(Configuration.GetSection("Logging"));
-                 logging.AddDebug();
+                logging.AddConfiguration(Configuration.GetSection("Logging"));
+                logging.AddDebug();
             });
 
             if (Configuration.GetValue("HttpClient:Mock", true))
@@ -49,9 +50,15 @@ namespace GSS.Authorization.OAuth2.Tests
                     errorState.StatusCode = c;
                     errorState.Message = m;
                 };
+            }).PostConfigure(options =>
+            {
+                Validator.ValidateObject(options, new ValidationContext(options), validateAllProperties: true);
             });
 
-            services.AddHttpClient<AuthorizerHttpClient>()
+            services.AddHttpClient<ClientCredentialsAuthorizer>()
+                .ConfigurePrimaryHttpMessageHandler(resolver => resolver.GetService<MockHttpMessageHandler>() as HttpMessageHandler ?? new HttpClientHandler());
+
+            services.AddHttpClient<ResourceOwnerCredentialsAuthorizer>()
                 .ConfigurePrimaryHttpMessageHandler(resolver => resolver.GetService<MockHttpMessageHandler>() as HttpMessageHandler ?? new HttpClientHandler());
 
             return services.BuildServiceProvider();
