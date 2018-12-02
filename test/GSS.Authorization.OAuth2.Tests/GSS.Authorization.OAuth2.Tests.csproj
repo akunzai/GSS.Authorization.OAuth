@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\GSS.Authorization.OAuth2.HttpClient\GSS.Authorization.OAuth2.HttpClient.csproj" />
     <ProjectReference Include="..\..\src\GSS.Authorization.OAuth2\GSS.Authorization.OAuth2.csproj" />
   </ItemGroup>
 
