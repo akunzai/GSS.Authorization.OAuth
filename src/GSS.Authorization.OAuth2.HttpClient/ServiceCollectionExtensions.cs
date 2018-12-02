@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace GSS.Authorization.OAuth2
 {
@@ -14,13 +13,13 @@ namespace GSS.Authorization.OAuth2
         /// <typeparam name="TAuthorizer">The type of the authorizer.</typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="configureOptions">A delegate that is used to configure an <see cref="AuthorizerOptions"/>.</param>
-        /// <param name="configureAuthorizerHttpClient">A delegate that is used to configure an <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> for the <see cref="AuthorizerHttpClient"/>.</param>
+        /// <param name="configureAuthorizer">A delegate that is used to configure an <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> for the <see cref="Authorizer"/>.</param>
         /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the client.</returns>
         public static IHttpClientBuilder AddOAuth2HttpClient<TClient, TAuthorizer>(this IServiceCollection services,
             Action<IServiceProvider, AuthorizerOptions> configureOptions,
-            Action<IHttpClientBuilder> configureAuthorizerHttpClient = null)
+            Action<IHttpClientBuilder> configureAuthorizer = null)
             where TClient : class
-            where TAuthorizer : class, IAuthorizer
+            where TAuthorizer : Authorizer
         {
             if (services == null)
             {
@@ -34,10 +33,10 @@ namespace GSS.Authorization.OAuth2
 
             var builder = services.AddOAuth2Authorizer<TAuthorizer>(configureOptions);
 
-            configureAuthorizerHttpClient?.Invoke(builder);
+            configureAuthorizer?.Invoke(builder);
 
             return services.AddHttpClient<TClient>()
-                .AddHttpMessageHandler(resolver => ActivatorUtilities.CreateInstance<OAuth2HttpHandler>(resolver));
+                .AddHttpMessageHandler(resolver => new OAuth2HttpHandler(resolver.GetRequiredService<TAuthorizer>()));
         }
 
         /// <summary>
@@ -47,12 +46,12 @@ namespace GSS.Authorization.OAuth2
         /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
         /// <typeparam name="TAuthorizer">The type of the authorizer.</typeparam>
         /// <param name="configureOptions">A delegate that is used to configure an <see cref="AuthorizerOptions"/>.</param>
-        /// <param name="configureAuthorizerHttpClient">A delegate that is used to configure an <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> for the <see cref="AuthorizerHttpClient"/>.</param>
+        /// <param name="configureAuthorizer">A delegate that is used to configure an <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> for the <see cref="Authorizer"/>.</param>
         /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the client.</returns>
         public static IHttpClientBuilder AddOAuth2HttpClient<TAuthorizer>(this IServiceCollection services, string name,
             Action<IServiceProvider, AuthorizerOptions> configureOptions,
-            Action<IHttpClientBuilder> configureAuthorizerHttpClient = null)
-            where TAuthorizer : class, IAuthorizer
+            Action<IHttpClientBuilder> configureAuthorizer = null)
+            where TAuthorizer : Authorizer
         {
             if (services == null)
             {
@@ -66,10 +65,10 @@ namespace GSS.Authorization.OAuth2
 
             var builder = services.AddOAuth2Authorizer<TAuthorizer>(configureOptions);
 
-            configureAuthorizerHttpClient?.Invoke(builder);
+            configureAuthorizer?.Invoke(builder);
 
             return services.AddHttpClient(name)
-                .AddHttpMessageHandler(resolver => ActivatorUtilities.CreateInstance<OAuth2HttpHandler>(resolver));
+                .AddHttpMessageHandler(resolver => new OAuth2HttpHandler(resolver.GetRequiredService<TAuthorizer>()));
         }
 
         /// <summary>
@@ -81,7 +80,7 @@ namespace GSS.Authorization.OAuth2
         /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the <see cref="AuthorizerHttpClient"/>.</returns>
         internal static IHttpClientBuilder AddOAuth2Authorizer<TAuthorizer>(this IServiceCollection services,
             Action<IServiceProvider, AuthorizerOptions> configureOptions)
-            where TAuthorizer : class, IAuthorizer
+            where TAuthorizer : Authorizer
         {
             if (services == null)
             {
@@ -93,8 +92,6 @@ namespace GSS.Authorization.OAuth2
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            services.TryAddTransient<IAuthorizer, TAuthorizer>();
-
             services.AddOptions<AuthorizerOptions>().Configure<IServiceProvider>((options, resolver) =>
             {
                 configureOptions(resolver, options);
@@ -104,7 +101,7 @@ namespace GSS.Authorization.OAuth2
                 Validator.ValidateObject(options, new ValidationContext(options), validateAllProperties: true);
             });
 
-            return services.AddHttpClient<AuthorizerHttpClient>();
+            return services.AddHttpClient<TAuthorizer>();
         }
     }
 }

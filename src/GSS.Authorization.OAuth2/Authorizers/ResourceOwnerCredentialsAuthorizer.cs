@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using Microsoft.Extensions.Options;
 
 namespace GSS.Authorization.OAuth2
@@ -7,7 +8,7 @@ namespace GSS.Authorization.OAuth2
     public class ResourceOwnerCredentialsAuthorizer : AccessTokenAuthorizerBase
     {
         public ResourceOwnerCredentialsAuthorizer(
-            AuthorizerHttpClient client,
+            HttpClient client,
             IOptions<AuthorizerOptions> options) : base(client, options)
         {
             if (options.Value.Credentials == null)
@@ -23,7 +24,14 @@ namespace GSS.Authorization.OAuth2
                 throw new ArgumentNullException(nameof(options.Value.Credentials.Password));
             }
         }
-        
+
+        [Obsolete("This is obsolete and will be removed in a future version.")]
+        public ResourceOwnerCredentialsAuthorizer(
+            AuthorizerHttpClient client,
+            IOptions<AuthorizerOptions> options) : this(client.HttClient, options)
+        {
+        }
+
         protected override void PrepareFormData(IDictionary<string, string> formData)
         {
             formData[AuthorizerDefaults.GrantType] = AuthorizerDefaults.Password;

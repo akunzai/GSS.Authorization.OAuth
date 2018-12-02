@@ -13,17 +13,17 @@ namespace GSS.Authorization.OAuth2.Tests
     public class ResourceOwnerCredentialsAuthorizerTests : IClassFixture<AuthorizerFixture>
     {
         private readonly IAuthorizer _authorizer;
+        private readonly AuthorizerError _error;
         private readonly MockHttpMessageHandler _mockHttp;
         private readonly AuthorizerOptions _options;
-        private readonly AuthorizerError _error;
 
         public ResourceOwnerCredentialsAuthorizerTests(AuthorizerFixture fixture)
         {
             var services = fixture.BuildServiceProvider();
-            _mockHttp = services.GetService<MockHttpMessageHandler>();
+            _authorizer = services.GetRequiredService<ResourceOwnerCredentialsAuthorizer>();
             _error = services.GetRequiredService<AuthorizerError>();
+            _mockHttp = services.GetService<MockHttpMessageHandler>();
             _options = services.GetService<IOptions<AuthorizerOptions>>().Value;
-            _authorizer = ActivatorUtilities.CreateInstance<ResourceOwnerCredentialsAuthorizer>(services);
         }
 
         [Fact]

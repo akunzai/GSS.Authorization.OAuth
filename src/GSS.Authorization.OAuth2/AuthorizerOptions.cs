@@ -24,7 +24,7 @@ namespace GSS.Authorization.OAuth2
         public NetworkCredential Credentials { get; set; }
 
         /// <summary>
-        /// AuthorizerHttpClient request error handler
+        /// HttpClient request error handler
         /// </summary>
         public Action<HttpStatusCode, string> OnError { get; set; }
     }
