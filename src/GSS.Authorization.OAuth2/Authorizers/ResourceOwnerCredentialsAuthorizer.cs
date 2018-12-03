@@ -28,7 +28,7 @@ namespace GSS.Authorization.OAuth2
         [Obsolete("This is obsolete and will be removed in a future version.")]
         public ResourceOwnerCredentialsAuthorizer(
             AuthorizerHttpClient client,
-            IOptions<AuthorizerOptions> options) : this(client.HttClient, options)
+            IOptions<AuthorizerOptions> options) : this(client.HttpClient, options)
         {
         }
 

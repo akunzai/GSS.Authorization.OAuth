@@ -9,11 +9,11 @@ namespace GSS.Authorization.OAuth2
     [Obsolete("This is obsolete and will be removed in a future version.")]
     public class AuthorizerHttpClient
     {
-        public AuthorizerHttpClient(HttpClient httClient)
+        public AuthorizerHttpClient(HttpClient httpClient)
         {
-            HttClient = httClient;
+            HttpClient = httpClient;
         }
         
-        public HttpClient HttClient { get; }
+        public HttpClient HttpClient { get; }
     }
 }
