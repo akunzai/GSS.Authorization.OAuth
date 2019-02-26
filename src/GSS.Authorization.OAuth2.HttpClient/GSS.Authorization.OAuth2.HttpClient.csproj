@@ -4,16 +4,12 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>OAuth 2.0 authorized HttpClient, friendly with HttpClientFactory</Description>
     <PackageTags>OAuth;OAuth2;HttpClient;HttpHandler</PackageTags>
-    <Version>1.3.0</Version>
+    <Version>1.4.0</Version>
     <RootNamespace>GSS.Authorization.OAuth2</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(Configuration)'=='Debug' ">
+  <ItemGroup>
     <ProjectReference Include="..\GSS.Authorization.OAuth2\GSS.Authorization.OAuth2.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(Configuration)'=='Release' ">
-    <PackageReference Include="GSS.Authorization.OAuth2" Version="1.3.0" />
   </ItemGroup>
 
   <ItemGroup>
