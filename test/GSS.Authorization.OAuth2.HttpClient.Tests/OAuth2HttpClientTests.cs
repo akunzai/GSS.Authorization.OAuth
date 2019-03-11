@@ -161,6 +161,46 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         }
 
         [SkippableFact]
+        public async Task HttpClient_AccessProtectedResourceWithCachedAccessToken_ShouldReAuthorizedWithUnauthorizedResponse()
+        {
+            Skip.If(_mockHttp == null);
+
+            // Arrange
+            var accessToken = new AccessToken
+            {
+                Token = Guid.NewGuid().ToString(),
+                ExpiresInSeconds = 1
+            };
+            var accessToken2 = new AccessToken
+            {
+                Token = Guid.NewGuid().ToString(),
+                ExpiresInSeconds = 2
+            };
+            _mockHttp?.ResetExpectations();
+            _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
+                .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
+                .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
+                .Respond("application/json", JsonConvert.SerializeObject(accessToken));
+            _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
+                .Respond(HttpStatusCode.Unauthorized);
+            _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
+                .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
+                .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
+                .Respond("application/json", JsonConvert.SerializeObject(accessToken2));
+            _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
+                .WithHeaders("Authorization", $"{AuthorizerDefaults.Bearer} {accessToken2.Token}")
+                .Respond(HttpStatusCode.OK);
+
+            // Act
+            var response = await _client.HttpClient.GetAsync(_resourceEndpoint).ConfigureAwait(false);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            _mockHttp.VerifyNoOutstandingExpectation();
+            _mockHttp.VerifyNoOutstandingRequest();
+        }
+
+        [SkippableFact]
         public async Task HttpClient_AccessProtectedResourceWithExpiredAccessToken_ShouldReAuthorized()
         {
             Skip.If(_mockHttp == null);
