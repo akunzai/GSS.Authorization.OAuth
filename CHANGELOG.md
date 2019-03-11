@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2019-03-11
+
+### GSS.Authorization.OAuth2.HttpClient 1.4.1
+
+- Force renew accessToken for Unauthorized response
+
 ## 2019-02-26
 
 ### GSS.Authorization.OAuth2(.HttpClient)? 1.4.0

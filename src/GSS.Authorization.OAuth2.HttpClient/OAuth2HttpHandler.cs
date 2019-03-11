@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -31,7 +31,7 @@ namespace GSS.Authorization.OAuth2
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                _accessTokenCache = await GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
+                _accessTokenCache = await GetAccessTokenAsync(cancellationToken, forceRenew: true).ConfigureAwait(false);
                 TrySetAuthorizationHeaderToRequest(request);
                 return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
             }
@@ -39,9 +39,9 @@ namespace GSS.Authorization.OAuth2
             return response;
         }
 
-        private async ValueTask<AccessToken> GetAccessTokenAsync(CancellationToken cancellationToken)
+        private async ValueTask<AccessToken> GetAccessTokenAsync(CancellationToken cancellationToken, bool forceRenew = false)
         {
-            if (_accessTokenCache != null && _accessTokenExpiredTime > DateTime.Now)
+            if (_accessTokenCache != null && !forceRenew && _accessTokenExpiredTime > DateTime.Now)
             {
                 return _accessTokenCache;
             }
