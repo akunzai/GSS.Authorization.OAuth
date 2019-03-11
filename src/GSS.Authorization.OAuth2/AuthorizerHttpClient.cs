@@ -13,7 +13,7 @@ namespace GSS.Authorization.OAuth2
         {
             HttpClient = httpClient;
         }
-        
+
         public HttpClient HttpClient { get; }
     }
 }
