@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2019-08-10
+
+### GSS.Authorization.OAuth2 1.5.0
+
+- Optimize JSON deserializing
+- Remove obsolete code
+
+### GSS.Authorization.OAuth2.HttpClient 1.5.0
+
+- Simplify accessToken caching by MemoryCache
+
 ## 2019-03-11
 
 ### GSS.Authorization.OAuth2.HttpClient 1.4.1
