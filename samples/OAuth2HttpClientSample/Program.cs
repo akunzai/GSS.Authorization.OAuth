@@ -29,9 +29,10 @@ namespace OAuth2HttpClientSample
             var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             Console.WriteLine("Response data:");
             Console.WriteLine(data);
-
-            Console.WriteLine("Press the ANY key to exit...");
-            Console.ReadKey();
+            if (!Console.IsInputRedirected){
+                Console.WriteLine("Press the ANY key to exit...");
+                Console.ReadKey();
+            }
         }
 
         private static IConfiguration Configuration { get; set; }
