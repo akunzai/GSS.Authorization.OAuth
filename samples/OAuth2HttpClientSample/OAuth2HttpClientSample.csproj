@@ -1,9 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2;net472</TargetFrameworks>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <OutputType>Exe</OutputType>
-    <DebugType>portable</DebugType>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -26,10 +25,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.2.0" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0-*" Condition=" '$(OS)' != 'Windows_NT' "/>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
 </Project>
