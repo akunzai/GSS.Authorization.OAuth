@@ -25,9 +25,9 @@ Currently, only `Client-Credentials` grant flow and `Resource-Owner-Credentials`
 
 ## Usage
 
-> please read [HttpClientFactory usage](https://docs.microsoft.com/aspnet/core/fundamentals/http-requests) first.
+Check out these [samples](./samples/) to learn the basics and key features.
 
-Named OAuth2 HttpClients
+### Named OAuth2 HttpClient
 
 ```csharp
 services.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("oauth2",(resolver, options) =>
@@ -41,7 +41,7 @@ services.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("oauth2",(resolver, op
 });
 ```
 
-Typed OAuth2 HttpClients
+### Typed OAuth2 HttpClient
 
 ```csharp
 services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>((resolver, options) =>
