@@ -14,7 +14,7 @@ namespace GSS.Authorization.OAuth2
             Client = client;
         }
 
-        public HttpClient Client { get; }
+        protected HttpClient Client { get; }
 
         public abstract Task<AccessToken> GetAccessTokenAsync(CancellationToken cancellationToken = default);
     }

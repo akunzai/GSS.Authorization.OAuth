@@ -13,26 +13,14 @@ namespace GSS.Authorization.OAuth2
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly IAuthorizer _authorizer;
         private readonly IMemoryCache _memoryCache;
-        private readonly Lazy<string> _lazyCacheKey;
+        private readonly string _cacheKey;
 
         public OAuth2HttpHandler(IAuthorizer authorizer, IMemoryCache memoryCache)
         {
             _authorizer = authorizer;
             _memoryCache = memoryCache;
-            _lazyCacheKey = new Lazy<string>(() => CacheKeyFactory(authorizer));
+            _cacheKey = Guid.NewGuid().ToString();
         }
-
-        public static Func<IAuthorizer,string> CacheKeyFactory { get; set; } = authorizer => {
-            switch (authorizer)
-            {
-                case AccessTokenAuthorizerBase authorizerWithOptions:
-                    return $"oauth2:{authorizerWithOptions.Options.AccessTokenEndpoint.AbsoluteUri}:{authorizerWithOptions.Options.ClientId}";
-                case Authorizer authorizerWithClient when authorizerWithClient.Client.BaseAddress != null:
-                    return $"oauth2:{authorizerWithClient.Client.BaseAddress.AbsoluteUri}";
-                default:
-                    return $"oauth2:{authorizer.GetType().FullName}";
-            }
-        };
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
@@ -50,8 +38,7 @@ namespace GSS.Authorization.OAuth2
         private async ValueTask<AccessToken> GetAccessTokenAsync(CancellationToken cancellationToken,
             bool forceRenew = false)
         {
-            var cacheKey = _lazyCacheKey.Value;
-            if (!forceRenew && _memoryCache.TryGetValue<AccessToken>(cacheKey, out var accessTokenCache))
+            if (!forceRenew && _memoryCache.TryGetValue<AccessToken>(_cacheKey, out var accessTokenCache))
             {
                 return accessTokenCache;
             }
@@ -63,11 +50,11 @@ namespace GSS.Authorization.OAuth2
                 if (accessToken == null) return AccessToken.Empty;
                 if (accessToken.ExpiresInSeconds > 0)
                 {
-                    _memoryCache.Set(cacheKey, accessToken, accessToken.ExpiresIn);
+                    _memoryCache.Set(_cacheKey, accessToken, accessToken.ExpiresIn);
                 }
                 else
                 {
-                    _memoryCache.Set(cacheKey, accessToken);
+                    _memoryCache.Set(_cacheKey, accessToken);
                 }
                 return accessToken;
             }
