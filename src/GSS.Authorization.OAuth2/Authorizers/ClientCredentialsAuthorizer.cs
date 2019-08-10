@@ -11,11 +11,6 @@ namespace GSS.Authorization.OAuth2
         {
         }
 
-        [Obsolete("This is obsolete and will be removed in a future version.")]
-        public ClientCredentialsAuthorizer(AuthorizerHttpClient client, IOptions<AuthorizerOptions> options) : base(client.HttpClient,options)
-        {
-        }
-
         protected override void PrepareFormData(IDictionary<string, string> formData)
         {
             formData[AuthorizerDefaults.GrantType] = AuthorizerDefaults.ClientCredentials;
