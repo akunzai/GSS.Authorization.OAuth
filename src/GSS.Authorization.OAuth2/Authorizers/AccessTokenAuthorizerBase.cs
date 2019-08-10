@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace GSS.Authorization.OAuth2
 {
@@ -46,17 +45,20 @@ namespace GSS.Authorization.OAuth2
                 Content = new FormUrlEncodedContent(formData)
             };
             var response = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
+
+            if (response.IsSuccessStatusCode)
             {
-                if (Options.OnError != null)
-                {
-                    var errorMessage = response.Content == null ? null : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    Options.OnError(response.StatusCode, string.IsNullOrWhiteSpace(errorMessage) ? response.ReasonPhrase : errorMessage);
-                }
+                return await response.Content.ReadAsAsync<AccessToken>(cancellationToken).ConfigureAwait(false);
+            }
+
+            if (Options.OnError == null)
+            {
                 return null;
             }
-            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            return JsonConvert.DeserializeObject<AccessToken>(json);
+
+            var errorMessage = response.Content == null ? null : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            Options.OnError(response.StatusCode, string.IsNullOrWhiteSpace(errorMessage) ? response.ReasonPhrase : errorMessage);
+            return null;
         }
 
         protected abstract void PrepareFormData(IDictionary<string, string> formData);
