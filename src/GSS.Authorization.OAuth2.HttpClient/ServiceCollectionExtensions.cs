@@ -35,8 +35,10 @@ namespace GSS.Authorization.OAuth2
 
             configureAuthorizer?.Invoke(builder);
 
-            return services.AddHttpClient<TClient>()
-                .AddHttpMessageHandler(resolver => new OAuth2HttpHandler(resolver.GetRequiredService<TAuthorizer>()));
+            return services
+                .AddMemoryCache()
+                .AddHttpClient<TClient>()
+                .AddHttpMessageHandler(resolver => ActivatorUtilities.CreateInstance<OAuth2HttpHandler>(resolver));
         }
 
         /// <summary>
@@ -67,8 +69,10 @@ namespace GSS.Authorization.OAuth2
 
             configureAuthorizer?.Invoke(builder);
 
-            return services.AddHttpClient(name)
-                .AddHttpMessageHandler(resolver => new OAuth2HttpHandler(resolver.GetRequiredService<TAuthorizer>()));
+            return services
+                .AddMemoryCache()
+                .AddHttpClient(name)
+                .AddHttpMessageHandler(resolver => ActivatorUtilities.CreateInstance<OAuth2HttpHandler>(resolver));
         }
 
         /// <summary>
@@ -100,7 +104,7 @@ namespace GSS.Authorization.OAuth2
             {
                 Validator.ValidateObject(options, new ValidationContext(options), validateAllProperties: true);
             });
-
+            services.AddTransient<IAuthorizer>(resolver => resolver.GetRequiredService<TAuthorizer>());
             return services.AddHttpClient<TAuthorizer>();
         }
     }
