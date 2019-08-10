@@ -53,12 +53,12 @@ namespace GSS.Authorization.OAuth2
 
             if (Options.OnError == null)
             {
-                return null;
+                return AccessToken.Empty;
             }
 
             var errorMessage = response.Content == null ? null : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             Options.OnError(response.StatusCode, string.IsNullOrWhiteSpace(errorMessage) ? response.ReasonPhrase : errorMessage);
-            return null;
+            return AccessToken.Empty;
         }
 
         protected abstract void PrepareFormData(IDictionary<string, string> formData);

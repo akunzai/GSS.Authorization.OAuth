@@ -46,7 +46,7 @@ namespace GSS.Authorization.OAuth2.Tests
             var accessToken = await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
 
             // Assert
-            Assert.NotNull(accessToken);
+            Assert.NotNull(accessToken.Token);
             _mockHttp?.VerifyNoOutstandingExpectation();
         }
 
@@ -70,7 +70,6 @@ namespace GSS.Authorization.OAuth2.Tests
             var accessToken = await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
 
             // Assert
-            Assert.NotNull(accessToken);
             Assert.NotEmpty(accessToken.Token);
             _mockHttp?.VerifyNoOutstandingExpectation();
         }
@@ -93,7 +92,7 @@ namespace GSS.Authorization.OAuth2.Tests
             var accessToken = await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
 
             // Assert
-            Assert.Null(accessToken);
+            Assert.Null(accessToken?.Token);
             _mockHttp.VerifyNoOutstandingExpectation();
         }
 

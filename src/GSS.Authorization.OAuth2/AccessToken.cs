@@ -5,6 +5,8 @@ namespace GSS.Authorization.OAuth2
 {
     public class AccessToken
     {
+        public static readonly AccessToken Empty = new AccessToken();
+
         [JsonProperty("access_token")]
         public string Token { get; set; }
 
