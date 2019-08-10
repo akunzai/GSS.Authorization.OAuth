@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -12,12 +13,26 @@ namespace GSS.Authorization.OAuth2
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly IAuthorizer _authorizer;
         private readonly IMemoryCache _memoryCache;
+        private readonly Lazy<string> _lazyCacheKey;
 
         public OAuth2HttpHandler(IAuthorizer authorizer, IMemoryCache memoryCache)
         {
             _authorizer = authorizer;
             _memoryCache = memoryCache;
+            _lazyCacheKey = new Lazy<string>(() => CacheKeyFactory(authorizer));
         }
+
+        public static Func<IAuthorizer,string> CacheKeyFactory { get; set; } = authorizer => {
+            switch (authorizer)
+            {
+                case AccessTokenAuthorizerBase authorizerWithOptions:
+                    return $"oauth2:{authorizerWithOptions.Options.AccessTokenEndpoint.AbsoluteUri}:{authorizerWithOptions.Options.ClientId}";
+                case Authorizer authorizerWithClient when authorizerWithClient.Client.BaseAddress != null:
+                    return $"oauth2:{authorizerWithClient.Client.BaseAddress.AbsoluteUri}";
+                default:
+                    return $"oauth2:{authorizer.GetType().FullName}";
+            }
+        };
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
@@ -35,7 +50,7 @@ namespace GSS.Authorization.OAuth2
         private async ValueTask<AccessToken> GetAccessTokenAsync(CancellationToken cancellationToken,
             bool forceRenew = false)
         {
-            var cacheKey = _authorizer.GetType().FullName;
+            var cacheKey = _lazyCacheKey.Value;
             if (!forceRenew && _memoryCache.TryGetValue<AccessToken>(cacheKey, out var accessTokenCache))
             {
                 return accessTokenCache;

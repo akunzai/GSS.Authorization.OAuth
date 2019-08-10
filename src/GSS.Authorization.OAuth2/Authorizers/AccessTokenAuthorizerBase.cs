@@ -26,7 +26,7 @@ namespace GSS.Authorization.OAuth2
             }
         }
 
-        protected AuthorizerOptions Options { get; }
+        public AuthorizerOptions Options { get; }
 
         public override async Task<AccessToken> GetAccessTokenAsync(CancellationToken cancellationToken = default)
         {
