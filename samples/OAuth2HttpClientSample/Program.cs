@@ -17,27 +17,21 @@ namespace OAuth2HttpClientSample
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "Production"}.json", optional: true)
                 .Build();
-            var services = new ServiceCollection();
-            ConfigureServices(services);
-            var provider = services.BuildServiceProvider();
+            var services = ConfigureServices(new ServiceCollection()).BuildServiceProvider();
 
             Console.WriteLine("Creating a client...");
-            var oauth2Client = provider.GetRequiredService<OAuth2HttpClient>();
+            var oauth2Client = services.GetRequiredService<OAuth2HttpClient>();
 
             Console.WriteLine("Sending a request...");
             var response = await oauth2Client.HttpClient.GetAsync(Configuration["OAuth2:ResourceEndpoint"]).ConfigureAwait(false);
             var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             Console.WriteLine("Response data:");
             Console.WriteLine(data);
-            if (!Console.IsInputRedirected){
-                Console.WriteLine("Press the ANY key to exit...");
-                Console.ReadKey();
-            }
         }
 
         private static IConfiguration Configuration { get; set; }
 
-        private static void ConfigureServices(IServiceCollection services)
+        private static IServiceCollection ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton(Configuration);
             services.AddLogging(logging =>
@@ -46,7 +40,7 @@ namespace OAuth2HttpClientSample
                 logging.AddDebug();
             });
 
-            if (Configuration.GetValue("OAuth2:GrantFlow", "ResourceOwnerCredentials").Equals("ClientCredentials"))
+            if (Configuration.GetValue("OAuth2:GrantFlow", "ClientCredentials").Equals("ClientCredentials"))
             {
                 services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) =>
                 {
@@ -60,6 +54,8 @@ namespace OAuth2HttpClientSample
                     ConfigureAuthorizerOptions(options);
                 });
             }
+
+            return services;
         }
 
         private static void ConfigureAuthorizerOptions(AuthorizerOptions options)
