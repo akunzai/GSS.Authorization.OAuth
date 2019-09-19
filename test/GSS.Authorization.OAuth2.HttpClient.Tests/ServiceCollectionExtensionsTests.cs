@@ -12,7 +12,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
     public class ServiceCollectionExtensionsTests
     {
         [Fact]
-        public void AddOAuth2HttpClient_WithoutNullConfigureOptions_ShouldThrows()
+        public void AddOAuth2HttpClient_WithoutConfigureOptions_ShouldThrows()
         {
             // Arrange
             var collection = new ServiceCollection();
