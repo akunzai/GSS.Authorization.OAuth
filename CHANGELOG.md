@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+### GSS.Authorization.OAuth2.HttpClient 1.5.1
+
+- Avoid register duplicated OAuth2 Authorizer
+- Fixes OAuth2 Authorizer type might not matched as desired
+
 ## 2019-08-10
 
 ### GSS.Authorization.OAuth2 1.5.0
