@@ -1,6 +1,8 @@
-﻿using System;
+using System;
+using System.Linq;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace GSS.Authorization.OAuth2
 {
@@ -31,14 +33,14 @@ namespace GSS.Authorization.OAuth2
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            var builder = services.AddOAuth2Authorizer<TAuthorizer>(configureOptions);
-
-            configureAuthorizer?.Invoke(builder);
+            TryAddOAuth2Authorizer<TAuthorizer>(services, configureOptions, configureAuthorizer);
 
             return services
                 .AddMemoryCache()
                 .AddHttpClient<TClient>()
-                .AddHttpMessageHandler(resolver => ActivatorUtilities.CreateInstance<OAuth2HttpHandler>(resolver));
+                .AddHttpMessageHandler(resolver => new OAuth2HttpHandler(
+                    resolver.GetRequiredService<TAuthorizer>(),
+                    resolver.GetRequiredService<IMemoryCache>()));
         }
 
         /// <summary>
@@ -65,25 +67,26 @@ namespace GSS.Authorization.OAuth2
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            var builder = services.AddOAuth2Authorizer<TAuthorizer>(configureOptions);
-
-            configureAuthorizer?.Invoke(builder);
+            TryAddOAuth2Authorizer<TAuthorizer>(services, configureOptions, configureAuthorizer);
 
             return services
                 .AddMemoryCache()
                 .AddHttpClient(name)
-                .AddHttpMessageHandler(resolver => ActivatorUtilities.CreateInstance<OAuth2HttpHandler>(resolver));
+                .AddHttpMessageHandler(resolver => new OAuth2HttpHandler(
+                    resolver.GetRequiredService<TAuthorizer>(),
+                    resolver.GetRequiredService<IMemoryCache>()));
         }
 
         /// <summary>
-        /// Add OAuth2 Authorizer and related services
+        /// Try Add OAuth2 Authorizer and related services
         /// </summary>
         /// <typeparam name="TAuthorizer">The type of the authorizer.</typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="configureOptions">A delegate that is used to configure an <see cref="AuthorizerOptions"/>.</param>
         /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the <see cref="AuthorizerHttpClient"/>.</returns>
-        internal static IHttpClientBuilder AddOAuth2Authorizer<TAuthorizer>(this IServiceCollection services,
-            Action<IServiceProvider, AuthorizerOptions> configureOptions)
+        internal static void TryAddOAuth2Authorizer<TAuthorizer>(this IServiceCollection services,
+            Action<IServiceProvider, AuthorizerOptions> configureOptions,
+            Action<IHttpClientBuilder> configureAuthorizer = null)
             where TAuthorizer : Authorizer
         {
             if (services == null)
@@ -96,16 +99,18 @@ namespace GSS.Authorization.OAuth2
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            services.AddOptions<AuthorizerOptions>().Configure<IServiceProvider>((options, resolver) =>
+            if (services.Any(x => x.ServiceType == typeof(TAuthorizer)))
             {
-                configureOptions(resolver, options);
-            })
-            .PostConfigure(options =>
-            {
-                Validator.ValidateObject(options, new ValidationContext(options), validateAllProperties: true);
-            });
-            services.AddTransient<IAuthorizer>(resolver => resolver.GetRequiredService<TAuthorizer>());
-            return services.AddHttpClient<TAuthorizer>();
+                return;
+            }
+
+            services.AddOptions<AuthorizerOptions>()
+                .Configure<IServiceProvider>((options, resolver) => configureOptions(resolver, options))
+                .PostConfigure(options => Validator.ValidateObject(options, new ValidationContext(options), validateAllProperties: true));
+
+            var builder = services.AddHttpClient<TAuthorizer>();
+
+            configureAuthorizer?.Invoke(builder);
         }
     }
 }

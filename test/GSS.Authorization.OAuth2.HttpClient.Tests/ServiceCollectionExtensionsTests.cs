@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
@@ -240,6 +240,30 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             // Assert
             Assert.NotNull(authorizer1);
             Assert.NotNull(authorizer2);
+        }
+
+        [Fact]
+        public void AddOAuth2HttpClients_WithSameAuthorizer_ShouldNotThrows()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            var services = collection.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("client1", (resolver, options) =>
+            {
+                options.AccessTokenEndpoint = new Uri("https://example.com");
+                options.ClientId = "foo";
+                options.ClientSecret = "bar";
+            }).Services.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("client2", (resolver, options) =>
+            {
+                options.AccessTokenEndpoint = new Uri("https://example.com");
+                options.ClientId = "foo";
+                options.ClientSecret = "bar";
+            }).Services.BuildServiceProvider();
+
+            // Act
+            var authorizer = services.GetService<ClientCredentialsAuthorizer>();
+
+            // Assert
+            Assert.NotNull(authorizer);
         }
     }
 }
