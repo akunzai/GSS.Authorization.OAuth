@@ -3,10 +3,10 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -41,7 +41,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-                .Respond("application/json", JsonConvert.SerializeObject(accessToken));
+                .Respond("application/json", JsonSerializer.Serialize(accessToken));
             _mockHttp?.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
                 .WithHeaders("Authorization", $"{AuthorizerDefaults.Bearer} {accessToken.Token}")
                 .Respond(HttpStatusCode.OK);
@@ -114,7 +114,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-                .Respond("application/json", JsonConvert.SerializeObject(accessToken));
+                .Respond("application/json", JsonSerializer.Serialize(accessToken));
             _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
                 .WithHeaders("Authorization", $"{AuthorizerDefaults.Bearer} {accessToken.Token}")
                 .Respond(HttpStatusCode.OK);
@@ -141,7 +141,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-                .Respond("application/json", JsonConvert.SerializeObject(accessToken));
+                .Respond("application/json", JsonSerializer.Serialize(accessToken));
             _mockHttp?.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
                 .WithHeaders("Authorization", $"{AuthorizerDefaults.Bearer} {accessToken.Token}")
                 .Respond(HttpStatusCode.OK);
@@ -180,13 +180,13 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-                .Respond("application/json", JsonConvert.SerializeObject(accessToken));
+                .Respond("application/json", JsonSerializer.Serialize(accessToken));
             _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
                 .Respond(HttpStatusCode.Unauthorized);
             _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-                .Respond("application/json", JsonConvert.SerializeObject(accessToken2));
+                .Respond("application/json", JsonSerializer.Serialize(accessToken2));
             _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
                 .WithHeaders("Authorization", $"{AuthorizerDefaults.Bearer} {accessToken2.Token}")
                 .Respond(HttpStatusCode.OK);
@@ -220,14 +220,14 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-                .Respond("application/json", JsonConvert.SerializeObject(accessToken));
+                .Respond("application/json", JsonSerializer.Serialize(accessToken));
             _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
                 .WithHeaders("Authorization", $"{AuthorizerDefaults.Bearer} {accessToken.Token}")
                 .Respond(HttpStatusCode.OK);
             _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-                .Respond("application/json", JsonConvert.SerializeObject(accessToken2));
+                .Respond("application/json", JsonSerializer.Serialize(accessToken2));
             _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
                 .WithHeaders("Authorization", $"{AuthorizerDefaults.Bearer} {accessToken2.Token}")
                 .Respond(HttpStatusCode.OK);

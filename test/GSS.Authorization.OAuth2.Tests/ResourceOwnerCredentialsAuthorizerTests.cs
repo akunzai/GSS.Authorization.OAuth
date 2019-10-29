@@ -2,9 +2,9 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -36,7 +36,7 @@ namespace GSS.Authorization.OAuth2.Tests
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
                 .WithFormData(AuthorizerDefaults.Username, _options.Credentials.UserName)
                 .WithFormData(AuthorizerDefaults.Password, _options.Credentials.Password)
-                .Respond("application/json", JsonConvert.SerializeObject(new AccessToken
+                .Respond("application/json", JsonSerializer.Serialize(new AccessToken
                 {
                     Token = Guid.NewGuid().ToString(),
                     ExpiresInSeconds = 10
@@ -60,7 +60,7 @@ namespace GSS.Authorization.OAuth2.Tests
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
                 .WithFormData(AuthorizerDefaults.Username, _options.Credentials.UserName)
                 .WithFormData(AuthorizerDefaults.Password,_options.Credentials.Password)
-                .Respond("application/json", JsonConvert.SerializeObject(new AccessToken
+                .Respond("application/json", JsonSerializer.Serialize(new AccessToken
                 {
                     Token = Guid.NewGuid().ToString(),
                     ExpiresInSeconds = 10

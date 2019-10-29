@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
@@ -48,7 +49,8 @@ namespace GSS.Authorization.OAuth2
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadAsAsync<AccessToken>(cancellationToken).ConfigureAwait(false);
+                var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                return await JsonSerializer.DeserializeAsync<AccessToken>(stream, null, cancellationToken).ConfigureAwait(false);
             }
 
             if (Options.OnError == null)
