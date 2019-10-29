@@ -2,9 +2,9 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -34,7 +34,7 @@ namespace GSS.Authorization.OAuth2.Tests
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.ClientCredentials)
-                .Respond("application/json", JsonConvert.SerializeObject(new AccessToken
+                .Respond("application/json", JsonSerializer.Serialize(new AccessToken
                 {
                     Token = Guid.NewGuid().ToString(),
                     ExpiresInSeconds = 10
@@ -56,7 +56,7 @@ namespace GSS.Authorization.OAuth2.Tests
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.ClientCredentials)
-                .Respond("application/json", JsonConvert.SerializeObject(new AccessToken
+                .Respond("application/json", JsonSerializer.Serialize(new AccessToken
                 {
                     Token = Guid.NewGuid().ToString(),
                     ExpiresInSeconds = 10
@@ -101,7 +101,7 @@ namespace GSS.Authorization.OAuth2.Tests
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.ClientCredentials)
-                .Respond(HttpStatusCode.InternalServerError,new StringContent(expectedErrorMessage));
+                .Respond(HttpStatusCode.InternalServerError, new StringContent(expectedErrorMessage));
 
             // Act
             await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);

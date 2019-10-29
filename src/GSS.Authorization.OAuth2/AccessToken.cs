@@ -1,5 +1,5 @@
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace GSS.Authorization.OAuth2
 {
@@ -7,18 +7,19 @@ namespace GSS.Authorization.OAuth2
     {
         public static readonly AccessToken Empty = new AccessToken();
 
-        [JsonProperty("access_token")]
+        [JsonPropertyName("access_token")]
         public string Token { get; set; }
 
-        [JsonProperty("token_type")]
+        [JsonPropertyName("token_type")]
         public string TokenType { get; set; }
 
-        [JsonProperty("refresh_token")]
+        [JsonPropertyName("refresh_token")]
         public string RefreshToken { get; set; }
 
-        [JsonProperty("expires_in")]
+        [JsonPropertyName("expires_in")]
         public int ExpiresInSeconds { get; set; }
 
+        [JsonIgnore]
         public TimeSpan ExpiresIn => TimeSpan.FromSeconds(ExpiresInSeconds);
     }
 }
