@@ -28,7 +28,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             var collection = new ServiceCollection();
 
             // Act
-            var builder = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) => { });
+            var builder = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((_, __) => { });
 
             // Assert
             Assert.NotNull(builder);
@@ -40,7 +40,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) => { }).Services.BuildServiceProvider();
+            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((_, __) => { }).Services.BuildServiceProvider();
 
             // Act
             var ex = Assert.Throws<ValidationException>(() => services.GetRequiredService<IOptions<AuthorizerOptions>>().Value);
@@ -55,10 +55,8 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) =>
-            {
-                options.AccessTokenEndpoint = new Uri("https://example.com");
-            }).Services.BuildServiceProvider();
+            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((_, options) => options.AccessTokenEndpoint = new Uri("https://example.com"))
+                .Services.BuildServiceProvider();
 
             // Act
             var ex = Assert.Throws<ValidationException>(() => services.GetRequiredService<IOptions<AuthorizerOptions>>().Value);
@@ -73,7 +71,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) =>
+            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((_, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
@@ -92,7 +90,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) =>
+            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((_, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
@@ -111,7 +109,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>((resolver, options) =>
+            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>((_, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
@@ -130,7 +128,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>((resolver, options) =>
+            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>((_, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
@@ -151,7 +149,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((resolver, options) =>
+            var services = collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((_, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
@@ -169,9 +167,9 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         public void AddNamedOAuth2HttpClient_WithClientCredentialsAuthorizer_ShouldAddInHttpClientFactory()
         {
             // Arrange
-            var name = "demo";
+            const string name = "demo";
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient<ClientCredentialsAuthorizer>(name, (resolver, options) =>
+            var services = collection.AddOAuth2HttpClient<ClientCredentialsAuthorizer>(name, (_, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
@@ -201,7 +199,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient<DemoOAuthClient, ClientCredentialsAuthorizer>((resolver, options) =>
+            var services = collection.AddOAuth2HttpClient<DemoOAuthClient, ClientCredentialsAuthorizer>((_, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
@@ -220,12 +218,12 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("client1", (resolver, options) =>
+            var services = collection.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("client1", (_, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
                 options.ClientSecret = "bar";
-            }).Services.AddOAuth2HttpClient<ResourceOwnerCredentialsAuthorizer>("client2", (resolver, options) =>
+            }).Services.AddOAuth2HttpClient<ResourceOwnerCredentialsAuthorizer>("client2", (_, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
@@ -247,12 +245,12 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("client1", (resolver, options) =>
+            var services = collection.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("client1", (_, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
                 options.ClientSecret = "bar";
-            }).Services.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("client2", (resolver, options) =>
+            }).Services.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("client2", (_, options) =>
             {
                 options.AccessTokenEndpoint = new Uri("https://example.com");
                 options.ClientId = "foo";
