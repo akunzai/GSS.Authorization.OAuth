@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
@@ -41,7 +41,8 @@ namespace GSS.Authorization.OAuth2
                 formData.Add(AuthorizerDefaults.Scope, string.Join(AuthorizerDefaults.ScopeSeparator, Options.Scopes));
             }
             PrepareFormData(formData);
-            var request = new HttpRequestMessage(HttpMethod.Post, Options.AccessTokenEndpoint)
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, Options.AccessTokenEndpoint)
             {
                 Content = new FormUrlEncodedContent(formData)
             };
