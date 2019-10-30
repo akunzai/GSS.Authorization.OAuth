@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<RuleSet Name="FxCop Rules" Description="FxCop Rules" ToolsVersion="15.0">
-   <Rules AnalyzerId="Microsoft.CodeQuality.Analyzers" RuleNamespace="Microsoft.CodeQuality.Analyzers">
-      <Rule Id="CA1062" Action="None" />             <!-- Validate arguments of public methods -->
-      <Rule Id="CA2208" Action="None" />             <!-- Instantiate argument exceptions correctly -->
-   </Rules>
-</RuleSet>
