@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2019-10-30
+
+### GSS.Authorization.OAuth2(.HttpClient)? 2.0.0
+
+- Support .Net Core 3.0
+- Replace Newtonsoft.Json by System.Text.Json
+- Use nullable reference types
+
 ### GSS.Authorization.OAuth2.HttpClient 1.5.1
 
 - Avoid register duplicated OAuth2 Authorizer
