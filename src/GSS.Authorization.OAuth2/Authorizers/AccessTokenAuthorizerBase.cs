@@ -12,7 +12,10 @@ namespace GSS.Authorization.OAuth2
     {
         protected AccessTokenAuthorizerBase(HttpClient client, IOptions<AuthorizerOptions> options) : base(client)
         {
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
             Options = options.Value;
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
             if (string.IsNullOrWhiteSpace(Options.ClientId))
             {
                 throw new ArgumentNullException(nameof(Options.ClientId));
@@ -25,6 +28,7 @@ namespace GSS.Authorization.OAuth2
             {
                 throw new ArgumentNullException(nameof(Options.AccessTokenEndpoint));
             }
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
         }
 
         protected AuthorizerOptions Options { get; }

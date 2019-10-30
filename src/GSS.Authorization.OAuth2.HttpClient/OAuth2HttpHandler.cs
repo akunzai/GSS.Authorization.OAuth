@@ -25,12 +25,15 @@ namespace GSS.Authorization.OAuth2
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
             if (request.Headers.Authorization == null)
             {
                 TrySetAuthorizationHeaderToRequest(await GetAccessTokenAsync(cancellationToken).ConfigureAwait(false), request);
             }
             var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            if (response.StatusCode != HttpStatusCode.Unauthorized) return response;
+            if (response.StatusCode != HttpStatusCode.Unauthorized)
+                return response;
             TrySetAuthorizationHeaderToRequest(await GetAccessTokenAsync(cancellationToken, forceRenew: true).ConfigureAwait(false), request);
             return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
@@ -47,7 +50,8 @@ namespace GSS.Authorization.OAuth2
             try
             {
                 var accessToken = await _authorizer.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
-                if (accessToken == null) return AccessToken.Empty;
+                if (accessToken == null)
+                    return AccessToken.Empty;
                 if (accessToken.ExpiresInSeconds > 0)
                 {
                     _memoryCache.Set(_cacheKey, accessToken, accessToken.ExpiresIn);

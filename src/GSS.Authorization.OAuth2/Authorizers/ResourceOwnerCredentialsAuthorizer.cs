@@ -11,6 +11,7 @@ namespace GSS.Authorization.OAuth2
             HttpClient client,
             IOptions<AuthorizerOptions> options) : base(client, options)
         {
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
             if (options.Value.Credentials == null)
             {
                 throw new ArgumentNullException(nameof(options.Value.Credentials));
@@ -23,10 +24,13 @@ namespace GSS.Authorization.OAuth2
             {
                 throw new ArgumentNullException(nameof(options.Value.Credentials.Password));
             }
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
         }
 
         protected override void PrepareFormData(IDictionary<string, string> formData)
         {
+            if (formData == null)
+                throw new ArgumentNullException(nameof(formData));
             formData[AuthorizerDefaults.GrantType] = AuthorizerDefaults.Password;
             formData[AuthorizerDefaults.Username] = Options.Credentials.UserName;
             formData[AuthorizerDefaults.Password] = Options.Credentials.Password;

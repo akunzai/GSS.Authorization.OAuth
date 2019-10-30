@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.Extensions.Options;
 
@@ -12,6 +13,8 @@ namespace GSS.Authorization.OAuth2
 
         protected override void PrepareFormData(IDictionary<string, string> formData)
         {
+            if (formData == null)
+                throw new ArgumentNullException(nameof(formData));
             formData[AuthorizerDefaults.GrantType] = AuthorizerDefaults.ClientCredentials;
         }
     }
