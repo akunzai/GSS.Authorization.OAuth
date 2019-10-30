@@ -8,13 +8,13 @@ namespace GSS.Authorization.OAuth2
         public static readonly AccessToken Empty = new AccessToken();
 
         [JsonPropertyName("access_token")]
-        public string Token { get; set; }
+        public string Token { get; set; } = default!;
 
         [JsonPropertyName("token_type")]
-        public string TokenType { get; set; }
+        public string? TokenType { get; set; }
 
         [JsonPropertyName("refresh_token")]
-        public string RefreshToken { get; set; }
+        public string? RefreshToken { get; set; }
 
         [JsonPropertyName("expires_in")]
         public int ExpiresInSeconds { get; set; }

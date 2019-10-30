@@ -63,8 +63,11 @@ namespace GSS.Authorization.OAuth2
                 return AccessToken.Empty;
             }
 
-            var errorMessage = response.Content == null ? null : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            Options.OnError(response.StatusCode, string.IsNullOrWhiteSpace(errorMessage) ? response.ReasonPhrase : errorMessage);
+            var errorMessage = response.Content == null ? response.ReasonPhrase : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                Options.OnError?.Invoke(response.StatusCode, errorMessage);
+            }
             return AccessToken.Empty;
         }
 

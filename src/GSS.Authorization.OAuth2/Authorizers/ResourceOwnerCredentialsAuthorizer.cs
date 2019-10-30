@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.Extensions.Options;
@@ -32,6 +32,12 @@ namespace GSS.Authorization.OAuth2
             if (formData == null)
                 throw new ArgumentNullException(nameof(formData));
             formData[AuthorizerDefaults.GrantType] = AuthorizerDefaults.Password;
+            if (Options.Credentials == null)
+            {
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
+                throw new ArgumentNullException(nameof(Options.Credentials));
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
+            }
             formData[AuthorizerDefaults.Username] = Options.Credentials.UserName;
             formData[AuthorizerDefaults.Password] = Options.Credentials.Password;
         }

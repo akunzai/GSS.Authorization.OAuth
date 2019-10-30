@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -70,7 +70,7 @@ namespace GSS.Authorization.OAuth2
 
         private static void TrySetAuthorizationHeaderToRequest(AccessToken accessToken, HttpRequestMessage request)
         {
-            if (!string.IsNullOrWhiteSpace(accessToken?.Token))
+            if (accessToken != null && !string.IsNullOrWhiteSpace(accessToken.Token))
             {
                 request.Headers.Authorization =
                     new AuthenticationHeaderValue(AuthorizerDefaults.Bearer, accessToken.Token);
