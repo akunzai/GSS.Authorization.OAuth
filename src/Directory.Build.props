@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Key.snk</AssemblyOriginatorKeyFile>
+    <Nullable>enable</Nullable>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
 

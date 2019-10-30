@@ -19,7 +19,7 @@ namespace GSS.Authorization.OAuth2
         /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the client.</returns>
         public static IHttpClientBuilder AddOAuth2HttpClient<TClient, TAuthorizer>(this IServiceCollection services,
             Action<IServiceProvider, AuthorizerOptions> configureOptions,
-            Action<IHttpClientBuilder> configureAuthorizer = null)
+            Action<IHttpClientBuilder>? configureAuthorizer = null)
             where TClient : class
             where TAuthorizer : Authorizer
         {
@@ -54,7 +54,7 @@ namespace GSS.Authorization.OAuth2
         /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the client.</returns>
         public static IHttpClientBuilder AddOAuth2HttpClient<TAuthorizer>(this IServiceCollection services, string name,
             Action<IServiceProvider, AuthorizerOptions> configureOptions,
-            Action<IHttpClientBuilder> configureAuthorizer = null)
+            Action<IHttpClientBuilder>? configureAuthorizer = null)
             where TAuthorizer : Authorizer
         {
             if (services == null)
@@ -86,7 +86,7 @@ namespace GSS.Authorization.OAuth2
         /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the <see cref="AuthorizerHttpClient"/>.</returns>
         internal static void TryAddOAuth2Authorizer<TAuthorizer>(this IServiceCollection services,
             Action<IServiceProvider, AuthorizerOptions> configureOptions,
-            Action<IHttpClientBuilder> configureAuthorizer = null)
+            Action<IHttpClientBuilder>? configureAuthorizer = null)
             where TAuthorizer : Authorizer
         {
             if (services == null)
