@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -19,11 +19,13 @@ namespace GSS.Authorization.OAuth2.Tests
 
         public ResourceOwnerCredentialsAuthorizerTests(AuthorizerFixture fixture)
         {
+            if (fixture == null)
+                throw new ArgumentNullException(nameof(fixture));
             var services = fixture.BuildServiceProvider();
             _authorizer = services.GetRequiredService<ResourceOwnerCredentialsAuthorizer>();
             _error = services.GetRequiredService<AuthorizerError>();
-            _mockHttp = services.GetService<MockHttpMessageHandler>();
-            _options = services.GetService<IOptions<AuthorizerOptions>>().Value;
+            _mockHttp = services.GetRequiredService<HttpMessageHandler>() as MockHttpMessageHandler;
+            _options = services.GetRequiredService<IOptions<AuthorizerOptions>>().Value;
         }
 
         [Fact]
@@ -59,7 +61,7 @@ namespace GSS.Authorization.OAuth2.Tests
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
                 .WithFormData(AuthorizerDefaults.Username, _options.Credentials.UserName)
-                .WithFormData(AuthorizerDefaults.Password,_options.Credentials.Password)
+                .WithFormData(AuthorizerDefaults.Password, _options.Credentials.Password)
                 .Respond("application/json", JsonSerializer.Serialize(new AccessToken
                 {
                     Token = Guid.NewGuid().ToString(),
@@ -109,7 +111,7 @@ namespace GSS.Authorization.OAuth2.Tests
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
                 .WithFormData(AuthorizerDefaults.Username, _options.Credentials.UserName)
                 .WithFormData(AuthorizerDefaults.Password, _options.Credentials.Password)
-                .Respond(HttpStatusCode.InternalServerError, new StringContent(expectedErrorMessage));
+                .Respond(HttpStatusCode.InternalServerError, "application/json", expectedErrorMessage);
 
             // Act
             await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);

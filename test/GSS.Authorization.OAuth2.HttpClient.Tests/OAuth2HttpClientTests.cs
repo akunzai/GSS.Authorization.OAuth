@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -21,11 +21,12 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
 
         public OAuth2HttpClientTests(OAuth2Fixture fixture)
         {
+            if (fixture == null) throw new ArgumentNullException(nameof(fixture));
             var services = fixture.BuildServiceProvider();
             _mockHttp = services.GetService<MockHttpMessageHandler>();
             _client = services.GetRequiredService<OAuth2HttpClient>();
             _options = services.GetRequiredService<IOptions<AuthorizerOptions>>().Value;
-            _resourceEndpoint = fixture.Configuration.GetValue<Uri>("OAuth2:ResourceEndpoint");
+            _resourceEndpoint = services.GetRequiredService<IConfiguration>().GetValue<Uri>("OAuth2:ResourceEndpoint");
         }
 
         [Fact]
@@ -68,7 +69,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
                 .Respond(HttpStatusCode.Forbidden);
 
             // Act
-            var request = new HttpRequestMessage(HttpMethod.Get, _resourceEndpoint);
+            using var request = new HttpRequestMessage(HttpMethod.Get, _resourceEndpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue(AuthorizerDefaults.Bearer, invalidToken);
             var response = await _client.HttpClient.SendAsync(request).ConfigureAwait(false);
 
