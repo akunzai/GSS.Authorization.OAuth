@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -19,11 +19,12 @@ namespace GSS.Authorization.OAuth2.Tests
 
         public ClientCredentialsAuthorizerTests(AuthorizerFixture fixture)
         {
+            if (fixture == null) throw new ArgumentNullException(nameof(fixture));
             var services = fixture.BuildServiceProvider();
             _authorizer = services.GetRequiredService<ClientCredentialsAuthorizer>();
             _error = services.GetRequiredService<AuthorizerError>();
-            _mockHttp = services.GetService<MockHttpMessageHandler>();
-            _options = services.GetService<IOptions<AuthorizerOptions>>().Value;
+            _mockHttp = services.GetRequiredService<HttpMessageHandler>() as MockHttpMessageHandler;
+            _options = services.GetRequiredService<IOptions<AuthorizerOptions>>().Value;
         }
 
         [Fact]
@@ -101,7 +102,7 @@ namespace GSS.Authorization.OAuth2.Tests
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.ClientCredentials)
-                .Respond(HttpStatusCode.InternalServerError, new StringContent(expectedErrorMessage));
+                .Respond(HttpStatusCode.InternalServerError, "application/json", expectedErrorMessage);
 
             // Act
             await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
