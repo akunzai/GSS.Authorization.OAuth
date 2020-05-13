@@ -5,47 +5,48 @@ using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using RichardSzalay.MockHttp;
 
 namespace GSS.Authorization.OAuth2.HttpClient.Tests
 {
     public class OAuth2Fixture
     {
-        public IServiceProvider BuildServiceProvider()
+        public OAuth2Fixture()
         {
-            return Host.CreateDefaultBuilder()
-            .ConfigureServices((context, services) =>
-            {
-                var handler = context.Configuration.GetValue("HttpClient:Mock", true)
-                            ? (HttpMessageHandler)new MockHttpMessageHandler()
-                            : new HttpClientHandler();
-                services.AddSingleton(handler);
-                if (context.Configuration.GetValue("OAuth2:GrantFlow", "ResourceOwnerCredentials").Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase))
-                {
-                    services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(ConfigureAuthroizerOptions,
-                        configureAuthorizer: authorizer => authorizer.ConfigurePrimaryHttpMessageHandler(_ => handler))
-                    .ConfigurePrimaryHttpMessageHandler(_ => handler);
-                }
-                else
-                {
-                    services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>(ConfigureAuthroizerOptions,
-                        configureAuthorizer: authorizer => authorizer.ConfigurePrimaryHttpMessageHandler(_ => handler))
-                    .ConfigurePrimaryHttpMessageHandler(_ => handler);
-                }
+            var host = Host.CreateDefaultBuilder()
+                .Build();
+            Configuration = host.Services.GetRequiredService<IConfiguration>();
+        }
 
-            }).Build().Services;
+        public IConfiguration Configuration { get; }
+
+        public IServiceProvider BuildOAuth2HttpClient(HttpMessageHandler handler)
+        {
+            handler ??= new HttpClientHandler();
+            var services = new ServiceCollection();
+            if (Configuration.GetValue("OAuth2:GrantFlow", "ResourceOwnerCredentials").Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase))
+            {
+                services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(ConfigureAuthroizerOptions,
+                        authorizer => authorizer.ConfigurePrimaryHttpMessageHandler(_ => handler))
+                    .ConfigurePrimaryHttpMessageHandler(_ => handler);
+            }
+            else
+            {
+                services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>(ConfigureAuthroizerOptions,
+                        authorizer => authorizer.ConfigurePrimaryHttpMessageHandler(_ => handler))
+                    .ConfigurePrimaryHttpMessageHandler(_ => handler);
+            }
+            return services.BuildServiceProvider();
         }
 
         private void ConfigureAuthroizerOptions(IServiceProvider resolver, AuthorizerOptions options)
         {
-            var configuration = resolver.GetRequiredService<IConfiguration>();
-            options.AccessTokenEndpoint = configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
-            options.ClientId = configuration["OAuth2:ClientId"];
-            options.ClientSecret = configuration["OAuth2:ClientSecret"];
+            options.AccessTokenEndpoint = Configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
+            options.ClientId = Configuration["OAuth2:ClientId"];
+            options.ClientSecret = Configuration["OAuth2:ClientSecret"];
             options.Credentials = new NetworkCredential(
-                configuration["OAuth2:Credentials:UserName"],
-                configuration["OAuth2:Credentials:Password"]);
-            options.Scopes = configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
+                Configuration["OAuth2:Credentials:UserName"],
+                Configuration["OAuth2:Credentials:Password"]);
+            options.Scopes = Configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
         }
     }
 }

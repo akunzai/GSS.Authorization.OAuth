@@ -21,12 +21,14 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
 
         public OAuth2HttpClientTests(OAuth2Fixture fixture)
         {
-            if (fixture == null) throw new ArgumentNullException(nameof(fixture));
-            var services = fixture.BuildServiceProvider();
-            _mockHttp = services.GetService<MockHttpMessageHandler>();
+            if (fixture.Configuration.GetValue("HttpClient:Mock", true))
+            {
+                _mockHttp = new MockHttpMessageHandler();
+            }
+            var services = fixture.BuildOAuth2HttpClient(_mockHttp);
             _client = services.GetRequiredService<OAuth2HttpClient>();
             _options = services.GetRequiredService<IOptions<AuthorizerOptions>>().Value;
-            _resourceEndpoint = services.GetRequiredService<IConfiguration>().GetValue<Uri>("OAuth2:ResourceEndpoint");
+            _resourceEndpoint = fixture.Configuration.GetValue<Uri>("OAuth2:ResourceEndpoint");
         }
 
         [Fact]
@@ -38,7 +40,6 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
                 Token = Guid.NewGuid().ToString(),
                 ExpiresInSeconds = 10
             };
-            _mockHttp?.ResetExpectations();
             _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
@@ -63,7 +64,6 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
 
             // Arrange
             var invalidToken = "TEST";
-            _mockHttp?.ResetExpectations();
             _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
                 .WithHeaders("Authorization", $"{AuthorizerDefaults.Bearer} {invalidToken}")
                 .Respond(HttpStatusCode.Forbidden);
@@ -85,7 +85,6 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             Skip.If(_mockHttp == null);
 
             // Arrange
-            _mockHttp?.ResetExpectations();
             _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
                 .Respond(HttpStatusCode.Forbidden);
 
@@ -104,7 +103,6 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             Skip.If(_mockHttp == null);
 
             // Arrange
-            _mockHttp?.ResetExpectations();
             _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
                 .Respond(HttpStatusCode.Unauthorized);
             var accessToken = new AccessToken
@@ -138,7 +136,6 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
                 Token = Guid.NewGuid().ToString(),
                 ExpiresInSeconds = 10
             };
-            _mockHttp?.ResetExpectations();
             _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
@@ -177,7 +174,6 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
                 Token = Guid.NewGuid().ToString(),
                 ExpiresInSeconds = 2
             };
-            _mockHttp?.ResetExpectations();
             _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
@@ -217,7 +213,6 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
                 Token = Guid.NewGuid().ToString(),
                 ExpiresInSeconds = 2
             };
-            _mockHttp?.ResetExpectations();
             _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)

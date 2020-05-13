@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
@@ -13,17 +14,23 @@ namespace GSS.Authorization.OAuth2.Tests
     public class ClientCredentialsAuthorizerTests : IClassFixture<AuthorizerFixture>
     {
         private readonly IAuthorizer _authorizer;
-        private readonly AuthorizerError _error;
         private readonly MockHttpMessageHandler _mockHttp;
         private readonly AuthorizerOptions _options;
+        private HttpStatusCode _errorStatusCode;
+        private string _errorMessage;
 
         public ClientCredentialsAuthorizerTests(AuthorizerFixture fixture)
         {
-            if (fixture == null) throw new ArgumentNullException(nameof(fixture));
-            var services = fixture.BuildServiceProvider();
+            if (fixture.Configuration.GetValue("HttpClient:Mock", true))
+            {
+                _mockHttp = new MockHttpMessageHandler();
+            }
+            var services = fixture.BuildAuthorizer<ClientCredentialsAuthorizer>(_mockHttp, (code, s) =>
+            {
+                _errorStatusCode = code;
+                _errorMessage = s;
+            });
             _authorizer = services.GetRequiredService<ClientCredentialsAuthorizer>();
-            _error = services.GetRequiredService<AuthorizerError>();
-            _mockHttp = services.GetRequiredService<HttpMessageHandler>() as MockHttpMessageHandler;
             _options = services.GetRequiredService<IOptions<AuthorizerOptions>>().Value;
         }
 
@@ -108,8 +115,8 @@ namespace GSS.Authorization.OAuth2.Tests
             await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
 
             // Assert
-            Assert.Equal(HttpStatusCode.InternalServerError, _error.StatusCode);
-            Assert.Equal(expectedErrorMessage, _error.Message);
+            Assert.Equal(HttpStatusCode.InternalServerError, _errorStatusCode);
+            Assert.Equal(expectedErrorMessage, _errorMessage);
             _mockHttp.VerifyNoOutstandingExpectation();
         }
     }
