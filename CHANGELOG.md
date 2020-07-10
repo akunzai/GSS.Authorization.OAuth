@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2020-07-13
+
+### GSS.Authorization.OAuth(.HttpClient)? 1.0.0
+
+- Initial Release
+
 ## 2019-10-30
 
 ### GSS.Authorization.OAuth2(.HttpClient)? 2.0.0

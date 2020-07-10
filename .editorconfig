@@ -170,3 +170,6 @@ csharp_space_between_square_brackets = false
 [*.cs]
 # Microsoft.CodeQuality.Analyzers
 dotnet_diagnostic.CA1200.severity = none
+
+# CA1308: Normalize strings to uppercase
+dotnet_diagnostic.CA1308.severity = none

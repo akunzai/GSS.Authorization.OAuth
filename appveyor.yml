@@ -5,7 +5,7 @@ nuget:
 build_script:
 - ps: dotnet build -c Release
 test_script:
-- ps: dotnet test -c Release --no-build --verbosity=normal
+- ps: dotnet test
 artifacts:
 - path: '**\Release\*.nupkg'
   name: NuGet
