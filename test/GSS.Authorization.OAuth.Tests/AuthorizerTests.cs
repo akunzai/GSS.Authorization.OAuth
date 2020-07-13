@@ -4,12 +4,14 @@ using System.Collections.Specialized;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 using Xunit;
 
 namespace GSS.Authorization.OAuth.Tests
 {
+    // see https://tools.ietf.org/html/rfc5849#section-1.2
     public class AuthorizerTests
     {
         private readonly AuthorizerOptions _options = new AuthorizerOptions
@@ -32,7 +34,6 @@ namespace GSS.Authorization.OAuth.Tests
             var expected = new OAuthCredential("hh5s93j4hdidpola", "hdhd0244k9j7ao03");
             _options.NonceProvider = () => "wIjqoS";
             _options.TimestampProvider = () => "137131200";
-            var authorizer = new FakeAuthorizer(_options, _mockHttp.ToHttpClient(), _signer);
             var authorizationHeader = _signer.GetAuthorizationHeader(HttpMethod.Post, _options.TemporaryCredentialRequestUri,
                 _options,
                 new NameValueCollection
@@ -47,6 +48,7 @@ namespace GSS.Authorization.OAuth.Tests
                     [OAuthDefaults.OAuthTokenSecret] = expected.Secret,
                     ["oauth_callback_confirmed"] = "true"
                 }));
+            var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer);
 
             // Act
             var actual = await authorizer.GetTemporaryCredentialAsync().ConfigureAwait(false);
@@ -61,27 +63,26 @@ namespace GSS.Authorization.OAuth.Tests
         public async Task GetVerificationCodeAsync()
         {
             // Arrange
+            var expected = "hfdp7dh39dks9884";
             var authorizeHtml = $@"<form action='{_options.ResourceOwnerAuthorizeUri}' method='post'>
 <input type='text' name='uid'>
 <input type='password' name='pwd'>
 <button type='submit'>Login</button></form>";
-            var temporaryCredential = new OAuthCredential("hh5s93j4hdidpola", "hdhd0244k9j7ao03");
-            var mockHttp = new MockHttpMessageHandler();
-            var authorizer = new FakeAuthorizer(_options, mockHttp.ToHttpClient(), _signer)
-            {
-                VerificationCode = "hfdp7dh39dks9884"
-            };
-            mockHttp.When(HttpMethod.Get, _options.ResourceOwnerAuthorizeUri.ToString())
-                .WithQueryString(OAuthDefaults.OAuthToken, temporaryCredential.Key)
+            var temporaryCredentials = new OAuthCredential("hh5s93j4hdidpola", "hdhd0244k9j7ao03");
+            var authorizeUri = new Uri(QueryHelpers.AddQueryString(_options.ResourceOwnerAuthorizeUri.ToString(), OAuthDefaults.OAuthToken, temporaryCredentials.Key));
+            _mockHttp.When(HttpMethod.Get, authorizeUri.ToString())
                 .Respond(new StringContent(authorizeHtml, Encoding.UTF8, "text/html"));
+            var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer)
+            {
+                VerificationCode = expected
+            };
 
             // Act
-            var actual = await authorizer.GetVerificationCodeAsync(temporaryCredential).ConfigureAwait(false);
+            var actual = await authorizer.GetVerificationCodeAsync(authorizeUri).ConfigureAwait(false);
 
             // Assert
-            Assert.Equal(authorizer.VerificationCode, actual);
-            Assert.Equal(authorizeHtml, authorizer.AuthorizeHtml);
-            mockHttp.VerifyNoOutstandingRequest();
+            Assert.Equal(expected, actual);
+            _mockHttp.VerifyNoOutstandingRequest();
         }
 
         [Fact]
@@ -89,27 +90,27 @@ namespace GSS.Authorization.OAuth.Tests
         {
             // Arrange
             var expected = new OAuthCredential("nnch734d00sl2jdk", "pfkkdhi9sl3r4s00");
+            var verificationCode = "hfdp7dh39dks9884";
             _options.NonceProvider = () => "walatlh";
             _options.TimestampProvider = () => "137131201";
             var temporaryCredential = new OAuthCredential("hh5s93j4hdidpola", "hdhd0244k9j7ao03");
-            var mockHttp = new MockHttpMessageHandler();
-            var authorizer = new FakeAuthorizer(_options, mockHttp.ToHttpClient(), _signer)
-            {
-                VerificationCode = "hfdp7dh39dks9884"
-            };
             var authorizationHeader = _signer.GetAuthorizationHeader(HttpMethod.Post, _options.TokenRequestUri,
                 _options,
                 new NameValueCollection
                 {
-                    [OAuthDefaults.OAuthVerifier] = authorizer.VerificationCode
+                    [OAuthDefaults.OAuthVerifier] = verificationCode
                 }, temporaryCredential);
-            mockHttp.When(HttpMethod.Post, _options.TokenRequestUri.ToString())
+            _mockHttp.When(HttpMethod.Post, _options.TokenRequestUri.ToString())
                 .WithHeaders("Authorization", authorizationHeader.ToString())
                 .Respond(new FormUrlEncodedContent(new Dictionary<string, string>
                 {
                     [OAuthDefaults.OAuthToken] = expected.Key,
                     [OAuthDefaults.OAuthTokenSecret] = expected.Secret
                 }));
+            var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer)
+            {
+                VerificationCode = verificationCode
+            };
 
             // Act
             var actual = await authorizer.GetTokenCredentialAsync(temporaryCredential, authorizer.VerificationCode).ConfigureAwait(false);
@@ -117,7 +118,56 @@ namespace GSS.Authorization.OAuth.Tests
             // Assert
             Assert.Equal(expected.Key, actual.Key);
             Assert.Equal(expected.Secret, actual.Secret);
-            mockHttp.VerifyNoOutstandingRequest();
+            _mockHttp.VerifyNoOutstandingRequest();
+        }
+
+        [Fact]
+        public async Task GrantAccessAsync()
+        {
+            // Arrange
+            var expected = new OAuthCredential("nnch734d00sl2jdk", "pfkkdhi9sl3r4s00");
+            var temporaryCredentials = new OAuthCredential("hh5s93j4hdidpola", "hdhd0244k9j7ao03");
+            var verificationCode = "hfdp7dh39dks9884";
+            _options.NonceProvider = () => "walatlh";
+            _options.TimestampProvider = () => "137131201";
+            _mockHttp.When(HttpMethod.Post, _options.TemporaryCredentialRequestUri.ToString())
+                .WithHeaders("Authorization", _signer.GetAuthorizationHeader(HttpMethod.Post, _options.TemporaryCredentialRequestUri,
+                    _options,
+                    new NameValueCollection
+                    {
+                        [OAuthDefaults.OAuthCallback] = _options.CallBack == null ? OAuthDefaults.OutOfBand : _options.CallBack.AbsoluteUri
+                    }).ToString())
+                .Respond(new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    [OAuthDefaults.OAuthToken] = temporaryCredentials.Key,
+                    [OAuthDefaults.OAuthTokenSecret] = temporaryCredentials.Secret,
+                    ["oauth_callback_confirmed"] = "true"
+                }));
+            var header = _signer.GetAuthorizationHeader(HttpMethod.Post, _options.TokenRequestUri,
+                _options,
+                new NameValueCollection
+                {
+                    [OAuthDefaults.OAuthVerifier] = verificationCode
+                }, temporaryCredentials);
+            _mockHttp.When(HttpMethod.Post, _options.TokenRequestUri.ToString())
+                .WithHeaders("Authorization", header.ToString())
+                .Respond(new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    [OAuthDefaults.OAuthToken] = expected.Key,
+                    [OAuthDefaults.OAuthTokenSecret] = expected.Secret
+                }));
+            var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer)
+            {
+                VerificationCode = verificationCode
+            };
+
+            // Act
+            var actual = await authorizer.GrantAccessAsync();
+
+            // Assert
+            Assert.Equal(expected.Key, actual.Key);
+            Assert.Equal(expected.Secret, actual.Secret);
+            _mockHttp.VerifyNoOutstandingRequest();
         }
     }
 }

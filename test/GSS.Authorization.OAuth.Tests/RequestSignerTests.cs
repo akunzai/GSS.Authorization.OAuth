@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net.Http;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace GSS.Authorization.OAuth.Tests
