@@ -6,28 +6,67 @@ OAuth authorized HttpClient, friendly with [HttpClientFactory](https://docs.micr
 
 ## NuGet Packages
 
+- [GSS.Authorization.OAuth ![NuGet version](https://img.shields.io/nuget/v/GSS.Authorization.OAuth.svg?style=flat-square)](https://www.nuget.org/packages/GSS.Authorization.OAuth/)
+- [GSS.Authorization.OAuth.HttpClient ![NuGet version](https://img.shields.io/nuget/v/GSS.Authorization.OAuth.HttpClient.svg?style=flat-square)](https://www.nuget.org/packages/GSS.Authorization.OAuth.HttpClient/)
 - [GSS.Authorization.OAuth2 ![NuGet version](https://img.shields.io/nuget/v/GSS.Authorization.OAuth2.svg?style=flat-square)](https://www.nuget.org/packages/GSS.Authorization.OAuth2/)
 - [GSS.Authorization.OAuth2.HttpClient ![NuGet version](https://img.shields.io/nuget/v/GSS.Authorization.OAuth2.HttpClient.svg?style=flat-square)](https://www.nuget.org/packages/GSS.Authorization.OAuth2.HttpClient/)
 
 ## Installation
 
 ```shell
-# Package Manager
-Install-Package GSS.Authorization.OAuth2.HttpClient
+# OAuth 1.0 protocol
+dotnet add package GSS.Authorization.OAuth.HttpClient
 
-# .NET CLI
+# OAuth 2.0 protocol
 dotnet add package GSS.Authorization.OAuth2.HttpClient
 ```
 
 ## Limits
 
-Currently, only `Client-Credentials` grant flow and `Resource-Owner-Credentials` grant flow are supported, You can implement `GSS.Authorization.OAuth2.IAuthorizer` to support more grant flows.
+### OAuth 1.0 protocol
+
+- Only provide `HMAC-SHA1` and `PLAINTEXT` signature method. you can implement `GSS.Authorization.OAuth.IRequestSigner` to support more signature methods.
+- You need grant token credentials manually or implementation `GSS.Authorization.OAuth.IAuthorizer` to support automatic grant flows.
+
+### OAuth 2.0 protocol
+
+- Only `Client-Credentials` grant flow and `Resource-Owner-Credentials` grant flow are supported, You can implement `GSS.Authorization.OAuth2.IAuthorizer` to support more grant flows.
 
 ## Usage
 
 Check out these [samples](./samples/) to learn the basics and key features.
 
-### Named OAuth2 HttpClient
+### Named OAuth 1.0 HttpClient
+
+```csharp
+services.AddOAuthHttpClient("oauth",(resolver, options) =>
+{
+    var configuration = resolver.GetRequiredService<IConfiguration>();
+    options.ClientCredentials = new OAuthCredential(configuration["OAuth:ClientId"], configuration["OAuth:ClientSecret"]);
+    options.SignedAsQuery = configuration.GetValue("OAuth:SignedAsQuery", false);
+    options.TokenCredentialProvider = _ =>
+    {
+        return new ValueTask<OAuthCredential>(new OAuthCredential(configuration["OAuth:TokenId"], configuration["OAuth:TokenSecret"]));
+    };
+});
+```
+
+### Typed OAuth 1.0 HttpClient
+
+```csharp
+services.AddOAuthHttpClient<OAuthHttpClient>((resolver, options) =>
+{
+    var configuration = resolver.GetRequiredService<IConfiguration>();
+    options.ClientCredentials = new OAuthCredential(configuration["OAuth:ClientId"], configuration["OAuth:ClientSecret"]);
+    options.SignedAsQuery = configuration.GetValue("OAuth:SignedAsQuery", false);
+    options.TokenCredentialProvider = _ =>
+    {
+        return new ValueTask<OAuthCredential>(new OAuthCredential(configuration["OAuth:TokenId"], configuration["OAuth:TokenSecret"]));
+    };
+});
+```
+
+### Named OAuth 2.0 HttpClient
 
 ```csharp
 services.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("oauth2",(resolver, options) =>
@@ -41,7 +80,7 @@ services.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("oauth2",(resolver, op
 });
 ```
 
-### Typed OAuth2 HttpClient
+### Typed OAuth 2.0 HttpClient
 
 ```csharp
 services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>((resolver, options) =>
