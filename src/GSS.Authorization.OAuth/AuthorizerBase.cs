@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Specialized;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Options;
 
 namespace GSS.Authorization.OAuth
 {
@@ -15,11 +15,13 @@ namespace GSS.Authorization.OAuth
         private readonly IRequestSigner _signer;
 
         protected AuthorizerBase(
-            AuthorizerOptions options,
+            IOptions<AuthorizerOptions> options,
             HttpClient httpClient,
             IRequestSigner signer)
         {
-            _options = options;
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
+            _options = options.Value;
             _httpClient = httpClient;
             _signer = signer;
         }
@@ -30,7 +32,11 @@ namespace GSS.Authorization.OAuth
             var temporaryCredentials = await GetTemporaryCredentialAsync(cancellationToken).ConfigureAwait(false);
 
             // Step 2: Resource Owner Authorization, see http://tools.ietf.org/html/rfc5849#section-2.2
-            var verificationCode = await GetVerificationCodeAsync(temporaryCredentials, cancellationToken).ConfigureAwait(false);
+            var authorizeUriWithToken = QueryHelpers.AddQueryString(_options.ResourceOwnerAuthorizeUri.ToString(),
+                OAuthDefaults.OAuthToken, temporaryCredentials.Key);
+            var authorizationUri = _options.ResourceOwnerAuthorizeUri.IsAbsoluteUri
+                ? new Uri(authorizeUriWithToken) : new Uri(_httpClient.BaseAddress, authorizeUriWithToken);
+            var verificationCode = await GetVerificationCodeAsync(authorizationUri, cancellationToken).ConfigureAwait(false);
 
             // Step 3: Token Credentials, see https://tools.ietf.org/html/rfc5849#section-2.3
             return await GetTokenCredentialAsync(temporaryCredentials, verificationCode, cancellationToken).ConfigureAwait(false);
@@ -53,34 +59,14 @@ namespace GSS.Authorization.OAuth
             return new OAuthCredential(formData[OAuthDefaults.OAuthToken], formData[OAuthDefaults.OAuthTokenSecret]);
         }
 
-        protected internal virtual async Task<string> GetVerificationCodeAsync(OAuthCredential temporaryCredentials, CancellationToken cancellationToken = default)
-        {
-            var authorizeUri = QueryHelpers.AddQueryString(_options.ResourceOwnerAuthorizeUri.ToString(),
-                OAuthDefaults.OAuthToken, temporaryCredentials.Key);
-            using var authorizeResponse = await _httpClient.GetAsync(authorizeUri, cancellationToken).ConfigureAwait(false);
-            authorizeResponse.EnsureSuccessStatusCode();
-            using var response = await AuthorizeAsync(_options.ResourceOwnerCredentials, temporaryCredentials, authorizeResponse.Content, cancellationToken).ConfigureAwait(false);
-            return await GetVerificationCodeAsync(response, cancellationToken).ConfigureAwait(false);
-        }
-
         /// <summary>
-        /// Asking the resource owner to authorize the requested access
+        /// authorize resource owner and get the verification code
         /// </summary>
-        /// <param name="resourceOwnerCredentials">the resource owner resourceOwnerCredentials</param>
-        /// <param name="temporaryCredentials"></param>
-        /// <param name="authorizePage"></param>
+        /// <param name="authorizationUri"></param>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public abstract Task<HttpResponseMessage> AuthorizeAsync(NetworkCredential resourceOwnerCredentials, OAuthCredential temporaryCredentials, HttpContent authorizePage,
+        /// <returns>the verification code</returns>
+        public abstract Task<string> GetVerificationCodeAsync(Uri authorizationUri,
             CancellationToken cancellationToken = default);
-
-        public virtual Task<string> GetVerificationCodeAsync(HttpResponseMessage response,
-            CancellationToken cancellationToken = default)
-        {
-            if (response == null)
-                throw new ArgumentNullException(nameof(response));
-            return Task.FromResult((string)QueryHelpers.ParseQuery(response.Headers.Location.Query)[OAuthDefaults.OAuthVerifier]);
-        }
 
         protected internal virtual async Task<OAuthCredential> GetTokenCredentialAsync(OAuthCredential temporaryCredentials, string verificationCode, CancellationToken cancellationToken = default)
         {

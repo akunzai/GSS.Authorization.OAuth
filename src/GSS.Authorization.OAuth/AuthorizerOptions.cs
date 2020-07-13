@@ -1,17 +1,10 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Net;
 
 namespace GSS.Authorization.OAuth
 {
     public class AuthorizerOptions : OAuthOptions
     {
-        /// <summary>
-        /// Resource Owner Credentials
-        /// </summary>
-        [Required]
-        public NetworkCredential ResourceOwnerCredentials { get; set; } = default!;
-
         /// <summary>
         /// Resource Owner Authorization endpoint
         /// </summary>
