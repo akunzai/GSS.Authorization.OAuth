@@ -16,6 +16,8 @@ namespace GSS.Authorization.OAuth
 
         public override Task<string> GetVerificationCodeAsync(Uri authorizationUri, CancellationToken cancellationToken = default)
         {
+            if (authorizationUri == null)
+                throw new ArgumentNullException(nameof(authorizationUri));
             OpenBrowser(authorizationUri);
             var verificationCode = string.Empty;
             while (string.IsNullOrWhiteSpace(verificationCode))
@@ -27,7 +29,7 @@ namespace GSS.Authorization.OAuth
         }
 
         // https://github.com/dotnet/runtime/issues/17938
-        private void OpenBrowser(Uri uri)
+        private static void OpenBrowser(Uri uri)
         {
             try
             {
