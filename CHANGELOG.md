@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2020-07-14
+
+### GSS.Authorization.OAuth 1.1.0
+
+- Refactoring AuthorizerBase
+- Add InteractiveConsoleAuthorizer
+
+### GSS.Authorization.OAuth.HttpClient 1.1.0
+
+- Add OAuthHttpHandlerOptions.TokenCredentials to simplify configuration
+
 ## 2020-07-13
 
 ### GSS.Authorization.OAuth(.HttpClient)? 1.0.0
