@@ -21,13 +21,10 @@ namespace OAuthHttpClientSample
                        options.ClientCredentials = new OAuthCredential(
                            hostContext.Configuration["OAuth:ClientId"],
                            hostContext.Configuration["OAuth:ClientSecret"]);
-                       options.SignedAsQuery = hostContext.Configuration.GetValue("OAuth:SignedAsQuery", false);
-                       options.TokenCredentialProvider = _ =>
-                       {
-                           return new ValueTask<OAuthCredential>(new OAuthCredential(
+                       options.TokenCredentials = new OAuthCredential(
                                hostContext.Configuration["OAuth:TokenId"],
-                               hostContext.Configuration["OAuth:TokenSecret"]));
-                       };
+                               hostContext.Configuration["OAuth:TokenSecret"]);
+                       options.SignedAsQuery = hostContext.Configuration.GetValue("OAuth:SignedAsQuery", false);
                    });
                 }).Build();
             var configuration = host.Services.GetRequiredService<IConfiguration>();

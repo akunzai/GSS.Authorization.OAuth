@@ -43,22 +43,6 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, __) => { }).Services.BuildServiceProvider();
 
             // Act
-            var ex = Assert.Throws<ValidationException>(() => services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>().Value);
-
-            // Assert
-            Assert.IsType<RequiredAttribute>(ex.ValidationAttribute);
-            Assert.Equal(nameof(OAuthHttpHandlerOptions.TokenCredentialProvider), ex.ValidationResult.MemberNames.First());
-        }
-
-        [Fact]
-        public void AddOAuthHttpClient_WithoutClientId_ShouldThrowsOnAccessOptionValue()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-            var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, options) => options.TokenCredentialProvider = (_) => new ValueTask<OAuthCredential>(new OAuthCredential("foo", "bar")))
-                .Services.BuildServiceProvider();
-
-            // Act
             var ex = Assert.Throws<ArgumentNullException>(() => services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>().Value);
 
             // Assert
@@ -72,7 +56,6 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var collection = new ServiceCollection();
             var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
             {
-                options.TokenCredentialProvider = (_) => new ValueTask<OAuthCredential>(new OAuthCredential("foo", "bar"));
                 options.ClientCredentials = new OAuthCredential("foo", null);
             }).Services.BuildServiceProvider();
 
@@ -84,14 +67,50 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         }
 
         [Fact]
+        public void AddOAuthHttpClient_WithoutTokenId_ShouldThrowsOnAccessOptionValue()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
+            {
+                options.ClientCredentials = new OAuthCredential("foo", "bar");
+                options.TokenCredentials = new OAuthCredential(null, "bar");
+            }).Services.BuildServiceProvider();
+
+            // Act
+            var ex = Assert.Throws<ArgumentNullException>(() => services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>().Value);
+
+            // Assert
+            Assert.Equal($"{nameof(OAuthHttpHandlerOptions.TokenCredentials)}.{nameof(OAuthHttpHandlerOptions.TokenCredentials.Key)}", ex.ParamName);
+        }
+
+        [Fact]
+        public void AddOAuthHttpClient_WithoutTokenSecret_ShouldThrowsOnAccessOptionValue()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
+            {
+                options.ClientCredentials = new OAuthCredential("foo", "bar");
+                options.TokenCredentials = new OAuthCredential("foo", null);
+            }).Services.BuildServiceProvider();
+
+            // Act
+            var ex = Assert.Throws<ArgumentNullException>(() => services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>().Value);
+
+            // Assert
+            Assert.Equal($"{nameof(OAuthHttpHandlerOptions.TokenCredentials)}.{nameof(OAuthHttpHandlerOptions.TokenCredentials.Secret)}", ex.ParamName);
+        }
+
+        [Fact]
         public void AddOAuthHttpClient_WithValidConfigureOptions_ShouldNotThrows()
         {
             // Arrange
             var collection = new ServiceCollection();
             var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
             {
-                options.TokenCredentialProvider = (_) => new ValueTask<OAuthCredential>(new OAuthCredential("foo", "bar"));
                 options.ClientCredentials = new OAuthCredential("foo", "bar");
+                options.TokenCredentials = new OAuthCredential("foo", "bar");
             }).Services.BuildServiceProvider();
 
             // Act
@@ -108,8 +127,8 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var collection = new ServiceCollection();
             var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
             {
-                options.TokenCredentialProvider = (_) => new ValueTask<OAuthCredential>(new OAuthCredential("foo", "bar"));
                 options.ClientCredentials = new OAuthCredential("foo", "bar");
+                options.TokenCredentials = new OAuthCredential("foo", "bar");
             }).Services.BuildServiceProvider();
 
             // Act
@@ -127,8 +146,8 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var collection = new ServiceCollection();
             var services = collection.AddOAuthHttpClient(name, (_, options) =>
             {
-                options.TokenCredentialProvider = (_) => new ValueTask<OAuthCredential>(new OAuthCredential("foo", "bar"));
                 options.ClientCredentials = new OAuthCredential("foo", "bar");
+                options.TokenCredentials = new OAuthCredential("foo", "bar");
             }).Services.BuildServiceProvider();
             var factory = services.GetRequiredService<IHttpClientFactory>();
 
@@ -158,8 +177,8 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var collection = new ServiceCollection();
             var services = collection.AddOAuthHttpClient<DemoOAuthClient>((_, options) =>
             {
-                options.TokenCredentialProvider = (_) => new ValueTask<OAuthCredential>(new OAuthCredential("foo", "bar"));
                 options.ClientCredentials = new OAuthCredential("foo", "bar");
+                options.TokenCredentials = new OAuthCredential("foo", "bar");
             }).Services.BuildServiceProvider();
 
             // Act
@@ -174,15 +193,15 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuthHttpClient<OAuthHttpClient,HmacSha1RequestSigner>((_, options) =>
+            var services = collection.AddOAuthHttpClient<OAuthHttpClient, HmacSha1RequestSigner>((_, options) =>
+             {
+                 options.ClientCredentials = new OAuthCredential("foo", "bar");
+                 options.TokenCredentials = new OAuthCredential("foo", "bar");
+             }).Services.AddOAuthHttpClient<DemoOAuthClient, PlainTextRequestSigner>((_, options) =>
             {
-                options.TokenCredentialProvider = (_) => new ValueTask<OAuthCredential>(new OAuthCredential("foo", "bar"));
                 options.ClientCredentials = new OAuthCredential("foo", "bar");
-            }).Services.AddOAuthHttpClient<DemoOAuthClient, PlainTextRequestSigner>((_, options) =>
-           {
-               options.TokenCredentialProvider = (_) => new ValueTask<OAuthCredential>(new OAuthCredential("foo", "bar"));
-               options.ClientCredentials = new OAuthCredential("foo", "bar");
-           }).Services.BuildServiceProvider();
+                options.TokenCredentials = new OAuthCredential("foo", "bar");
+            }).Services.BuildServiceProvider();
 
             // Act
             var client1 = services.GetService<OAuthHttpClient>();
@@ -204,12 +223,12 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var collection = new ServiceCollection();
             var services = collection.AddOAuthHttpClient<HmacSha1RequestSigner>("client1", (_, options) =>
             {
-                options.TokenCredentialProvider = (_) => new ValueTask<OAuthCredential>(new OAuthCredential("foo", "bar"));
                 options.ClientCredentials = new OAuthCredential("foo", "bar");
+                options.TokenCredentials = new OAuthCredential("foo", "bar");
             }).Services.AddOAuthHttpClient<PlainTextRequestSigner>("client2", (_, options) =>
             {
-                options.TokenCredentialProvider = (_) => new ValueTask<OAuthCredential>(new OAuthCredential("foo", "bar"));
                 options.ClientCredentials = new OAuthCredential("foo", "bar");
+                options.TokenCredentials = new OAuthCredential("foo", "bar");
             }).Services.BuildServiceProvider();
 
             // Act

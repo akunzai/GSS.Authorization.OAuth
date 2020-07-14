@@ -118,6 +118,14 @@ namespace GSS.Authorization.OAuth
             {
                 throw new ArgumentNullException($"{nameof(options.ClientCredentials)}.{nameof(options.ClientCredentials.Secret)}");
             }
+            if (string.IsNullOrWhiteSpace(options.TokenCredentials.Key))
+            {
+                throw new ArgumentNullException($"{nameof(options.TokenCredentials)}.{nameof(options.TokenCredentials.Key)}");
+            }
+            if (string.IsNullOrWhiteSpace(options.TokenCredentials.Secret))
+            {
+                throw new ArgumentNullException($"{nameof(options.TokenCredentials)}.{nameof(options.TokenCredentials.Secret)}");
+            }
         }
     }
 }
