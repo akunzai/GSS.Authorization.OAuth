@@ -43,11 +43,8 @@ services.AddOAuthHttpClient("oauth",(resolver, options) =>
 {
     var configuration = resolver.GetRequiredService<IConfiguration>();
     options.ClientCredentials = new OAuthCredential(configuration["OAuth:ClientId"], configuration["OAuth:ClientSecret"]);
+    options.TokenCredentials = new OAuthCredential(configuration["OAuth:TokenId"],configuration["OAuth:TokenSecret"]);
     options.SignedAsQuery = configuration.GetValue("OAuth:SignedAsQuery", false);
-    options.TokenCredentialProvider = _ =>
-    {
-        return new ValueTask<OAuthCredential>(new OAuthCredential(configuration["OAuth:TokenId"], configuration["OAuth:TokenSecret"]));
-    };
 });
 ```
 
@@ -58,11 +55,8 @@ services.AddOAuthHttpClient<OAuthHttpClient>((resolver, options) =>
 {
     var configuration = resolver.GetRequiredService<IConfiguration>();
     options.ClientCredentials = new OAuthCredential(configuration["OAuth:ClientId"], configuration["OAuth:ClientSecret"]);
+    options.TokenCredentials = new OAuthCredential(configuration["OAuth:TokenId"],configuration["OAuth:TokenSecret"]);
     options.SignedAsQuery = configuration.GetValue("OAuth:SignedAsQuery", false);
-    options.TokenCredentialProvider = _ =>
-    {
-        return new ValueTask<OAuthCredential>(new OAuthCredential(configuration["OAuth:TokenId"], configuration["OAuth:TokenSecret"]));
-    };
 });
 ```
 

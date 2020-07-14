@@ -7,8 +7,22 @@ namespace GSS.Authorization.OAuth
 {
     public class OAuthHttpHandlerOptions : OAuthOptions
     {
+        private Func<HttpRequestMessage, ValueTask<OAuthCredential>>? _tokenCredentialProvider;
+
         [Required]
-        public Func<HttpRequestMessage, ValueTask<OAuthCredential>> TokenCredentialProvider { get; set; } = default!;
+        public OAuthCredential TokenCredentials { get; set; }
+
+        public Func<HttpRequestMessage, ValueTask<OAuthCredential>> TokenCredentialProvider
+        {
+            get
+            {
+                return _tokenCredentialProvider ?? (_ => new ValueTask<OAuthCredential>(TokenCredentials));
+            }
+            set
+            {
+                _tokenCredentialProvider = value;
+            }
+        }
 
         /// <summary>
         /// sign request as query parameter ? (default: Authorization header)

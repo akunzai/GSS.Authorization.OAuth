@@ -42,7 +42,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                     options.ClientCredentials = new OAuthCredential(
                         _configuration["OAuth:ClientId"],
                         _configuration["OAuth:ClientSecret"]);
-                    options.TokenCredentialProvider = _ => new ValueTask<OAuthCredential>(_tokenCredentials);
+                    options.TokenCredentials = _tokenCredentials;
                     if (_mockHttp != null)
                     {
                         var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
@@ -80,7 +80,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                     options.ClientCredentials = new OAuthCredential(
                         _configuration["OAuth:ClientId"],
                         _configuration["OAuth:ClientSecret"]);
-                    options.TokenCredentialProvider = _ => new ValueTask<OAuthCredential>(_tokenCredentials);
+                    options.TokenCredentials = _tokenCredentials;
                     options.SignedAsQuery = true;
                     if (_mockHttp != null)
                     {
