@@ -26,7 +26,7 @@ dotnet add package GSS.Authorization.OAuth2.HttpClient
 ### OAuth 1.0 protocol
 
 - Only provide `HMAC-SHA1` and `PLAINTEXT` signature method. you can implement `GSS.Authorization.OAuth.IRequestSigner` to support more signature methods.
-- You need grant token credentials manually or implementation `GSS.Authorization.OAuth.IAuthorizer` to support automatic grant flows.
+- Only provide `InteractiveConsoleAuthorizer` to grant token credentials. you can implementation `GSS.Authorization.OAuth.IAuthorizer` to support more grant flows.
 
 ### OAuth 2.0 protocol
 
