@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using GSS.Authorization.OAuth2;
 using Microsoft.Extensions.Configuration;
@@ -16,14 +17,17 @@ namespace OAuth2HttpClientSample
             var host = Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    if (hostContext.Configuration.GetValue("OAuth2:GrantFlow", "ClientCredentials").Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase))
+                    var clientBuilder =
+                        hostContext.Configuration.GetValue("OAuth2:GrantFlow", "ClientCredentials")
+                            .Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase)
+                            ? services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(
+                                ConfigureAuthorizerOptions)
+                            : services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>(
+                                ConfigureAuthorizerOptions);
+                    clientBuilder.ConfigureHttpClient(client =>
                     {
-                        services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(ConfigureAuthorizerOptions);
-                    }
-                    else
-                    {
-                        services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>(ConfigureAuthorizerOptions);
-                    }
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    });
                 }).Build();
             var configuration = host.Services.GetRequiredService<IConfiguration>();
 
