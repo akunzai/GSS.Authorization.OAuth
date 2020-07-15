@@ -188,20 +188,70 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             Assert.NotNull(client);
         }
 
+        private class DemoOptions : OAuthHttpHandlerOptions
+        {
+            public Uri BaseAddress { get; set; }
+        }
+
+        [Fact]
+        public void AddTypedOAuthHttpClient_WithCustomConfigureOptions_ShouldAddInServiceProvider()
+        {
+            // Arrange
+            var expected = new Uri("http://example.com");
+            var collection = new ServiceCollection();
+            var services = collection.AddOAuthHttpClient<DemoOAuthClient, DemoOptions>((_, options) =>
+             {
+                 options.BaseAddress = expected;
+                 options.ClientCredentials = new OAuthCredential("foo", "bar");
+                 options.TokenCredentials = new OAuthCredential("foo", "bar");
+             }).Services.BuildServiceProvider();
+
+            // Act
+            var client = services.GetService<DemoOAuthClient>();
+            var actual = services.GetService<IOptions<DemoOptions>>()?.Value?.BaseAddress;
+
+            // Assert
+            Assert.NotNull(client);
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void AddNamedOAuthHttpClient_WithCustomConfigureOptions_ShouldAddInServiceProvider()
+        {
+            // Arrange
+            var expected = new Uri("http://example.com");
+            var collection = new ServiceCollection();
+            var services = collection.AddOAuthHttpClient<DemoOptions>("client1",(_, options) =>
+            {
+                options.BaseAddress = expected;
+                options.ClientCredentials = new OAuthCredential("foo", "bar");
+                options.TokenCredentials = new OAuthCredential("foo", "bar");
+            }).Services.BuildServiceProvider();
+
+            // Act
+            var factory = services.GetRequiredService<IHttpClientFactory>();
+            var client = factory.CreateClient("client1");
+            var actual = services.GetService<IOptions<DemoOptions>>()?.Value?.BaseAddress;
+
+            // Assert
+            Assert.NotNull(client);
+            Assert.Equal(expected, actual);
+        }
+
         [Fact]
         public void AddTypedOAuthHttpClients_WithDifferenctSigners_ShouldAddInServiceProvider()
         {
             // Arrange
             var collection = new ServiceCollection();
             var services = collection.AddOAuthHttpClient<OAuthHttpClient, HmacSha1RequestSigner>((_, options) =>
+              {
+                  options.ClientCredentials = new OAuthCredential("foo", "bar");
+                  options.TokenCredentials = new OAuthCredential("foo", "bar");
+              }).Services.AddOAuthHttpClient<DemoOAuthClient, PlainTextRequestSigner>((_, options) =>
              {
                  options.ClientCredentials = new OAuthCredential("foo", "bar");
                  options.TokenCredentials = new OAuthCredential("foo", "bar");
-             }).Services.AddOAuthHttpClient<DemoOAuthClient, PlainTextRequestSigner>((_, options) =>
-            {
-                options.ClientCredentials = new OAuthCredential("foo", "bar");
-                options.TokenCredentials = new OAuthCredential("foo", "bar");
-            }).Services.BuildServiceProvider();
+             }).Services.BuildServiceProvider();
 
             // Act
             var client1 = services.GetService<OAuthHttpClient>();
@@ -217,7 +267,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         }
 
         [Fact]
-        public void AddNamedOAuthHttpClients_WithDifferenctSigners_ShouldAddInServiceProvider()
+        public void AddNamedOAuthHttpClients_WithDifferentSigners_ShouldAddInServiceProvider()
         {
             // Arrange
             var collection = new ServiceCollection();
