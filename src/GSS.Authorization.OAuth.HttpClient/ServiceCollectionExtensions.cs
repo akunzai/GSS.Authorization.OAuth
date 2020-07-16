@@ -22,7 +22,7 @@ namespace GSS.Authorization.OAuth
             Action<IServiceProvider, TOptions> configureOptions)
             where TClient : class
             where TRequestSigner : RequestSignerBase
-            where TOptions : OAuthHttpHandlerOptions
+            where TOptions : OAuthHttpHandlerOptions, new()
         {
             if (services == null)
             {
@@ -43,7 +43,7 @@ namespace GSS.Authorization.OAuth
             return services
                 .AddHttpClient<TClient>()
                 .AddHttpMessageHandler(resolver => new OAuthHttpHandler(
-                    resolver.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>(),
+                    resolver.GetRequiredService<IOptions<TOptions>>(),
                     resolver.GetRequiredService<TRequestSigner>()));
         }
 
@@ -74,7 +74,7 @@ namespace GSS.Authorization.OAuth
         public static IHttpClientBuilder AddOAuthHttpClient<TClient, TOptions>(this IServiceCollection services,
             Action<IServiceProvider, TOptions> configureOptions)
             where TClient : class
-            where TOptions : OAuthHttpHandlerOptions
+            where TOptions : OAuthHttpHandlerOptions, new()
         {
             return services.AddOAuthHttpClient<TClient, HmacSha1RequestSigner, TOptions>(configureOptions);
         }
@@ -105,7 +105,7 @@ namespace GSS.Authorization.OAuth
         public static IHttpClientBuilder AddOAuthHttpClient<TRequestSigner, TOptions>(this IServiceCollection services, string name,
             Action<IServiceProvider, TOptions> configureOptions)
             where TRequestSigner : RequestSignerBase
-            where TOptions : OAuthHttpHandlerOptions
+            where TOptions : OAuthHttpHandlerOptions, new()
         {
             if (services == null)
             {
@@ -126,7 +126,7 @@ namespace GSS.Authorization.OAuth
             return services
                 .AddHttpClient(name)
                 .AddHttpMessageHandler(resolver => new OAuthHttpHandler(
-                    resolver.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>(),
+                    resolver.GetRequiredService<IOptions<TOptions>>(),
                     resolver.GetRequiredService<TRequestSigner>()));
         }
 
@@ -155,7 +155,7 @@ namespace GSS.Authorization.OAuth
         /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the client.</returns>
         public static IHttpClientBuilder AddOAuthHttpClient<TOptions>(this IServiceCollection services, string name,
             Action<IServiceProvider, TOptions> configureOptions)
-            where TOptions : OAuthHttpHandlerOptions
+            where TOptions : OAuthHttpHandlerOptions, new()
         {
             return services.AddOAuthHttpClient<HmacSha1RequestSigner, TOptions>(name, configureOptions);
         }
