@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2020-07-16
+
+### GSS.Authorization.OAuth.HttpClient 1.2.1
+
+- Fixed null extended OAuthHttpHandlerOptions
+
 ## 2020-07-15
 
 ### GSS.Authorization.OAuth.HttpClient 1.2.0
