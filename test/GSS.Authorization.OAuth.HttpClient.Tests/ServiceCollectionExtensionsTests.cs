@@ -197,45 +197,52 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         public void AddTypedOAuthHttpClient_WithCustomConfigureOptions_ShouldAddInServiceProvider()
         {
             // Arrange
-            var expected = new Uri("http://example.com");
+            var baseAddress = new Uri("http://example.com");
+            var clientCredentials = new OAuthCredential(Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString());
+            var tokenCredentials = new OAuthCredential(Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString());
             var collection = new ServiceCollection();
             var services = collection.AddOAuthHttpClient<DemoOAuthClient, DemoOptions>((_, options) =>
              {
-                 options.BaseAddress = expected;
-                 options.ClientCredentials = new OAuthCredential("foo", "bar");
-                 options.TokenCredentials = new OAuthCredential("foo", "bar");
+                 options.BaseAddress = baseAddress;
+                 options.ClientCredentials = clientCredentials;
+                 options.TokenCredentials = tokenCredentials;
              }).Services.BuildServiceProvider();
 
             // Act
-            var client = services.GetService<DemoOAuthClient>();
-            var actual = services.GetService<IOptions<DemoOptions>>()?.Value?.BaseAddress;
+            var actual = services.GetService<IOptions<DemoOptions>>()?.Value;
 
             // Assert
-            Assert.NotNull(client);
-            Assert.Equal(expected, actual);
+            Assert.Equal(baseAddress, actual?.BaseAddress);
+            Assert.Equal(clientCredentials.Key, actual?.ClientCredentials.Key);
+            Assert.Equal(clientCredentials.Secret, actual?.ClientCredentials.Secret);
+            Assert.Equal(tokenCredentials.Key, actual?.TokenCredentials.Key);
+            Assert.Equal(tokenCredentials.Secret, actual?.TokenCredentials.Secret);
         }
 
         [Fact]
         public void AddNamedOAuthHttpClient_WithCustomConfigureOptions_ShouldAddInServiceProvider()
         {
             // Arrange
-            var expected = new Uri("http://example.com");
+            var baseAddress = new Uri("http://example.com");
+            var clientCredentials = new OAuthCredential(Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString());
+            var tokenCredentials = new OAuthCredential(Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString());
             var collection = new ServiceCollection();
-            var services = collection.AddOAuthHttpClient<DemoOptions>("client1",(_, options) =>
-            {
-                options.BaseAddress = expected;
-                options.ClientCredentials = new OAuthCredential("foo", "bar");
-                options.TokenCredentials = new OAuthCredential("foo", "bar");
-            }).Services.BuildServiceProvider();
+            var services = collection.AddOAuthHttpClient<DemoOptions>("client1", (_, options) =>
+             {
+                 options.BaseAddress = baseAddress;
+                 options.ClientCredentials = clientCredentials;
+                 options.TokenCredentials = tokenCredentials;
+             }).Services.BuildServiceProvider();
 
             // Act
-            var factory = services.GetRequiredService<IHttpClientFactory>();
-            var client = factory.CreateClient("client1");
-            var actual = services.GetService<IOptions<DemoOptions>>()?.Value?.BaseAddress;
+            var actual = services.GetService<IOptions<DemoOptions>>()?.Value;
 
             // Assert
-            Assert.NotNull(client);
-            Assert.Equal(expected, actual);
+            Assert.Equal(baseAddress, actual?.BaseAddress);
+            Assert.Equal(clientCredentials.Key, actual?.ClientCredentials.Key);
+            Assert.Equal(clientCredentials.Secret, actual?.ClientCredentials.Secret);
+            Assert.Equal(tokenCredentials.Key, actual?.TokenCredentials.Key);
+            Assert.Equal(tokenCredentials.Secret, actual?.TokenCredentials.Secret);
         }
 
         [Fact]
