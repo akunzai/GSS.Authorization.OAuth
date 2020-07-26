@@ -21,7 +21,7 @@ namespace GSS.Authorization.OAuth
         public static IHttpClientBuilder AddOAuthHttpClient<TClient, TRequestSigner, TOptions>(this IServiceCollection services,
             Action<IServiceProvider, TOptions> configureOptions)
             where TClient : class
-            where TRequestSigner : RequestSignerBase
+            where TRequestSigner : class, IRequestSigner
             where TOptions : OAuthHttpHandlerOptions, new()
         {
             if (services == null)
@@ -59,7 +59,7 @@ namespace GSS.Authorization.OAuth
         public static IHttpClientBuilder AddOAuthHttpClient<TClient, TRequestSigner>(this IServiceCollection services,
             Action<IServiceProvider, OAuthHttpHandlerOptions> configureOptions)
             where TClient : class
-            where TRequestSigner : RequestSignerBase
+            where TRequestSigner : class, IRequestSigner
         {
             return services.AddOAuthHttpClient<TClient, TRequestSigner, OAuthHttpHandlerOptions>(configureOptions);
         }
@@ -105,7 +105,7 @@ namespace GSS.Authorization.OAuth
         /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the client.</returns>
         public static IHttpClientBuilder AddOAuthHttpClient<TRequestSigner, TOptions>(this IServiceCollection services, string name,
             Action<IServiceProvider, TOptions> configureOptions)
-            where TRequestSigner : RequestSignerBase
+            where TRequestSigner : class, IRequestSigner
             where TOptions : OAuthHttpHandlerOptions, new()
         {
             if (services == null)
@@ -143,7 +143,7 @@ namespace GSS.Authorization.OAuth
         public static IHttpClientBuilder AddOAuthHttpClient<TRequestSigner>(this IServiceCollection services,
             string name,
             Action<IServiceProvider, OAuthHttpHandlerOptions> configureOptions)
-            where TRequestSigner : RequestSignerBase
+            where TRequestSigner : class, IRequestSigner
         {
             return services.AddOAuthHttpClient<TRequestSigner, OAuthHttpHandlerOptions>(name, configureOptions);
         }
