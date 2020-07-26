@@ -11,6 +11,14 @@ namespace GSS.Authorization.OAuth
     /// </summary>
     public class HmacSha1RequestSigner : RequestSignerBase
     {
+        public HmacSha1RequestSigner(OAuthOptions options) : base(options)
+        {
+        }
+
+        public HmacSha1RequestSigner()
+        {
+        }
+
         public override string MethodName => "HMAC-SHA1";
 
         public override string GetSignature(
@@ -20,7 +28,7 @@ namespace GSS.Authorization.OAuth
             string consumerSecret,
             string? tokenSecret = null)
         {
-            var key = OAuthEncoder.PercentEncode(consumerSecret) + "&" + OAuthEncoder.PercentEncode(tokenSecret);
+            var key = Options.PercentEncodeProvider(consumerSecret) + "&" + Options.PercentEncodeProvider(tokenSecret);
 #pragma warning disable CA5350 // Do Not Use Weak Cryptographic Algorithms
             using var hmacSha1 = new HMACSHA1(Encoding.ASCII.GetBytes(key));
 #pragma warning restore CA5350 // Do Not Use Weak Cryptographic Algorithms

@@ -2,8 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## 2020-07-26
+## 2020-07-27
 
+### GSS.Authorization.OAuth 1.2.0
+
+- Support to customize the percent encoder
+
+## 2020-07-26
 
 ### GSS.Authorization.OAuth.HttpClient 1.3.1
 
