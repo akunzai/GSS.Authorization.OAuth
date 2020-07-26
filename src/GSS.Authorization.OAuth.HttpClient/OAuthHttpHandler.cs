@@ -25,14 +25,35 @@ namespace GSS.Authorization.OAuth
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
             var tokenCredentials = await _options.TokenCredentialProvider(request).ConfigureAwait(false);
-            var parameters = request.RequestUri.ParseQueryString();
-            if (_options.SignedAsQuery)
+            var queryString = request.RequestUri.ParseQueryString();
+            if (_options.SignedAsBody && request.Content.IsFormData())
             {
-                var query = _signer.AppendAuthorizationParameters(request.Method, request.RequestUri, _options, parameters, tokenCredentials);
-                var values = new List<string>();
-                foreach (var key in query.AllKeys)
+                var formData = await request.Content.ReadAsFormDataAsync(cancellationToken).ConfigureAwait(false);
+                foreach (var key in queryString.AllKeys)
                 {
-                    foreach (var value in query.GetValues(key))
+                    if (formData.Get(key) == null)
+                    {
+                        formData.Add(key, queryString[key]);
+                    }
+                }
+                var parameters = _signer.AppendAuthorizationParameters(request.Method, request.RequestUri, _options, formData, tokenCredentials);
+                var values = new Dictionary<string, string>();
+                foreach (var key in parameters.AllKeys)
+                {
+                    if (queryString.Get(key) == null)
+                    {
+                        values.Add(key, parameters[key]);
+                    }
+                }
+                request.Content = _options.FormUrlEncodedContentProvider(values);
+            }
+            else if (_options.SignedAsQuery)
+            {
+                var parameters = _signer.AppendAuthorizationParameters(request.Method, request.RequestUri, _options, queryString, tokenCredentials);
+                var values = new List<string>();
+                foreach (var key in parameters.AllKeys)
+                {
+                    foreach (var value in parameters.GetValues(key))
                     {
                         values.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}");
                     }
@@ -48,7 +69,7 @@ namespace GSS.Authorization.OAuth
                         request.Method,
                         request.RequestUri,
                         _options,
-                        parameters,
+                        queryString,
                         tokenCredentials);
             }
             return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);

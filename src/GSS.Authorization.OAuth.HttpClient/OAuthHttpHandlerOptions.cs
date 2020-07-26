@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -26,8 +27,19 @@ namespace GSS.Authorization.OAuth
 
         /// <summary>
         /// sign request as query parameter ? (default: Authorization header)
-        /// , see https://tools.ietf.org/html/rfc5849#section-3.5
+        /// , see https://tools.ietf.org/html/rfc5849#section-3.5.3
         /// </summary>
         public bool SignedAsQuery { get; set; }
+
+        /// <summary>
+        /// sign request as form-encoded body ? (default: Authorization header)
+        /// , see https://tools.ietf.org/html/rfc5849#section-3.5.2
+        /// </summary>
+        public bool SignedAsBody { get; set; }
+
+        /// <summary>
+        /// The form-encoded httpContent provider, see https://tools.ietf.org/html/rfc5849#section-3.5.2
+        /// </summary>
+        public Func<IEnumerable<KeyValuePair<string, string>>, HttpContent> FormUrlEncodedContentProvider { get; set; } = (values) => new FormUrlEncodedContent(values);
     }
 }
