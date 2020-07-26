@@ -162,7 +162,7 @@ namespace GSS.Authorization.OAuth.Tests
             };
 
             // Act
-            var actual = await authorizer.GrantAccessAsync();
+            var actual = await authorizer.GrantAccessAsync().ConfigureAwait(false);
 
             // Assert
             Assert.Equal(expected.Key, actual.Key);

@@ -96,7 +96,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var client = services.GetRequiredService<OAuthHttpClient>();
             var options = services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>();
             var resourceUri = new UriBuilder(_configuration["Request:Uri"]);
-            resourceUri.Query += resourceUri.Query.Contains("?") ? "&foo=v1&foo=v2" : "?foo=v1&foo=v2";
+            resourceUri.Query += resourceUri.Query.Contains("?", StringComparison.Ordinal) ? "&foo=v1&foo=v2" : "?foo=v1&foo=v2";
             var parameters = _signer.AppendAuthorizationParameters(HttpMethod.Get, resourceUri.Uri,
                 options.Value, resourceUri.Uri.ParseQueryString(), _tokenCredentials);
             var values = new List<string>();
@@ -161,7 +161,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             }
             var parameters = _signer.AppendAuthorizationParameters(HttpMethod.Post, resourceUri.Uri,
                 options.Value, formData, _tokenCredentials);
-            var values = new Dictionary<string,string>();
+            var values = new Dictionary<string, string>();
             foreach (var key in parameters.AllKeys)
             {
                 if (queryString.Get(key) == null)
@@ -174,8 +174,8 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                 .Respond(HttpStatusCode.OK);
 
             // Act
-            
-            var response = await client.HttpClient.PostAsync(resourceUri.Uri, new FormUrlEncodedContent(body)).ConfigureAwait(false);
+            using var content = new FormUrlEncodedContent(body);
+            var response = await client.HttpClient.PostAsync(resourceUri.Uri, content).ConfigureAwait(false);
 
             // Assert
             Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
