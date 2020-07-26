@@ -1,8 +1,5 @@
 using System;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
