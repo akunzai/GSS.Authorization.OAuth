@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Support to customize the percent encoder
 
+### GSS.Authorization.OAuth.HttpClient 1.3.2
+
+- Changed the generic type constraint from RequestSignerBase to IRequestSigner
+
 ## 2020-07-26
 
 ### GSS.Authorization.OAuth.HttpClient 1.3.1
