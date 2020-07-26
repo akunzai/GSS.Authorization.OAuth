@@ -26,7 +26,7 @@ namespace GSS.Authorization.OAuth
                 throw new ArgumentNullException(nameof(request));
             var tokenCredentials = await _options.TokenCredentialProvider(request).ConfigureAwait(false);
             var queryString = request.RequestUri.ParseQueryString();
-            if (_options.SignedAsBody && request.Content.IsFormData())
+            if (_options.SignedAsBody && request.Content?.IsFormData() == true)
             {
                 var formData = await request.Content.ReadAsFormDataAsync(cancellationToken).ConfigureAwait(false);
                 foreach (var key in queryString.AllKeys)
