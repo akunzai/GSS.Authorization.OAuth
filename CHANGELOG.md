@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2020-07-26
+
+### GSS.Authorization.OAuth.HttpClient 1.3.0
+
+- Support to signed as form body
+
 ## 2020-07-16
 
 ### GSS.Authorization.OAuth.HttpClient 1.2.1
