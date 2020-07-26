@@ -11,6 +11,18 @@ namespace GSS.Authorization.OAuth
     [DebuggerDisplay("Method = {MethodName}")]
     public abstract class RequestSignerBase : IRequestSigner
     {
+        protected RequestSignerBase(OAuthOptions options)
+        {
+            Options = options ?? new OAuthOptions();
+        }
+
+        protected RequestSignerBase()
+        {
+            Options = new OAuthOptions();
+        }
+
+        protected OAuthOptions Options { get; }
+
         public abstract string MethodName { get; }
 
         public abstract string GetSignature(HttpMethod method, Uri uri, NameValueCollection parameters, string consumerSecret, string? tokenSecret = null);
@@ -22,7 +34,7 @@ namespace GSS.Authorization.OAuth
 		/// <param name='method'>HTTP request method.</param>
 		/// <param name='uri'>The request resource URI.</param>
 		/// <param name='parameters'>Request Parameters, see http://tools.ietf.org/html/rfc5849#section-3.4.1.3 </param>
-		protected internal static string GetBaseString(HttpMethod method, Uri uri, NameValueCollection parameters)
+		protected internal string GetBaseString(HttpMethod method, Uri uri, NameValueCollection parameters)
         {
             if (method == null)
                 throw new ArgumentNullException(nameof(method));
@@ -32,25 +44,25 @@ namespace GSS.Authorization.OAuth
             }
             var baseUri = GetBaseStringUri(uri);
             // Parameters Normalization, see https://tools.ietf.org/html/rfc5849#section-3.4.1.3.2
-            var normalizationParameters = new List<KeyValuePair<string,string>>();
-            foreach(var key in parameters.AllKeys
+            var normalizationParameters = new List<KeyValuePair<string, string>>();
+            foreach (var key in parameters.AllKeys
                 // the `oauth_signature`,`realm` parameter MUST be excluded
-                .Where(k=> !(k.Equals(OAuthDefaults.OAuthSignature, StringComparison.Ordinal) || k.Equals(OAuthDefaults.Realm, StringComparison.Ordinal))))
+                .Where(k => !(k.Equals(OAuthDefaults.OAuthSignature, StringComparison.Ordinal) || k.Equals(OAuthDefaults.Realm, StringComparison.Ordinal))))
             {
-                foreach(var value in parameters.GetValues(key))
+                foreach (var value in parameters.GetValues(key))
                 {
-                    normalizationParameters.Add(new KeyValuePair<string, string>(key,value));
+                    normalizationParameters.Add(new KeyValuePair<string, string>(Options.PercentEncodeProvider(key), Options.PercentEncodeProvider(value)));
                 }
             }
             var values = normalizationParameters
                 .OrderBy(x => PadNumbers(x.Key), StringComparer.Ordinal)
                 .ThenBy(x => x.Value).Select(x =>
-                  $"{OAuthEncoder.PercentEncode(x.Key)}={OAuthEncoder.PercentEncode(x.Value)}");
+                  $"{x.Key}={x.Value}");
             var parts = new List<string>
             {
                 method.Method.ToUpperInvariant(),
-                OAuthEncoder.PercentEncode(baseUri),
-                OAuthEncoder.PercentEncode(string.Join("&", values))
+                Options.PercentEncodeProvider(baseUri),
+                Options.PercentEncodeProvider(string.Join("&", values))
             };
             return string.Join("&", parts);
         }

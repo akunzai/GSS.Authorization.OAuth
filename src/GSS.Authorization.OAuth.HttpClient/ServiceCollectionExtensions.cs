@@ -35,6 +35,7 @@ namespace GSS.Authorization.OAuth
             }
 
             services.TryAddSingleton<TRequestSigner>();
+            services.TryAddSingleton<OAuthOptions>(resolver => resolver.GetRequiredService<IOptions<TOptions>>().Value);
 
             services.AddOptions<TOptions>()
                 .Configure<IServiceProvider>((options, resolver) => configureOptions(resolver, options))
@@ -118,6 +119,7 @@ namespace GSS.Authorization.OAuth
             }
 
             services.TryAddSingleton<TRequestSigner>();
+            services.TryAddSingleton<OAuthOptions>(resolver => resolver.GetRequiredService<IOptions<TOptions>>().Value);
 
             services.AddOptions<TOptions>()
                 .Configure<IServiceProvider>((options, resolver) => configureOptions(resolver, options))

@@ -32,5 +32,10 @@ namespace GSS.Authorization.OAuth
         /// The realm parameter defines a protection realm per (https://tools.ietf.org/html/rfc2617). see https://tools.ietf.org/html/rfc5849#section-3.5.1
         /// </summary>
         public string? Realm { get; set; }
+
+        /// <summary>
+        /// The Percent-Encoding Provider, see https://tools.ietf.org/html/rfc3986#section-2.1
+        /// </summary>
+        public Func<string?, string> PercentEncodeProvider { get; set; } = OAuthEncoder.PercentEncode;
     }
 }
