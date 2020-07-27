@@ -33,9 +33,23 @@ namespace GSS.Authorization.OAuth
         /// </summary>
         public string? Realm { get; set; }
 
+        [Obsolete("Use PercentEncoder instead")]
+        public Func<string?, string> PercentEncodeProvider
+        {
+            get
+            {
+                return (value) => value == null ? string.Empty : PercentEncoder(value);
+            }
+            set
+            {
+                PercentEncoder = value;
+            }
+        }
+
         /// <summary>
-        /// The Percent-Encoding Provider, see https://tools.ietf.org/html/rfc3986#section-2.1
+        /// The Percent-Encoder, see https://tools.ietf.org/html/rfc3986#section-2.1
+        /// by default, the <see cref="Uri.EscapeDataString(string)"/> is RFC3986 compliant.
         /// </summary>
-        public Func<string?, string> PercentEncodeProvider { get; set; } = OAuthEncoder.PercentEncode;
+        public Func<string, string> PercentEncoder { get; set; } = Uri.EscapeDataString;
     }
 }

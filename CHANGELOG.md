@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## 2020-07-27
 
+### GSS.Authorization.OAuth 1.3.0
+
+- Obsolete OAuthEncoder
+
 ### GSS.Authorization.OAuth 1.2.0
 
 - Support to customize the percent encoder

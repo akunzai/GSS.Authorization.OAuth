@@ -51,7 +51,7 @@ namespace GSS.Authorization.OAuth
             {
                 foreach (var value in parameters.GetValues(key))
                 {
-                    normalizationParameters.Add(new KeyValuePair<string, string>(Options.PercentEncodeProvider(key), Options.PercentEncodeProvider(value)));
+                    normalizationParameters.Add(new KeyValuePair<string, string>(Options.PercentEncoder(key), Options.PercentEncoder(value)));
                 }
             }
             var values = normalizationParameters
@@ -61,8 +61,8 @@ namespace GSS.Authorization.OAuth
             var parts = new List<string>
             {
                 method.Method.ToUpperInvariant(),
-                Options.PercentEncodeProvider(baseUri),
-                Options.PercentEncodeProvider(string.Join("&", values))
+                Options.PercentEncoder(baseUri),
+                Options.PercentEncoder(string.Join("&", values))
             };
             return string.Join("&", parts);
         }

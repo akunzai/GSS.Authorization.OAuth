@@ -4,6 +4,7 @@ using System.Text;
 
 namespace GSS.Authorization.OAuth
 {
+    [Obsolete("Use Uri.EscapeDataString instead")]
     public static class OAuthEncoder
     {
         private static readonly IDictionary<string, string> _uriRfc3986EscapeChars = new Dictionary<string, string>
