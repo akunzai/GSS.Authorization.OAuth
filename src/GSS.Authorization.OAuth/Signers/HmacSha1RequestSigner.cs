@@ -28,9 +28,13 @@ namespace GSS.Authorization.OAuth
             string consumerSecret,
             string? tokenSecret = null)
         {
-            var key = Options.PercentEncodeProvider(consumerSecret) + "&" + Options.PercentEncodeProvider(tokenSecret);
+            var key = new StringBuilder(Options.PercentEncoder(consumerSecret)).Append("&");
+            if (tokenSecret != null)
+            {
+                key.Append(Options.PercentEncoder(tokenSecret));
+            }
 #pragma warning disable CA5350 // Do Not Use Weak Cryptographic Algorithms
-            using var hmacSha1 = new HMACSHA1(Encoding.ASCII.GetBytes(key));
+            using var hmacSha1 = new HMACSHA1(Encoding.ASCII.GetBytes(key.ToString()));
 #pragma warning restore CA5350 // Do Not Use Weak Cryptographic Algorithms
             var text = GetBaseString(method, uri, parameters);
             var digest = hmacSha1.ComputeHash(Encoding.ASCII.GetBytes(text));

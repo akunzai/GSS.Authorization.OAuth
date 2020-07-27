@@ -34,13 +34,13 @@ namespace GSS.Authorization.OAuth
             {
                 foreach (var value in query.GetValues(key))
                 {
-                    values.Add($"{options.PercentEncodeProvider(key)}=\"{options.PercentEncodeProvider(value)}\"");
+                    values.Add($"{options.PercentEncoder(key)}=\"{options.PercentEncoder(value)}\"");
                 }
             }
             var headerValue = string.Join(",", values);
-            if (!string.IsNullOrEmpty(options.Realm))
+            if (options.Realm != null && !string.IsNullOrWhiteSpace(options.Realm))
             {
-                return new AuthenticationHeaderValue(OAuthDefaults.OAuthScheme, $"{OAuthDefaults.Realm}=\"{options.PercentEncodeProvider(options.Realm)}\",{headerValue}");
+                return new AuthenticationHeaderValue(OAuthDefaults.OAuthScheme, $"{OAuthDefaults.Realm}=\"{options.PercentEncoder(options.Realm)}\",{headerValue}");
             }
             return new AuthenticationHeaderValue(OAuthDefaults.OAuthScheme, headerValue);
         }
