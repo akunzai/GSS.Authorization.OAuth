@@ -127,6 +127,42 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             _mockHttp.VerifyNoOutstandingRequest();
         }
 
+        [SkippableFact]
+        public async Task HttpClient_AccessProtectedResourceWithWwwAuthenticateError_ShouldAuthorized()
+        {
+            Skip.If(_mockHttp == null);
+
+            // Arrange
+            _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
+                .Respond(req =>
+                {
+                    var res = new HttpResponseMessage(HttpStatusCode.BadRequest);
+                    res.Headers.TryAddWithoutValidation("WWW-Authenticate",
+                        @"Bearer realm=""oauth2-resource"", error=""unauthorized"", error_description=""Full authentication is required to access this resource""");
+                    return res;
+                });
+            var accessToken = new AccessToken
+            {
+                Token = Guid.NewGuid().ToString(),
+                ExpiresInSeconds = 10
+            };
+            _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
+                .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
+                .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
+                .Respond("application/json", JsonSerializer.Serialize(accessToken));
+            _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
+                .WithHeaders("Authorization", $"{AuthorizerDefaults.Bearer} {accessToken.Token}")
+                .Respond(HttpStatusCode.OK);
+
+            // Act
+            var response = await _client.HttpClient.GetAsync(_resourceEndpoint).ConfigureAwait(false);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            _mockHttp.VerifyNoOutstandingExpectation();
+            _mockHttp.VerifyNoOutstandingRequest();
+        }
+
         [Fact]
         public async Task HttpClient_AccessProtectedResourceWithCachedAccessToken_ShouldAuthorizedOnce()
         {
