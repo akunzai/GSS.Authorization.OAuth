@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2020-09-15
+
+### GSS.Authorization.OAuth2.HttpClient 2.1.0
+
+- Handle WWW-Authenticate response error (https://tools.ietf.org/html/rfc6750#section-3)
+
 ## 2020-07-27
 
 ### GSS.Authorization.OAuth 1.3.0
