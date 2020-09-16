@@ -266,7 +266,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
 
             // Act
             var response = await _client.HttpClient.GetAsync(_resourceEndpoint).ConfigureAwait(false);
-            await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+            await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
             var response2 = await _client.HttpClient.GetAsync(_resourceEndpoint).ConfigureAwait(false);
 
             // Assert
