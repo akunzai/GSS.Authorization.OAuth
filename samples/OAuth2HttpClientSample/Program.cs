@@ -51,6 +51,10 @@ namespace OAuth2HttpClientSample
                 configuration["OAuth2:Credentials:UserName"],
                 configuration["OAuth2:Credentials:Password"]);
             options.Scopes = configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
+            options.OnError = (code, message) =>
+            {
+                Console.Error.Write($"ERROR: [${code}]: {message}");
+            };
         }
     }
 }
