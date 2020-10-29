@@ -3,7 +3,9 @@ image: Visual Studio 2019
 nuget:
   disable_publish_on_pr: true
 build_script:
-- ps: dotnet build -c Release
+- ps: |
+    dotnet --info
+    dotnet build -c Release
 test_script:
 - ps: dotnet test
 artifacts:
