@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Fixes compiler warnings
 
+### GSS.Authorization.OAuth2 2.1.0
+
+- Update target from netcoreapp3.0 to netcoreapp3.1 (https://dotnet.microsoft.com/platform/support/policy/dotnet-core)
+
 ### GSS.Authorization.OAuth2.HttpClient 2.1.1
 
 - Remove unnecessary logs
