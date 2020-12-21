@@ -6,8 +6,6 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace GSS.Authorization.OAuth2
 {
@@ -16,20 +14,13 @@ namespace GSS.Authorization.OAuth2
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly IAuthorizer _authorizer;
         private readonly IMemoryCache _memoryCache;
-        private readonly ILogger<OAuth2HttpHandler> _logger;
         private readonly string _cacheKey;
 
-        public OAuth2HttpHandler(IAuthorizer authorizer, IMemoryCache memoryCache, ILoggerFactory loggerFactory)
+        public OAuth2HttpHandler(IAuthorizer authorizer, IMemoryCache memoryCache)
         {
             _authorizer = authorizer;
             _memoryCache = memoryCache;
-            _logger = loggerFactory.CreateLogger<OAuth2HttpHandler>();
             _cacheKey = Guid.NewGuid().ToString();
-        }
-
-        [Obsolete("Use another constructor")]
-        public OAuth2HttpHandler(IAuthorizer authorizer, IMemoryCache memoryCache) : this(authorizer, memoryCache, NullLoggerFactory.Instance)
-        {
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
@@ -46,7 +37,6 @@ namespace GSS.Authorization.OAuth2
             var authenticateError = response.Headers.WwwAuthenticate.FirstOrDefault()?.Parameter;
             if (string.IsNullOrWhiteSpace(authenticateError) && response.StatusCode != HttpStatusCode.Unauthorized)
                 return response;
-            _logger.LogError(authenticateError);
             TrySetAuthorizationHeaderToRequest(await GetAccessTokenAsync(cancellationToken, forceRenew: true).ConfigureAwait(false), request);
             return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
