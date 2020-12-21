@@ -63,7 +63,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             Skip.If(_mockHttp == null);
 
             // Arrange
-            var invalidToken = "TEST";
+            const string invalidToken = "TEST";
             _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
                 .WithHeaders("Authorization", $"{AuthorizerDefaults.Bearer} {invalidToken}")
                 .Respond(HttpStatusCode.Forbidden);
@@ -134,7 +134,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
 
             // Arrange
             _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
-                .Respond(req =>
+                .Respond(_ =>
                 {
                     var res = new HttpResponseMessage(HttpStatusCode.BadRequest);
                     res.Headers.TryAddWithoutValidation("WWW-Authenticate",

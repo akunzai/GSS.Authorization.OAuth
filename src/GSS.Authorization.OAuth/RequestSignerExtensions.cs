@@ -59,6 +59,8 @@ namespace GSS.Authorization.OAuth
             this IRequestSigner signer, HttpMethod method, Uri uri, OAuthOptions options,
             NameValueCollection? parameters = null, OAuthCredential? tokenCredentials = null)
         {
+            if (signer == null)
+                throw new ArgumentNullException(nameof(signer));
             if (options == null)
                 throw new ArgumentNullException(nameof(options));
             parameters ??= new NameValueCollection();

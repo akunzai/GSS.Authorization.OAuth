@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## 2020-12-21
 
+### GSS.Authorization.OAuth 1.3.1
+
+- Fixes compiler warnings
+
 ### GSS.Authorization.OAuth2.HttpClient 2.1.1
 
 - Remove unnecessary logs

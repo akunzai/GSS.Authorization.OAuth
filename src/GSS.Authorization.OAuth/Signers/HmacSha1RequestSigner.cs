@@ -28,7 +28,7 @@ namespace GSS.Authorization.OAuth
             string consumerSecret,
             string? tokenSecret = null)
         {
-            var key = new StringBuilder(Options.PercentEncoder(consumerSecret)).Append("&");
+            var key = new StringBuilder(Options.PercentEncoder(consumerSecret)).Append('&');
             if (tokenSecret != null)
             {
                 key.Append(Options.PercentEncoder(tokenSecret));

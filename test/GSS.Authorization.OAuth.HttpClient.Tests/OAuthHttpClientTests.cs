@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
 {
     public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
     {
+        private static readonly RNGCryptoServiceProvider _rngCrypto = new RNGCryptoServiceProvider();
         private readonly MockHttpMessageHandler _mockHttp;
         private readonly IRequestSigner _signer = new HmacSha1RequestSigner();
         private readonly IConfiguration _configuration;
@@ -47,7 +49,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                     if (_mockHttp != null)
                     {
                         var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
-                        var nonce = new Random().Next(123400, 9999999).ToString(CultureInfo.InvariantCulture);
+                        var nonce = generateNonce();
                         options.TimestampProvider = () => timestamp;
                         options.NonceProvider = () => nonce;
                     }
@@ -86,7 +88,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                     if (_mockHttp != null)
                     {
                         var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
-                        var nonce = new Random().Next(123400, 9999999).ToString(CultureInfo.InvariantCulture);
+                        var nonce = generateNonce();
                         options.TimestampProvider = () => timestamp;
                         options.NonceProvider = () => nonce;
                     }
@@ -135,7 +137,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                     if (_mockHttp != null)
                     {
                         var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
-                        var nonce = new Random().Next(123400, 9999999).ToString(CultureInfo.InvariantCulture);
+                        var nonce = generateNonce();
                         options.TimestampProvider = () => timestamp;
                         options.NonceProvider = () => nonce;
                     }
@@ -181,6 +183,13 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
             _mockHttp?.VerifyNoOutstandingExpectation();
             _mockHttp?.VerifyNoOutstandingRequest();
+        }
+
+        private string generateNonce()
+        {
+            var bytes = new byte[16];
+            _rngCrypto.GetNonZeroBytes(bytes);
+            return Convert.ToBase64String(bytes);
         }
     }
 }
