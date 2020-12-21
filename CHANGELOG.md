@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2020-12-21
+
+### GSS.Authorization.OAuth2.HttpClient 2.1.1
+
+- Remove unnecessary logs
+
 ## 2020-09-15
 
 ### GSS.Authorization.OAuth2.HttpClient 2.1.0
