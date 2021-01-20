@@ -1,8 +1,13 @@
 # GSS.Authorization.OAuth
 
-OAuth authorized HttpClient, friendly with [HttpClientFactory](https://docs.microsoft.com/aspnet/core/fundamentals/http-requests)
+[![Build Status][ci-badge]][ci] [![Code Coverage][codecov-badge]][codecov]
 
-[![Build status](https://ci.appveyor.com/api/projects/status/9s6628wsosi4a6gu?svg=true)](https://ci.appveyor.com/project/akunzai/gss-authorization-oauth)
+[ci]: https://github.com/akunzai/GSS.Authorization.OAuth/actions?query=workflow%3ACI
+[ci-badge]: https://github.com/akunzai/GSS.Authorization.OAuth/workflows/CI/badge.svg
+[codecov]: https://codecov.io/gh/akunzai/GSS.Authorization.OAuth
+[codecov-badge]: https://codecov.io/gh/akunzai/GSS.Authorization.OAuth/branch/main/graph/badge.svg?token=YHAPVX7R97
+
+OAuth authorized HttpClient, friendly with [HttpClientFactory](https://docs.microsoft.com/aspnet/core/fundamentals/http-requests)
 
 ## NuGet Packages
 
