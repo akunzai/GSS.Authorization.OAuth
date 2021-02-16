@@ -12,6 +12,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                 .Build();
             Configuration = host.Services.GetRequiredService<IConfiguration>();
         }
+
         public IConfiguration Configuration { get; }
     }
 }

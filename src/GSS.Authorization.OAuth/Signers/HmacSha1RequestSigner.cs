@@ -1,8 +1,9 @@
 using System;
-using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Primitives;
 
 namespace GSS.Authorization.OAuth
 {
@@ -21,11 +22,7 @@ namespace GSS.Authorization.OAuth
 
         public override string MethodName => "HMAC-SHA1";
 
-        public override string GetSignature(
-            HttpMethod method,
-            Uri uri,
-            NameValueCollection parameters,
-            string consumerSecret,
+        public override string GetSignature(HttpMethod method, Uri uri, IEnumerable<KeyValuePair<string, StringValues>> parameters, string consumerSecret,
             string? tokenSecret = null)
         {
             var key = new StringBuilder(Options.PercentEncoder(consumerSecret)).Append('&');

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Primitives;
 
 namespace GSS.Authorization.OAuth
 {
@@ -12,29 +12,30 @@ namespace GSS.Authorization.OAuth
         /// <summary>
         /// Gets the authorization header for a signed request.
         /// </summary>
-        /// <returns>The authorization header.</returns>
         /// <param name="signer">The request signer.</param>
         /// <param name='method'>HTTP request method.</param>
         /// <param name='uri'>The request resource URI.</param>
         /// <param name="options">The OAuth options.</param>
         /// <param name='parameters'>Request Parameters, see http://tools.ietf.org/html/rfc5849#section-3.4.1.3 </param>
         /// <param name="tokenCredentials">Token Credentials.</param>
+        /// <returns>The authorization header.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public static AuthenticationHeaderValue GetAuthorizationHeader(this IRequestSigner signer,
             HttpMethod method,
             Uri uri,
             OAuthOptions options,
-            NameValueCollection? parameters = null,
+            IDictionary<string,StringValues>? parameters = null,
             OAuthCredential? tokenCredentials = null)
         {
             if (options == null)
                 throw new ArgumentNullException(nameof(options));
             var query = AppendAuthorizationParameters(signer, method, uri, options, parameters, tokenCredentials);
             var values = new List<string>();
-            foreach (var key in query.AllKeys.Where(x => x.StartsWith(OAuthDefaults.OAuthPrefix, StringComparison.Ordinal)))
+            foreach (var entry in query.Where(p => p.Key.StartsWith(OAuthDefaults.OAuthPrefix, StringComparison.Ordinal)))
             {
-                foreach (var value in query.GetValues(key))
+                foreach (var value in entry.Value)
                 {
-                    values.Add($"{options.PercentEncoder(key)}=\"{options.PercentEncoder(value)}\"");
+                    values.Add($"{options.PercentEncoder(entry.Key)}=\"{options.PercentEncoder(value)}\"");
                 }
             }
             var headerValue = string.Join(",", values);
@@ -48,22 +49,23 @@ namespace GSS.Authorization.OAuth
         /// <summary>
         /// Gets the authorization query for a signed request.
         /// </summary>
-        /// <returns>The authorization header.</returns>
         /// <param name="signer">The request signer.</param>
         /// <param name='method'>HTTP request method.</param>
         /// <param name='uri'>The request resource URI.</param>
         /// <param name="options">The OAuth options.</param>
         /// <param name='parameters'>Request Parameters, see http://tools.ietf.org/html/rfc5849#section-3.4.1.3 </param>
         /// <param name="tokenCredentials">Token Credentials.</param>
-        public static NameValueCollection AppendAuthorizationParameters(
+        /// <returns>The authorization header.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static IDictionary<string,StringValues> AppendAuthorizationParameters(
             this IRequestSigner signer, HttpMethod method, Uri uri, OAuthOptions options,
-            NameValueCollection? parameters = null, OAuthCredential? tokenCredentials = null)
+            IDictionary<string,StringValues>? parameters = null, OAuthCredential? tokenCredentials = null)
         {
             if (signer == null)
                 throw new ArgumentNullException(nameof(signer));
             if (options == null)
                 throw new ArgumentNullException(nameof(options));
-            parameters ??= new NameValueCollection();
+            parameters ??= new Dictionary<string, StringValues>();
             if (tokenCredentials != null && !string.IsNullOrWhiteSpace(tokenCredentials.Value.Key))
             {
                 parameters[OAuthDefaults.OAuthToken] = tokenCredentials.Value.Key;

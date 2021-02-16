@@ -2,13 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -48,20 +51,22 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                     options.TokenCredentials = _tokenCredentials;
                     if (_mockHttp != null)
                     {
-                        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
+                        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                            .ToString(CultureInfo.InvariantCulture);
                         var nonce = generateNonce();
                         options.TimestampProvider = () => timestamp;
                         options.NonceProvider = () => nonce;
                     }
                 })
                 .ConfigurePrimaryHttpMessageHandler(_ => (HttpMessageHandler)_mockHttp ?? new HttpClientHandler())
-            .Services.BuildServiceProvider();
+                .Services.BuildServiceProvider();
             var client = services.GetRequiredService<OAuthHttpClient>();
             var options = services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>();
             var resourceUri = _configuration.GetValue<Uri>("Request:Uri");
             _mockHttp?.Expect(HttpMethod.Get, resourceUri.AbsoluteUri)
                 .WithHeaders("Authorization", _signer.GetAuthorizationHeader(
-                    HttpMethod.Get, resourceUri, options.Value, resourceUri.ParseQueryString(), _tokenCredentials).ToString())
+                    HttpMethod.Get, resourceUri, options.Value, QueryHelpers.ParseQuery(resourceUri.Query),
+                    _tokenCredentials).ToString())
                 .Respond(HttpStatusCode.OK);
 
             // Act
@@ -87,28 +92,32 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                     options.SignedAsQuery = true;
                     if (_mockHttp != null)
                     {
-                        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
+                        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                            .ToString(CultureInfo.InvariantCulture);
                         var nonce = generateNonce();
                         options.TimestampProvider = () => timestamp;
                         options.NonceProvider = () => nonce;
                     }
                 })
                 .ConfigurePrimaryHttpMessageHandler(_ => (HttpMessageHandler)_mockHttp ?? new HttpClientHandler())
-            .Services.BuildServiceProvider();
+                .Services.BuildServiceProvider();
             var client = services.GetRequiredService<OAuthHttpClient>();
             var options = services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>();
             var resourceUri = new UriBuilder(_configuration["Request:Uri"]);
-            resourceUri.Query += resourceUri.Query.Contains("?", StringComparison.Ordinal) ? "&foo=v1&foo=v2" : "?foo=v1&foo=v2";
+            resourceUri.Query += resourceUri.Query.Contains("?", StringComparison.Ordinal)
+                ? "&foo=v1&foo=v2"
+                : "?foo=v1&foo=v2";
             var parameters = _signer.AppendAuthorizationParameters(HttpMethod.Get, resourceUri.Uri,
-                options.Value, resourceUri.Uri.ParseQueryString(), _tokenCredentials);
+                options.Value, QueryHelpers.ParseQuery(resourceUri.Uri.Query), _tokenCredentials);
             var values = new List<string>();
-            foreach (var key in parameters.AllKeys)
+            foreach (var parameter in parameters)
             {
-                foreach (var value in parameters.GetValues(key))
+                foreach (var value in parameter.Value)
                 {
-                    values.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}");
+                    values.Add($"{Uri.EscapeDataString(parameter.Key)}={Uri.EscapeDataString(value)}");
                 }
             }
+
             _mockHttp?.Expect(HttpMethod.Get, resourceUri.Uri.AbsoluteUri)
                 .WithQueryString("?" + string.Join("&", values))
                 .Respond(HttpStatusCode.OK);
@@ -136,41 +145,45 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                     options.SignedAsBody = true;
                     if (_mockHttp != null)
                     {
-                        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
+                        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                            .ToString(CultureInfo.InvariantCulture);
                         var nonce = generateNonce();
                         options.TimestampProvider = () => timestamp;
                         options.NonceProvider = () => nonce;
                     }
                 })
                 .ConfigurePrimaryHttpMessageHandler(_ => (HttpMessageHandler)_mockHttp ?? new HttpClientHandler())
-            .Services.BuildServiceProvider();
+                .Services.BuildServiceProvider();
             var client = services.GetRequiredService<OAuthHttpClient>();
             var options = services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>();
             var resourceUri = new UriBuilder(_configuration["Request:Uri"]);
-            var queryString = resourceUri.Uri.ParseQueryString();
-            var body = _configuration.GetSection("Request:Body").Get<IDictionary<string, string>>();
-            var formData = new NameValueCollection();
+            var queryString = QueryHelpers.ParseQuery(resourceUri.Uri.Query);
+            var body = _configuration.GetSection("Request:Body").Get<IDictionary<string,string>>();
+            var formData = new Dictionary<string, StringValues>();
             foreach (var (key, value) in body)
             {
                 formData.Add(key, value);
             }
-            foreach (var key in queryString.AllKeys)
+
+            foreach (var query in queryString)
             {
-                if (formData.Get(key) == null)
+                if (!formData.ContainsKey(query.Key))
                 {
-                    formData.Add(key, queryString[key]);
+                    formData.Add(query.Key, query.Value);
                 }
             }
+
             var parameters = _signer.AppendAuthorizationParameters(HttpMethod.Post, resourceUri.Uri,
                 options.Value, formData, _tokenCredentials);
-            var values = new Dictionary<string, string>();
-            foreach (var key in parameters.AllKeys)
+            var values = new List<KeyValuePair<string, string>>();
+            foreach (var parameter in parameters)
             {
-                if (queryString.Get(key) == null)
+                if (!queryString.ContainsKey(parameter.Key))
                 {
-                    values.Add(key, parameters[key]);
+                    values.AddRange(parameter.Value.Select(value=> new KeyValuePair<string, string>(parameter.Key, value)));
                 }
             }
+
             _mockHttp?.Expect(HttpMethod.Post, resourceUri.Uri.AbsoluteUri)
                 .WithFormData(values)
                 .Respond(HttpStatusCode.OK);

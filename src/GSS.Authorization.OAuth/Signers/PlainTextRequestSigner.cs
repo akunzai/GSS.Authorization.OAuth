@@ -1,6 +1,7 @@
 using System;
-using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.Net.Http;
+using Microsoft.Extensions.Primitives;
 
 namespace GSS.Authorization.OAuth
 {
@@ -11,7 +12,8 @@ namespace GSS.Authorization.OAuth
     {
         public override string MethodName => "PLAINTEXT";
 
-        public override string GetSignature(HttpMethod method, Uri uri, NameValueCollection parameters, string consumerSecret, string? tokenSecret = null)
+        public override string GetSignature(HttpMethod method, Uri uri, IEnumerable<KeyValuePair<string, StringValues>> parameters, string consumerSecret,
+            string? tokenSecret = null)
         {
             return $"{consumerSecret}&{tokenSecret}";
         }

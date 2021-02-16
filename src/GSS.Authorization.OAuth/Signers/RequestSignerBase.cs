@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Primitives;
 
 namespace GSS.Authorization.OAuth
 {
@@ -25,16 +25,18 @@ namespace GSS.Authorization.OAuth
 
         public abstract string MethodName { get; }
 
-        public abstract string GetSignature(HttpMethod method, Uri uri, NameValueCollection parameters, string consumerSecret, string? tokenSecret = null);
+        public abstract string GetSignature(HttpMethod method, Uri uri, IEnumerable<KeyValuePair<string, StringValues>> parameters, string consumerSecret,
+            string? tokenSecret = null);
 
         /// <summary>
-		/// Signature Base String, see http://tools.ietf.org/html/rfc5849#section-3.4.1
-		/// </summary>
-		/// <returns>The signature base string.</returns>
-		/// <param name='method'>HTTP request method.</param>
-		/// <param name='uri'>The request resource URI.</param>
-		/// <param name='parameters'>Request Parameters, see http://tools.ietf.org/html/rfc5849#section-3.4.1.3 </param>
-		protected internal string GetBaseString(HttpMethod method, Uri uri, NameValueCollection parameters)
+        /// Signature Base String, see http://tools.ietf.org/html/rfc5849#section-3.4.1
+        /// </summary>
+        /// <param name='method'>HTTP request method.</param>
+        /// <param name='uri'>The request resource URI.</param>
+        /// <param name='parameters'>Request Parameters, see http://tools.ietf.org/html/rfc5849#section-3.4.1.3 </param>
+        /// <returns>The signature base string.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        protected internal string GetBaseString(HttpMethod method, Uri uri, IEnumerable<KeyValuePair<string, StringValues>> parameters)
         {
             if (method == null)
                 throw new ArgumentNullException(nameof(method));
@@ -45,19 +47,19 @@ namespace GSS.Authorization.OAuth
             var baseUri = GetBaseStringUri(uri);
             // Parameters Normalization, see https://tools.ietf.org/html/rfc5849#section-3.4.1.3.2
             var normalizationParameters = new List<KeyValuePair<string, string>>();
-            foreach (var key in parameters.AllKeys
+            foreach (var parameter in parameters
                 // the `oauth_signature`,`realm` parameter MUST be excluded
-                .Where(k => !(k.Equals(OAuthDefaults.OAuthSignature, StringComparison.Ordinal) || k.Equals(OAuthDefaults.Realm, StringComparison.Ordinal))))
+                .Where(p => !(p.Key.Equals(OAuthDefaults.OAuthSignature, StringComparison.Ordinal) || p.Key.Equals(OAuthDefaults.Realm, StringComparison.Ordinal))))
             {
-                foreach (var value in parameters.GetValues(key))
+                foreach (var value in parameter.Value)
                 {
-                    normalizationParameters.Add(new KeyValuePair<string, string>(Options.PercentEncoder(key), Options.PercentEncoder(value)));
+                    normalizationParameters.Add(new KeyValuePair<string, string>(Options.PercentEncoder(parameter.Key), Options.PercentEncoder(value)));
                 }
             }
             var values = normalizationParameters
                 .OrderBy(x => PadNumbers(x.Key), StringComparer.Ordinal)
                 .ThenBy(x => x.Value).Select(x =>
-                  $"{x.Key}={x.Value}");
+                    $"{x.Key}={x.Value}");
             var parts = new List<string>
             {
                 method.Method.ToUpperInvariant(),
