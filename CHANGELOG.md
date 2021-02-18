@@ -2,11 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## 2021-02-16
+## 2021-02-20
 
 ### GSS.Authorization.OAuth(.HttpClient)? 2.0.0
 
 - Removed dependencies of Microsoft.AspNet.WebApi.Client
+- Removed obsolete code
 
 ## 2020-12-21
 
