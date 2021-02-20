@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -24,6 +24,7 @@ namespace GSS.Authorization.OAuth.Tests
             Realm = "Photos",
             ProvideVersion = false
         };
+
         private readonly MockHttpMessageHandler _mockHttp = new MockHttpMessageHandler();
         private readonly IRequestSigner _signer = new HmacSha1RequestSigner();
 
@@ -34,11 +35,14 @@ namespace GSS.Authorization.OAuth.Tests
             var expected = new OAuthCredential("hh5s93j4hdidpola", "hdhd0244k9j7ao03");
             _options.NonceProvider = () => "wIjqoS";
             _options.TimestampProvider = () => "137131200";
-            var authorizationHeader = _signer.GetAuthorizationHeader(HttpMethod.Post, _options.TemporaryCredentialRequestUri,
+            var authorizationHeader = _signer.GetAuthorizationHeader(HttpMethod.Post,
+                _options.TemporaryCredentialRequestUri,
                 _options,
-                new NameValueCollection
+                new Dictionary<string, StringValues>
                 {
-                    [OAuthDefaults.OAuthCallback] = _options.CallBack == null ? OAuthDefaults.OutOfBand : _options.CallBack.AbsoluteUri
+                    [OAuthDefaults.OAuthCallback] = _options.CallBack == null
+                        ? OAuthDefaults.OutOfBand
+                        : _options.CallBack.AbsoluteUri
                 });
             _mockHttp.When(HttpMethod.Post, _options.TemporaryCredentialRequestUri.ToString())
                 .WithHeaders("Authorization", authorizationHeader.ToString())
@@ -69,7 +73,8 @@ namespace GSS.Authorization.OAuth.Tests
 <input type='password' name='pwd'>
 <button type='submit'>Login</button></form>";
             var temporaryCredentials = new OAuthCredential("hh5s93j4hdidpola", "hdhd0244k9j7ao03");
-            var authorizeUri = new Uri(QueryHelpers.AddQueryString(_options.ResourceOwnerAuthorizeUri.ToString(), OAuthDefaults.OAuthToken, temporaryCredentials.Key));
+            var authorizeUri = new Uri(QueryHelpers.AddQueryString(_options.ResourceOwnerAuthorizeUri.ToString(),
+                OAuthDefaults.OAuthToken, temporaryCredentials.Key));
             _mockHttp.When(HttpMethod.Get, authorizeUri.ToString())
                 .Respond(new StringContent(authorizeHtml, Encoding.UTF8, "text/html"));
             var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer)
@@ -96,7 +101,7 @@ namespace GSS.Authorization.OAuth.Tests
             var temporaryCredential = new OAuthCredential("hh5s93j4hdidpola", "hdhd0244k9j7ao03");
             var authorizationHeader = _signer.GetAuthorizationHeader(HttpMethod.Post, _options.TokenRequestUri,
                 _options,
-                new NameValueCollection
+                new Dictionary<string, StringValues>
                 {
                     [OAuthDefaults.OAuthVerifier] = verificationCode
                 }, temporaryCredential);
@@ -113,7 +118,8 @@ namespace GSS.Authorization.OAuth.Tests
             };
 
             // Act
-            var actual = await authorizer.GetTokenCredentialAsync(temporaryCredential, authorizer.VerificationCode).ConfigureAwait(false);
+            var actual = await authorizer.GetTokenCredentialAsync(temporaryCredential, authorizer.VerificationCode)
+                .ConfigureAwait(false);
 
             // Assert
             Assert.Equal(expected.Key, actual.Key);
@@ -131,11 +137,14 @@ namespace GSS.Authorization.OAuth.Tests
             _options.NonceProvider = () => "walatlh";
             _options.TimestampProvider = () => "137131201";
             _mockHttp.When(HttpMethod.Post, _options.TemporaryCredentialRequestUri.ToString())
-                .WithHeaders("Authorization", _signer.GetAuthorizationHeader(HttpMethod.Post, _options.TemporaryCredentialRequestUri,
+                .WithHeaders("Authorization", _signer.GetAuthorizationHeader(HttpMethod.Post,
+                    _options.TemporaryCredentialRequestUri,
                     _options,
-                    new NameValueCollection
+                    new Dictionary<string, StringValues>
                     {
-                        [OAuthDefaults.OAuthCallback] = _options.CallBack == null ? OAuthDefaults.OutOfBand : _options.CallBack.AbsoluteUri
+                        [OAuthDefaults.OAuthCallback] = _options.CallBack == null
+                            ? OAuthDefaults.OutOfBand
+                            : _options.CallBack.AbsoluteUri
                     }).ToString())
                 .Respond(new FormUrlEncodedContent(new Dictionary<string, string>
                 {
@@ -145,7 +154,7 @@ namespace GSS.Authorization.OAuth.Tests
                 }));
             var header = _signer.GetAuthorizationHeader(HttpMethod.Post, _options.TokenRequestUri,
                 _options,
-                new NameValueCollection
+                new Dictionary<string, StringValues>
                 {
                     [OAuthDefaults.OAuthVerifier] = verificationCode
                 }, temporaryCredentials);

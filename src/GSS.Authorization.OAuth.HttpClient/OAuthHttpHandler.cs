@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 
 namespace GSS.Authorization.OAuth
 {
     public class OAuthHttpHandler : DelegatingHandler
     {
+        private const string ApplicationFormUrlEncoded = "application/x-www-form-urlencoded";
         private readonly OAuthHttpHandlerOptions _options;
         private readonly IRequestSigner _signer;
 
@@ -20,58 +23,66 @@ namespace GSS.Authorization.OAuth
             _signer = signer;
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+            CancellationToken cancellationToken)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
             var tokenCredentials = await _options.TokenCredentialProvider(request).ConfigureAwait(false);
-            var queryString = request.RequestUri.ParseQueryString();
-            if (_options.SignedAsBody && request.Content?.IsFormData() == true)
+            var queryString = QueryHelpers.ParseQuery(request.RequestUri.Query);
+            if (_options.SignedAsBody && request.Content != null && string.Equals(request.Content.Headers?.ContentType?.MediaType,
+                ApplicationFormUrlEncoded, StringComparison.OrdinalIgnoreCase))
             {
-                var formData = await request.Content.ReadAsFormDataAsync(cancellationToken).ConfigureAwait(false);
-                foreach (var key in queryString.AllKeys)
+                var urlEncoded = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var formData = QueryHelpers.ParseQuery(urlEncoded);
+                foreach (var query in queryString)
                 {
-                    if (formData.Get(key) == null)
+                    if (!formData.ContainsKey(query.Key))
                     {
-                        formData.Add(key, queryString[key]);
+                        formData.Add(query.Key, query.Value);
                     }
                 }
-                var parameters = _signer.AppendAuthorizationParameters(request.Method, request.RequestUri, _options, formData, tokenCredentials);
-                var values = new Dictionary<string, string>();
-                foreach (var key in parameters.AllKeys)
+
+                var parameters = _signer.AppendAuthorizationParameters(request.Method, request.RequestUri, _options,
+                    formData, tokenCredentials);
+                var values = new List<KeyValuePair<string, string>>();
+                foreach (var parameter in parameters)
                 {
-                    if (queryString.Get(key) == null)
+                    if (!queryString.ContainsKey(parameter.Key))
                     {
-                        values.Add(key, parameters[key]);
+                        values.AddRange(parameter.Value.Select(value =>
+                            new KeyValuePair<string, string>(parameter.Key, value)));
                     }
                 }
-                request.Content = _options.FormUrlEncodedContentProvider(values);
+
+                // The form-encoded httpContent, see https://tools.ietf.org/html/rfc5849#section-3.5.2
+                request.Content = new FormUrlEncodedContent(values);
             }
             else if (_options.SignedAsQuery)
             {
-                var parameters = _signer.AppendAuthorizationParameters(request.Method, request.RequestUri, _options, queryString, tokenCredentials);
+                var parameters = _signer.AppendAuthorizationParameters(request.Method, request.RequestUri, _options,
+                    queryString, tokenCredentials);
                 var values = new List<string>();
-                foreach (var key in parameters.AllKeys)
+                foreach (var parameter in parameters)
                 {
-                    foreach (var value in parameters.GetValues(key))
+                    foreach (var value in parameter.Value)
                     {
-                        values.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}");
+                        values.Add($"{Uri.EscapeDataString(parameter.Key)}={Uri.EscapeDataString(value)}");
                     }
                 }
-                request.RequestUri = new UriBuilder(request.RequestUri)
-                {
-                    Query = "?" + string.Join("&", values)
-                }.Uri;
+
+                request.RequestUri = new UriBuilder(request.RequestUri) { Query = "?" + string.Join("&", values) }.Uri;
             }
             else
             {
                 request.Headers.Authorization = _signer.GetAuthorizationHeader(
-                        request.Method,
-                        request.RequestUri,
-                        _options,
-                        queryString,
-                        tokenCredentials);
+                    request.Method,
+                    request.RequestUri,
+                    _options,
+                    queryString,
+                    tokenCredentials);
             }
+
             return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
     }

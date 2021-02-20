@@ -104,10 +104,10 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
+            var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, o) =>
             {
-                options.ClientCredentials = new OAuthCredential("foo", "bar");
-                options.TokenCredentials = new OAuthCredential("foo", "bar");
+                o.ClientCredentials = new OAuthCredential("foo", "bar");
+                o.TokenCredentials = new OAuthCredential("foo", "bar");
             }).Services.BuildServiceProvider();
 
             // Act
