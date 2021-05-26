@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.2.0 (2021-05-26)
+
+- Update dependencies [#51](https://github.com/akunzai/GSS.Authorization.OAuth/pull/51)
+- Add System.Text.Encodings.Web to fix [#50](https://github.com/akunzai/GSS.Authorization.OAuth/issues/50)
+
 ## 2021-02-20
 
 ### GSS.Authorization.OAuth(.HttpClient)? 2.0.0
