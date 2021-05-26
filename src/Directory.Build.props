@@ -9,6 +9,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <Nullable>enable</Nullable>
+    <Version>2.2.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release' ">

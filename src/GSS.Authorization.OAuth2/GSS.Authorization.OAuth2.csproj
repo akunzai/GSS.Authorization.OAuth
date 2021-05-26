@@ -4,7 +4,6 @@
     <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
     <Description>OAuth 2.0 Authorizer</Description>
     <PackageTags>OAuth;OAuth2</PackageTags>
-    <Version>2.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
