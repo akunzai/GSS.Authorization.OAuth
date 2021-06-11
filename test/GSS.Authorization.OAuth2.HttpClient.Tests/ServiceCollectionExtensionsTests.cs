@@ -4,7 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
+using RichardSzalay.MockHttp;
 using Xunit;
 
 namespace GSS.Authorization.OAuth2.HttpClient.Tests
@@ -102,6 +104,30 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
 
             // Assert
             Assert.NotNull(authorizerOptions);
+        }
+        
+        [Fact]
+        public void AddOAuth2HttpClient_WithGenericConfigurePrimaryHttpMessageHandler_ShouldAddInHttpMessageHandlerBuilderActions()
+        {   
+            // Arrange
+            var mockHttp = new MockHttpMessageHandler();
+            var collection = new ServiceCollection();
+            var builder = collection
+                .AddSingleton(mockHttp)
+                .AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>((_, options) =>
+                {
+                    options.AccessTokenEndpoint = new Uri("https://example.com");
+                    options.ClientId = "foo";
+                    options.ClientSecret = "bar";
+                }).ConfigurePrimaryHttpMessageHandler<MockHttpMessageHandler>();
+            var services = builder.Services.BuildServiceProvider();
+            
+            // Act
+            var optionsMonitor = services.GetRequiredService<IOptionsMonitor<HttpClientFactoryOptions>>();
+            
+            // Assert
+            var httpClientFactoryOptions = optionsMonitor.Get(builder.Name);
+            Assert.Contains(httpClientFactoryOptions.HttpMessageHandlerBuilderActions, x => x.Target?.ToString()?.Contains("MockHttpMessageHandler") == true);
         }
 
         [Fact]
