@@ -243,7 +243,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         }
 
         [Fact]
-        public void AddTypedOAuthHttpClients_WithDifferenctSigners_ShouldAddInServiceProvider()
+        public void AddTypedOAuthHttpClients_WithDifferentSigners_ShouldAddInServiceProvider()
         {
             // Arrange
             var collection = new ServiceCollection();

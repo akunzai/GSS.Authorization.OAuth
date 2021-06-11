@@ -105,7 +105,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         }
 
         [Fact]
-        public void AddOAuth2HttpClient_WithoutCredentials_ShouldThorwsForResourceOwnerCredentialsAuthorizer()
+        public void AddOAuth2HttpClient_WithoutCredentials_ShouldThrowsForResourceOwnerCredentialsAuthorizer()
         {
             // Arrange
             var collection = new ServiceCollection();
@@ -124,7 +124,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         }
 
         [Fact]
-        public void AddOAuth2HttpClient_WithCredentials_ShouldNotThorwsForResourceOwnerCredentialsAuthorizer()
+        public void AddOAuth2HttpClient_WithCredentials_ShouldNotThrowsForResourceOwnerCredentialsAuthorizer()
         {
             // Arrange
             var collection = new ServiceCollection();
@@ -214,7 +214,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         }
 
         [Fact]
-        public void AddOAuth2HttpClients_WithDifferenctAuthorizers_ShouldAddAuthroizersInServiceProvider()
+        public void AddOAuth2HttpClients_WithDifferentAuthorizers_ShouldAddAuthorizersInServiceProvider()
         {
             // Arrange
             var collection = new ServiceCollection();
