@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.3.0 (2021-06-11)
+
+- Floating latest dependencies for .NET Core 3.1 and .NET 5
+- Fixed [ConfigurePrimaryHttpMessageHandler<T>() not loading handler](https://github.com/dotnet/extensions/issues/851)
+
 ## 2.2.0 (2021-05-26)
 
 - Update dependencies [#51](https://github.com/akunzai/GSS.Authorization.OAuth/pull/51)
