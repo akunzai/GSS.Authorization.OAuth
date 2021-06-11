@@ -53,8 +53,6 @@ namespace GSS.Authorization.OAuth2
             try
             {
                 var accessToken = await _authorizer.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
-                if (accessToken == null)
-                    return AccessToken.Empty;
                 if (accessToken.ExpiresInSeconds > 0)
                 {
                     _memoryCache.Set(_cacheKey, accessToken, accessToken.ExpiresIn);
@@ -73,10 +71,10 @@ namespace GSS.Authorization.OAuth2
 
         private static void TrySetAuthorizationHeaderToRequest(AccessToken accessToken, HttpRequestMessage request)
         {
-            if (!string.IsNullOrWhiteSpace(accessToken?.Token))
+            if (!string.IsNullOrWhiteSpace(accessToken.Token))
             {
                 request.Headers.Authorization =
-                    new AuthenticationHeaderValue(AuthorizerDefaults.Bearer, accessToken?.Token);
+                    new AuthenticationHeaderValue(AuthorizerDefaults.Bearer, accessToken.Token);
             }
         }
     }

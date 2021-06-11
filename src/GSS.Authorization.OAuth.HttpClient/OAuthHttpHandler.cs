@@ -29,7 +29,7 @@ namespace GSS.Authorization.OAuth
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
             var tokenCredentials = await _options.TokenCredentialProvider(request).ConfigureAwait(false);
-            var queryString = QueryHelpers.ParseQuery(request.RequestUri.Query);
+            var queryString = QueryHelpers.ParseQuery(request.RequestUri?.Query);
             if (_options.SignedAsBody && request.Content != null && string.Equals(request.Content.Headers?.ContentType?.MediaType,
                 ApplicationFormUrlEncoded, StringComparison.OrdinalIgnoreCase))
             {
@@ -43,15 +43,15 @@ namespace GSS.Authorization.OAuth
                     }
                 }
 
-                var parameters = _signer.AppendAuthorizationParameters(request.Method, request.RequestUri, _options,
+                var parameters = _signer.AppendAuthorizationParameters(request.Method, request.RequestUri!, _options,
                     formData, tokenCredentials);
-                var values = new List<KeyValuePair<string, string>>();
+                var values = new List<KeyValuePair<string?, string?>>();
                 foreach (var parameter in parameters)
                 {
                     if (!queryString.ContainsKey(parameter.Key))
                     {
                         values.AddRange(parameter.Value.Select(value =>
-                            new KeyValuePair<string, string>(parameter.Key, value)));
+                            new KeyValuePair<string?, string?>(parameter.Key, value)));
                     }
                 }
 
@@ -60,7 +60,7 @@ namespace GSS.Authorization.OAuth
             }
             else if (_options.SignedAsQuery)
             {
-                var parameters = _signer.AppendAuthorizationParameters(request.Method, request.RequestUri, _options,
+                var parameters = _signer.AppendAuthorizationParameters(request.Method, request.RequestUri!, _options,
                     queryString, tokenCredentials);
                 var values = new List<string>();
                 foreach (var parameter in parameters)
@@ -71,13 +71,13 @@ namespace GSS.Authorization.OAuth
                     }
                 }
 
-                request.RequestUri = new UriBuilder(request.RequestUri) { Query = "?" + string.Join("&", values) }.Uri;
+                request.RequestUri = new UriBuilder(request.RequestUri!) { Query = "?" + string.Join("&", values) }.Uri;
             }
             else
             {
                 request.Headers.Authorization = _signer.GetAuthorizationHeader(
                     request.Method,
-                    request.RequestUri,
+                    request.RequestUri!,
                     _options,
                     queryString,
                     tokenCredentials);
