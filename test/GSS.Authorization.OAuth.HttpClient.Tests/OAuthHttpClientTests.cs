@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -43,19 +42,19 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         {
             // Arrange
             var services = new ServiceCollection()
-                .AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
+                .AddOAuthHttpClient<OAuthHttpClient>((_, handlerOptions) =>
                 {
-                    options.ClientCredentials = new OAuthCredential(
+                    handlerOptions.ClientCredentials = new OAuthCredential(
                         _configuration["OAuth:ClientId"],
                         _configuration["OAuth:ClientSecret"]);
-                    options.TokenCredentials = _tokenCredentials;
+                    handlerOptions.TokenCredentials = _tokenCredentials;
                     if (_mockHttp != null)
                     {
                         var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                             .ToString(CultureInfo.InvariantCulture);
                         var nonce = generateNonce();
-                        options.TimestampProvider = () => timestamp;
-                        options.NonceProvider = () => nonce;
+                        handlerOptions.TimestampProvider = () => timestamp;
+                        handlerOptions.NonceProvider = () => nonce;
                     }
                 })
                 .ConfigurePrimaryHttpMessageHandler(_ => (HttpMessageHandler)_mockHttp ?? new HttpClientHandler())
@@ -83,20 +82,20 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         {
             // Arrange
             var services = new ServiceCollection()
-                .AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
+                .AddOAuthHttpClient<OAuthHttpClient>((_, handlerOptions) =>
                 {
-                    options.ClientCredentials = new OAuthCredential(
+                    handlerOptions.ClientCredentials = new OAuthCredential(
                         _configuration["OAuth:ClientId"],
                         _configuration["OAuth:ClientSecret"]);
-                    options.TokenCredentials = _tokenCredentials;
-                    options.SignedAsQuery = true;
+                    handlerOptions.TokenCredentials = _tokenCredentials;
+                    handlerOptions.SignedAsQuery = true;
                     if (_mockHttp != null)
                     {
                         var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                             .ToString(CultureInfo.InvariantCulture);
                         var nonce = generateNonce();
-                        options.TimestampProvider = () => timestamp;
-                        options.NonceProvider = () => nonce;
+                        handlerOptions.TimestampProvider = () => timestamp;
+                        handlerOptions.NonceProvider = () => nonce;
                     }
                 })
                 .ConfigurePrimaryHttpMessageHandler(_ => (HttpMessageHandler)_mockHttp ?? new HttpClientHandler())
@@ -136,20 +135,20 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         {
             // Arrange
             var services = new ServiceCollection()
-                .AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
+                .AddOAuthHttpClient<OAuthHttpClient>((_, handlerOptions) =>
                 {
-                    options.ClientCredentials = new OAuthCredential(
+                    handlerOptions.ClientCredentials = new OAuthCredential(
                         _configuration["OAuth:ClientId"],
                         _configuration["OAuth:ClientSecret"]);
-                    options.TokenCredentials = _tokenCredentials;
-                    options.SignedAsBody = true;
+                    handlerOptions.TokenCredentials = _tokenCredentials;
+                    handlerOptions.SignedAsBody = true;
                     if (_mockHttp != null)
                     {
                         var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                             .ToString(CultureInfo.InvariantCulture);
                         var nonce = generateNonce();
-                        options.TimestampProvider = () => timestamp;
-                        options.NonceProvider = () => nonce;
+                        handlerOptions.TimestampProvider = () => timestamp;
+                        handlerOptions.NonceProvider = () => nonce;
                     }
                 })
                 .ConfigurePrimaryHttpMessageHandler(_ => (HttpMessageHandler)_mockHttp ?? new HttpClientHandler())

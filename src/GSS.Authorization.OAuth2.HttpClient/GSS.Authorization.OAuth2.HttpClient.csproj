@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.1;net5.0</TargetFrameworks>
     <Description>OAuth 2.0 authorized HttpClient, friendly with HttpClientFactory</Description>
     <PackageTags>OAuth;OAuth2;HttpClient;HttpHandler</PackageTags>
     <RootNamespace>GSS.Authorization.OAuth2</RootNamespace>
@@ -12,9 +12,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="2.2.0" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.*" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.*" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.*" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.*" />
   </ItemGroup>
 
 </Project>

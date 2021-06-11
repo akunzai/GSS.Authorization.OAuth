@@ -1,7 +1,9 @@
 using System;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
+using RichardSzalay.MockHttp;
 using Xunit;
 
 namespace GSS.Authorization.OAuth.HttpClient.Tests
@@ -134,6 +136,29 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             // Assert
             Assert.NotNull(client);
         }
+        
+        [Fact]
+        public void AddOAuthHttpClient_WithGenericConfigurePrimaryHttpMessageHandler_ShouldAddInHttpMessageHandlerBuilderActions()
+        {   
+            // Arrange
+            var mockHttp = new MockHttpMessageHandler();
+            var collection = new ServiceCollection();
+            var builder = collection
+                .AddSingleton(mockHttp)
+                .AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
+                {
+                    options.ClientCredentials = new OAuthCredential("foo", "bar");
+                    options.TokenCredentials = new OAuthCredential("foo", "bar");
+                }).ConfigurePrimaryHttpMessageHandler<MockHttpMessageHandler>();
+            var services = builder.Services.BuildServiceProvider();
+            
+            // Act
+            var optionsMonitor = services.GetRequiredService<IOptionsMonitor<HttpClientFactoryOptions>>();
+            
+            // Assert
+            var httpClientFactoryOptions = optionsMonitor.Get(builder.Name);
+            Assert.Contains(httpClientFactoryOptions.HttpMessageHandlerBuilderActions, x => x.Target?.ToString()?.Contains("MockHttpMessageHandler") == true);
+        }
 
         [Fact]
         public void AddNamedOAuthHttpClient_WithValidConfigureOptions_ShouldAddInHttpClientFactory()
@@ -243,7 +268,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         }
 
         [Fact]
-        public void AddTypedOAuthHttpClients_WithDifferenctSigners_ShouldAddInServiceProvider()
+        public void AddTypedOAuthHttpClients_WithDifferentSigners_ShouldAddInServiceProvider()
         {
             // Arrange
             var collection = new ServiceCollection();
