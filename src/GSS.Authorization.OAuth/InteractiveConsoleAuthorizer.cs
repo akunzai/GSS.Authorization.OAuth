@@ -39,16 +39,9 @@ namespace GSS.Authorization.OAuth
                     UseShellExecute = true
                 });
             }
-            catch
+            catch when (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    Process.Start("xdg-open", uri.AbsoluteUri);
-                }
-                else
-                {
-                    throw;
-                }
+                Process.Start("xdg-open", uri.AbsoluteUri);
             }
         }
     }
