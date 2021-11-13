@@ -1,7 +1,4 @@
-using System;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,10 +11,10 @@ namespace GSS.Authorization.OAuth2.Tests
     public class ClientCredentialsAuthorizerTests : IClassFixture<AuthorizerFixture>
     {
         private readonly IAuthorizer _authorizer;
-        private readonly MockHttpMessageHandler _mockHttp;
+        private readonly MockHttpMessageHandler? _mockHttp;
         private readonly AuthorizerOptions _options;
         private HttpStatusCode _errorStatusCode;
-        private string _errorMessage;
+        private string? _errorMessage;
 
         public ClientCredentialsAuthorizerTests(AuthorizerFixture fixture)
         {

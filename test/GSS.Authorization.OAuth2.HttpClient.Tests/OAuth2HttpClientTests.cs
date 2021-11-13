@@ -1,8 +1,5 @@
-using System;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading.Tasks;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +12,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
     public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
     {
         private readonly OAuth2HttpClient _client;
-        private readonly MockHttpMessageHandler _mockHttp;
+        private readonly MockHttpMessageHandler? _mockHttp;
         private readonly Uri _resourceEndpoint;
         private readonly AuthorizerOptions _options;
 

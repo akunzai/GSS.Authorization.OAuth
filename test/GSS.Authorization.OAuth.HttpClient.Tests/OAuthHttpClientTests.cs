@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Security.Cryptography;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,8 +13,9 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
 {
     public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
     {
-        private static readonly RNGCryptoServiceProvider _rngCrypto = new RNGCryptoServiceProvider();
-        private readonly MockHttpMessageHandler _mockHttp;
+        private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
+
+        private readonly MockHttpMessageHandler? _mockHttp;
         private readonly IRequestSigner _signer = new HmacSha1RequestSigner();
         private readonly IConfiguration _configuration;
         private readonly OAuthCredential _tokenCredentials;
@@ -57,7 +53,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                         handlerOptions.NonceProvider = () => nonce;
                     }
                 })
-                .ConfigurePrimaryHttpMessageHandler(_ => (HttpMessageHandler)_mockHttp ?? new HttpClientHandler())
+                .ConfigurePrimaryHttpMessageHandler(_ => _mockHttp ?? new HttpClientHandler() as HttpMessageHandler)
                 .Services.BuildServiceProvider();
             var client = services.GetRequiredService<OAuthHttpClient>();
             var options = services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>();
@@ -98,12 +94,12 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                         handlerOptions.NonceProvider = () => nonce;
                     }
                 })
-                .ConfigurePrimaryHttpMessageHandler(_ => (HttpMessageHandler)_mockHttp ?? new HttpClientHandler())
+                .ConfigurePrimaryHttpMessageHandler(_ => _mockHttp ?? new HttpClientHandler() as HttpMessageHandler)
                 .Services.BuildServiceProvider();
             var client = services.GetRequiredService<OAuthHttpClient>();
             var options = services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>();
             var resourceUri = new UriBuilder(_configuration["Request:Uri"]);
-            resourceUri.Query += resourceUri.Query.Contains("?", StringComparison.Ordinal)
+            resourceUri.Query += resourceUri.Query.Contains('?', StringComparison.Ordinal)
                 ? "&foo=v1&foo=v2"
                 : "?foo=v1&foo=v2";
             var parameters = _signer.AppendAuthorizationParameters(HttpMethod.Get, resourceUri.Uri,
@@ -151,13 +147,13 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                         handlerOptions.NonceProvider = () => nonce;
                     }
                 })
-                .ConfigurePrimaryHttpMessageHandler(_ => (HttpMessageHandler)_mockHttp ?? new HttpClientHandler())
+                .ConfigurePrimaryHttpMessageHandler(_ => _mockHttp ?? new HttpClientHandler() as HttpMessageHandler)
                 .Services.BuildServiceProvider();
             var client = services.GetRequiredService<OAuthHttpClient>();
             var options = services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>();
             var resourceUri = new UriBuilder(_configuration["Request:Uri"]);
             var queryString = QueryHelpers.ParseQuery(resourceUri.Uri.Query);
-            var body = _configuration.GetSection("Request:Body").Get<IDictionary<string,string>>();
+            var body = _configuration.GetSection("Request:Body").Get<IDictionary<string, string>>();
             var formData = new Dictionary<string, StringValues>();
             foreach (var (key, value) in body)
             {
@@ -179,7 +175,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             {
                 if (!queryString.ContainsKey(parameter.Key))
                 {
-                    values.AddRange(parameter.Value.Select(value=> new KeyValuePair<string, string>(parameter.Key, value)));
+                    values.AddRange(parameter.Value.Select(value => new KeyValuePair<string, string>(parameter.Key, value)));
                 }
             }
 
@@ -197,10 +193,10 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             _mockHttp?.VerifyNoOutstandingRequest();
         }
 
-        private string generateNonce()
+        private static string generateNonce()
         {
             var bytes = new byte[16];
-            _rngCrypto.GetNonZeroBytes(bytes);
+            _randomNumberGenerator.GetNonZeroBytes(bytes);
             return Convert.ToBase64String(bytes);
         }
     }

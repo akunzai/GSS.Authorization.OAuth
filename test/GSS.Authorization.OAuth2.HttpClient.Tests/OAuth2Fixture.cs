@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,7 +16,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
 
         public IConfiguration Configuration { get; }
 
-        public IServiceProvider BuildOAuth2HttpClient(HttpMessageHandler handler)
+        public IServiceProvider BuildOAuth2HttpClient(HttpMessageHandler? handler)
         {
             handler ??= new HttpClientHandler();
             var services = new ServiceCollection();

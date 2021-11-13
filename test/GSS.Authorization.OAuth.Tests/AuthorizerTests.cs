@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -14,7 +10,7 @@ namespace GSS.Authorization.OAuth.Tests
     // see https://tools.ietf.org/html/rfc5849#section-1.2
     public class AuthorizerTests
     {
-        private readonly AuthorizerOptions _options = new AuthorizerOptions
+        private readonly AuthorizerOptions _options = new()
         {
             ClientCredentials = new OAuthCredential("dpf43f3p2l4k3l03", "kd94hf93k423kf44"),
             TemporaryCredentialRequestUri = new Uri("https://photos.example.net/initiate"),
@@ -25,7 +21,7 @@ namespace GSS.Authorization.OAuth.Tests
             ProvideVersion = false
         };
 
-        private readonly MockHttpMessageHandler _mockHttp = new MockHttpMessageHandler();
+        private readonly MockHttpMessageHandler _mockHttp = new();
         private readonly IRequestSigner _signer = new HmacSha1RequestSigner();
 
         [Fact]
@@ -67,7 +63,7 @@ namespace GSS.Authorization.OAuth.Tests
         public async Task GetVerificationCodeAsync()
         {
             // Arrange
-            var expected = "hfdp7dh39dks9884";
+            const string expected = "hfdp7dh39dks9884";
             var authorizeHtml = $@"<form action='{_options.ResourceOwnerAuthorizeUri}' method='post'>
 <input type='text' name='uid'>
 <input type='password' name='pwd'>
@@ -95,7 +91,7 @@ namespace GSS.Authorization.OAuth.Tests
         {
             // Arrange
             var expected = new OAuthCredential("nnch734d00sl2jdk", "pfkkdhi9sl3r4s00");
-            var verificationCode = "hfdp7dh39dks9884";
+            const string verificationCode = "hfdp7dh39dks9884";
             _options.NonceProvider = () => "walatlh";
             _options.TimestampProvider = () => "137131201";
             var temporaryCredential = new OAuthCredential("hh5s93j4hdidpola", "hdhd0244k9j7ao03");
@@ -133,7 +129,7 @@ namespace GSS.Authorization.OAuth.Tests
             // Arrange
             var expected = new OAuthCredential("nnch734d00sl2jdk", "pfkkdhi9sl3r4s00");
             var temporaryCredentials = new OAuthCredential("hh5s93j4hdidpola", "hdhd0244k9j7ao03");
-            var verificationCode = "hfdp7dh39dks9884";
+            const string verificationCode = "hfdp7dh39dks9884";
             _options.NonceProvider = () => "walatlh";
             _options.TimestampProvider = () => "137131201";
             _mockHttp.When(HttpMethod.Post, _options.TemporaryCredentialRequestUri.ToString())

@@ -1,7 +1,3 @@
-using System;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
 namespace GSS.Authorization.OAuth.Tests
@@ -13,7 +9,7 @@ namespace GSS.Authorization.OAuth.Tests
         {
         }
 
-        public string VerificationCode { get; set; }
+        public string VerificationCode { get; set; } = default!;
 
         public override Task<string> GetVerificationCodeAsync(Uri authorizeUri,
             CancellationToken cancellationToken = default)

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 using Xunit;
@@ -29,7 +26,7 @@ namespace GSS.Authorization.OAuth.Tests
                 [OAuthDefaults.OAuthNonce] = "7d8f3e4a",
                 ["c2"] = ""
             };
-            var expected =
+            const string expected =
                 "POST&http%3A%2F%2Fexample.com%2Frequest&a2%3Dr%2520b%26a3%3D2%2520q%26a3%3Da%26b5%3D%253D%25253D%26c%2540%3D%26c2%3D%26oauth_consumer_key%3D9djdj82h48djs9d2%26oauth_nonce%3D7d8f3e4a%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D137131201%26oauth_token%3Dkkk9d7dh3k39sjv7";
 
             // Act
@@ -44,7 +41,7 @@ namespace GSS.Authorization.OAuth.Tests
         public void GetSignatureForTemporaryCredentials()
         {
             // Arrange
-            var expected = "74KNZJeDHnMBp0EMJ9ZHt/XKycU=";
+            const string expected = "74KNZJeDHnMBp0EMJ9ZHt/XKycU=";
             var clientCredentials = new OAuthCredential("dpf43f3p2l4k3l03", "kd94hf93k423kf44");
             var uri = new Uri("https://photos.example.net/initiate");
             var parameters = new Dictionary<string, StringValues>
@@ -70,7 +67,7 @@ namespace GSS.Authorization.OAuth.Tests
         public void GetSignatureForTokenCredentials()
         {
             // Arrange
-            var expected = "gKgrFCywp7rO0OXSjdot/IHF7IU=";
+            const string expected = "gKgrFCywp7rO0OXSjdot/IHF7IU=";
             var clientCredentials = new OAuthCredential("dpf43f3p2l4k3l03", "kd94hf93k423kf44");
             var temporaryCredentials = new OAuthCredential("hh5s93j4hdidpola", "hdhd0244k9j7ao03");
             var uri = new Uri("https://photos.example.net/token");
@@ -98,7 +95,7 @@ namespace GSS.Authorization.OAuth.Tests
         public void GetSignatureForResource()
         {
             // Arrange
-            var expected = "MdpQcU8iPSUjWoN/UDMsK2sui9I=";
+            const string expected = "MdpQcU8iPSUjWoN/UDMsK2sui9I=";
             var clientCredentials = new OAuthCredential("dpf43f3p2l4k3l03", "kd94hf93k423kf44");
             var tokenCredentials = new OAuthCredential("nnch734d00sl2jdk", "pfkkdhi9sl3r4s00");
             var uri = new Uri("http://photos.example.net/photos?file=vacation.jpg&size=original");
