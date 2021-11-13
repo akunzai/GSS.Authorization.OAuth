@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.3.1 (2021-11-14)
+
+- Floating latest dependencies for .NET 6
+- [RNGCryptoServiceProvider is obsolete since .NET 6](https://github.com/dotnet/runtime/issues/40169)
+- Bump System.ComponentModel.Annotations from 4.5.0 to 4.7.0
+
 ## 2.3.0 (2021-06-11)
 
 - Floating latest dependencies for .NET Core 3.1 and .NET 5
