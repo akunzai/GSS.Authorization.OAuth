@@ -1,5 +1,3 @@
-using System;
-using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
@@ -17,7 +15,9 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var collection = new ServiceCollection();
 
             // Act & Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
             Assert.Throws<ArgumentNullException>(() => collection.AddOAuthHttpClient<OAuthHttpClient>(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
         }
 
         [Fact]
@@ -53,10 +53,9 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
-            {
-                options.ClientCredentials = new OAuthCredential("foo", null);
-            }).Services.BuildServiceProvider();
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+            var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, options) => options.ClientCredentials = new OAuthCredential("foo", null)).Services.BuildServiceProvider();
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
             // Act
             var ex = Assert.Throws<ArgumentNullException>(() => services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>().Value);
@@ -73,7 +72,9 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
             {
                 options.ClientCredentials = new OAuthCredential("foo", "bar");
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                 options.TokenCredentials = new OAuthCredential(null, "bar");
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
             }).Services.BuildServiceProvider();
 
             // Act
@@ -91,7 +92,9 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
             {
                 options.ClientCredentials = new OAuthCredential("foo", "bar");
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                 options.TokenCredentials = new OAuthCredential("foo", null);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
             }).Services.BuildServiceProvider();
 
             // Act
@@ -136,10 +139,10 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             // Assert
             Assert.NotNull(client);
         }
-        
+
         [Fact]
         public void AddOAuthHttpClient_WithGenericConfigurePrimaryHttpMessageHandler_ShouldAddInHttpMessageHandlerBuilderActions()
-        {   
+        {
             // Arrange
             var mockHttp = new MockHttpMessageHandler();
             var collection = new ServiceCollection();
@@ -151,10 +154,10 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                     options.TokenCredentials = new OAuthCredential("foo", "bar");
                 }).ConfigurePrimaryHttpMessageHandler<MockHttpMessageHandler>();
             var services = builder.Services.BuildServiceProvider();
-            
+
             // Act
             var optionsMonitor = services.GetRequiredService<IOptionsMonitor<HttpClientFactoryOptions>>();
-            
+
             // Assert
             var httpClientFactoryOptions = optionsMonitor.Get(builder.Name);
             Assert.Contains(httpClientFactoryOptions.HttpMessageHandlerBuilderActions, x => x.Target?.ToString()?.Contains("MockHttpMessageHandler") == true);
@@ -212,7 +215,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
 
         private class DemoOptions : OAuthHttpHandlerOptions
         {
-            public Uri BaseAddress { get; set; }
+            public Uri BaseAddress { get; set; } = default!;
         }
 
         [Fact]

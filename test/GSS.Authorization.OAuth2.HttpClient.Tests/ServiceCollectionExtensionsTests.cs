@@ -1,8 +1,5 @@
-using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
@@ -20,7 +17,9 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             var collection = new ServiceCollection();
 
             // Act & Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
             Assert.Throws<ArgumentNullException>(() => collection.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
         }
 
         [Fact]
@@ -105,10 +104,10 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             // Assert
             Assert.NotNull(authorizerOptions);
         }
-        
+
         [Fact]
         public void AddOAuth2HttpClient_WithGenericConfigurePrimaryHttpMessageHandler_ShouldAddInHttpMessageHandlerBuilderActions()
-        {   
+        {
             // Arrange
             var mockHttp = new MockHttpMessageHandler();
             var collection = new ServiceCollection();
@@ -121,10 +120,10 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
                     options.ClientSecret = "bar";
                 }).ConfigurePrimaryHttpMessageHandler<MockHttpMessageHandler>();
             var services = builder.Services.BuildServiceProvider();
-            
+
             // Act
             var optionsMonitor = services.GetRequiredService<IOptionsMonitor<HttpClientFactoryOptions>>();
-            
+
             // Assert
             var httpClientFactoryOptions = optionsMonitor.Get(builder.Name);
             Assert.Contains(httpClientFactoryOptions.HttpMessageHandlerBuilderActions, x => x.Target?.ToString()?.Contains("MockHttpMessageHandler") == true);

@@ -1,7 +1,4 @@
-using System;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,10 +11,10 @@ namespace GSS.Authorization.OAuth2.Tests
     public class ResourceOwnerCredentialsAuthorizerTests : IClassFixture<AuthorizerFixture>
     {
         private readonly IAuthorizer _authorizer;
-        private readonly MockHttpMessageHandler _mockHttp;
+        private readonly MockHttpMessageHandler? _mockHttp;
         private readonly AuthorizerOptions _options;
         private HttpStatusCode _errorStatusCode;
-        private string _errorMessage;
+        private string? _errorMessage;
 
         public ResourceOwnerCredentialsAuthorizerTests(AuthorizerFixture fixture)
         {
@@ -42,8 +39,8 @@ namespace GSS.Authorization.OAuth2.Tests
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
-                .WithFormData(AuthorizerDefaults.Username, _options.Credentials.UserName)
-                .WithFormData(AuthorizerDefaults.Password, _options.Credentials.Password)
+                .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
+                .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
                 .Respond("application/json", JsonSerializer.Serialize(new AccessToken
                 {
                     Token = Guid.NewGuid().ToString(),
@@ -66,8 +63,8 @@ namespace GSS.Authorization.OAuth2.Tests
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
-                .WithFormData(AuthorizerDefaults.Username, _options.Credentials.UserName)
-                .WithFormData(AuthorizerDefaults.Password, _options.Credentials.Password)
+                .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
+                .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
                 .Respond("application/json", JsonSerializer.Serialize(new AccessToken
                 {
                     Token = Guid.NewGuid().ToString(),
@@ -92,8 +89,8 @@ namespace GSS.Authorization.OAuth2.Tests
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
-                .WithFormData(AuthorizerDefaults.Username, _options.Credentials.UserName)
-                .WithFormData(AuthorizerDefaults.Password, _options.Credentials.Password)
+                .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
+                .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
                 .Respond(HttpStatusCode.InternalServerError);
 
             // Act
@@ -115,8 +112,8 @@ namespace GSS.Authorization.OAuth2.Tests
                 .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
                 .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
-                .WithFormData(AuthorizerDefaults.Username, _options.Credentials.UserName)
-                .WithFormData(AuthorizerDefaults.Password, _options.Credentials.Password)
+                .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
+                .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
                 .Respond(HttpStatusCode.InternalServerError, "application/json", expectedErrorMessage);
 
             // Act

@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
-using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,7 +16,7 @@ namespace GSS.Authorization.OAuth2.Tests
 
         public IConfiguration Configuration { get; }
 
-        public IServiceProvider BuildAuthorizer<TAuthorizer>(HttpMessageHandler handler, Action<HttpStatusCode, string> errorHandler)
+        public IServiceProvider BuildAuthorizer<TAuthorizer>(HttpMessageHandler? handler, Action<HttpStatusCode, string>? errorHandler)
             where TAuthorizer : class
         {
             handler ??= new HttpClientHandler();

@@ -11,7 +11,7 @@ namespace GSS.Authorization.OAuth2
 {
     public class OAuth2HttpHandler : DelegatingHandler
     {
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _semaphore = new(1, 1);
         private readonly IAuthorizer _authorizer;
         private readonly IMemoryCache _memoryCache;
         private readonly string _cacheKey;

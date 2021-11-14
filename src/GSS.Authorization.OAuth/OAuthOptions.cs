@@ -7,7 +7,7 @@ namespace GSS.Authorization.OAuth
 {
     public class OAuthOptions
     {
-        private static readonly RNGCryptoServiceProvider _rngCrypto = new RNGCryptoServiceProvider();
+        private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 
         [Required]
         public OAuthCredential ClientCredentials { get; set; }
@@ -16,7 +16,7 @@ namespace GSS.Authorization.OAuth
         public Func<string> NonceProvider { get; set; } = () =>
         {
             var bytes = new byte[16];
-            _rngCrypto.GetNonZeroBytes(bytes);
+            _randomNumberGenerator.GetNonZeroBytes(bytes);
             return Convert.ToBase64String(bytes);
         };
 
