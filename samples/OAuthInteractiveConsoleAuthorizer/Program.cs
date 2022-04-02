@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Net.Http.Headers;
 using GSS.Authorization.OAuth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,11 @@ var host = Host.CreateDefaultBuilder()
         .PostConfigure(options => Validator.ValidateObject(options, new ValidationContext(options), true));
     services.AddSingleton<IRequestSigner, HmacSha1RequestSigner>();
     services.AddHttpClient<InteractiveConsoleAuthorizer>()
-        .ConfigureHttpClient(client => client.BaseAddress = context.Configuration.GetValue<Uri>("OAuth:BaseAddress"));
+        .ConfigureHttpClient(client =>
+        {
+            client.BaseAddress = context.Configuration.GetValue<Uri>("OAuth:BaseAddress");
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("OAuthInteractiveConsoleAuthorizer", "1.0"));
+        });
     services.AddTransient<IAuthorizer>(resolver => resolver.GetRequiredService<InteractiveConsoleAuthorizer>());
 }).Build();
 

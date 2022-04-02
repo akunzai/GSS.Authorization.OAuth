@@ -20,28 +20,33 @@ static void ConfigureAuthorizerOptions(IServiceProvider resolver, AuthorizerOpti
     options.OnError = (code, message) => Console.Error.Write($"ERROR: [${code}]: {message}");
 }
 
-var host = Host.CreateDefaultBuilder(args)
-.ConfigureServices((hostContext, services) =>
+static void ConfigureHttpClient(HttpClient client)
 {
-    var clientBuilder =
-        hostContext.Configuration.GetValue("OAuth2:GrantFlow", "ClientCredentials")
-            .Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase)
-            ? services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(
-                ConfigureAuthorizerOptions)
-            : services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>(
-                ConfigureAuthorizerOptions);
-    clientBuilder.ConfigureHttpClient(client => client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json")));
-}).Build();
+    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("OAuth2HttpClientSample", "1.0"));
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+}
+
+var host = Host.CreateDefaultBuilder(args)
+    .ConfigureServices((hostContext, services) =>
+    {
+        var clientBuilder =
+            hostContext.Configuration.GetValue("OAuth2:GrantFlow", "ClientCredentials")
+                .Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase)
+                ? services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(
+                    ConfigureAuthorizerOptions, builder => builder.ConfigureHttpClient(ConfigureHttpClient))
+                : services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>(
+                    ConfigureAuthorizerOptions, builder => builder.ConfigureHttpClient(ConfigureHttpClient));
+        clientBuilder.ConfigureHttpClient(ConfigureHttpClient);
+    }).Build();
 var configuration = host.Services.GetRequiredService<IConfiguration>();
 
 Console.WriteLine("Creating a client...");
 var oauth2Client = host.Services.GetRequiredService<OAuth2HttpClient>();
 
 Console.WriteLine("Sending a request...");
-var response = await oauth2Client.HttpClient.GetAsync(configuration.GetValue<Uri>("OAuth2:ResourceEndpoint")).ConfigureAwait(false);
+var response = await oauth2Client.HttpClient.GetAsync(configuration.GetValue<Uri>("OAuth2:ResourceEndpoint"))
+    .ConfigureAwait(false);
 
 Console.WriteLine("Response data:");
 var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 Console.WriteLine(data);
-
-
