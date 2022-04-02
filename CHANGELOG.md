@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.4.0 (2022-04-02)
+
+- [Prefer to send the client credentials in Authorization header](https://datatracker.ietf.org/doc/html/rfc6749#section-2.3.1)
+
 ## 2.3.1 (2021-11-14)
 
 - Floating latest dependencies for .NET 6
