@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ namespace GSS.Authorization.OAuth2.Tests
         private readonly AuthorizerOptions _options;
         private HttpStatusCode _errorStatusCode;
         private string? _errorMessage;
+        private readonly string _basicAuthHeaderValue;
 
         public ResourceOwnerCredentialsAuthorizerTests(AuthorizerFixture fixture)
         {
@@ -29,6 +31,8 @@ namespace GSS.Authorization.OAuth2.Tests
             });
             _authorizer = services.GetRequiredService<ResourceOwnerCredentialsAuthorizer>();
             _options = services.GetRequiredService<IOptions<AuthorizerOptions>>().Value;
+            _basicAuthHeaderValue =
+                $"Basic {Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_options.ClientId}:{_options.ClientSecret}"))}";
         }
 
         [Fact]
@@ -36,8 +40,7 @@ namespace GSS.Authorization.OAuth2.Tests
         {
             // Arrange
             _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-                .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
-                .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
+                .WithHeaders("Authorization", _basicAuthHeaderValue)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
                 .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
                 .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
@@ -60,8 +63,7 @@ namespace GSS.Authorization.OAuth2.Tests
         {
             // Arrange
             _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-                .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
-                .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
+                .WithHeaders("Authorization", _basicAuthHeaderValue)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
                 .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
                 .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
@@ -86,8 +88,7 @@ namespace GSS.Authorization.OAuth2.Tests
 
             // Arrange
             _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-                .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
-                .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
+                .WithHeaders("Authorization", _basicAuthHeaderValue)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
                 .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
                 .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
@@ -97,7 +98,7 @@ namespace GSS.Authorization.OAuth2.Tests
             var accessToken = await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
 
             // Assert
-            Assert.Null(accessToken?.Token);
+            Assert.Null(accessToken.Token);
             _mockHttp.VerifyNoOutstandingExpectation();
         }
 
@@ -109,8 +110,7 @@ namespace GSS.Authorization.OAuth2.Tests
             // Arrange
             var expectedErrorMessage = Guid.NewGuid().ToString();
             _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-                .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
-                .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
+                .WithHeaders("Authorization", _basicAuthHeaderValue)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
                 .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
                 .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
