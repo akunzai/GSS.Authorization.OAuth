@@ -40,6 +40,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             options.AccessTokenEndpoint = Configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
             options.ClientId = Configuration["OAuth2:ClientId"];
             options.ClientSecret = Configuration["OAuth2:ClientSecret"];
+            options.SendClientCredentialsInRequestBody = true;
             options.Credentials = new NetworkCredential(
                 Configuration["OAuth2:Credentials:UserName"],
                 Configuration["OAuth2:Credentials:Password"]);

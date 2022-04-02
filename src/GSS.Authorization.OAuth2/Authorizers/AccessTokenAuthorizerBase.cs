@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,14 +37,15 @@ namespace GSS.Authorization.OAuth2
 
         public override async Task<AccessToken> GetAccessTokenAsync(CancellationToken cancellationToken = default)
         {
-            var formData = new Dictionary<string, string>
-            {
-                [AuthorizerDefaults.ClientId] = Options.ClientId,
-                [AuthorizerDefaults.ClientSecret] = Options.ClientSecret
-            };
+            var formData = new Dictionary<string, string>();
             if (Options.Scopes != null)
             {
                 formData.Add(AuthorizerDefaults.Scope, string.Join(AuthorizerDefaults.ScopeSeparator, Options.Scopes));
+            }
+            if (Options.SendClientCredentialsInRequestBody)
+            {
+                formData.Add(AuthorizerDefaults.ClientId, Options.ClientId);
+                formData.Add(AuthorizerDefaults.ClientSecret, Options.ClientSecret);
             }
             PrepareFormData(formData);
 
@@ -50,6 +53,11 @@ namespace GSS.Authorization.OAuth2
             {
                 Content = new FormUrlEncodedContent(formData)
             };
+            if (!Options.SendClientCredentialsInRequestBody)
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue(AuthorizerDefaults.Basic,
+                    Convert.ToBase64String(Encoding.ASCII.GetBytes($"{Options.ClientId}:{Options.ClientSecret}")));
+            }
             var response = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
             if (response.IsSuccessStatusCode)

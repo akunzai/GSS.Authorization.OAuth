@@ -11,6 +11,8 @@ static void ConfigureAuthorizerOptions(IServiceProvider resolver, AuthorizerOpti
     options.AccessTokenEndpoint = configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
     options.ClientId = configuration["OAuth2:ClientId"];
     options.ClientSecret = configuration["OAuth2:ClientSecret"];
+    options.SendClientCredentialsInRequestBody =
+        configuration.GetValue("OAuth2:SendClientCredentialsInRequestBody", false);
     options.Credentials = new NetworkCredential(
         configuration["OAuth2:Credentials:UserName"],
         configuration["OAuth2:Credentials:Password"]);

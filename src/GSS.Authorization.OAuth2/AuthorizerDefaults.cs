@@ -2,6 +2,7 @@ namespace GSS.Authorization.OAuth2
 {
     public static class AuthorizerDefaults
     {
+        public const string Basic = "Basic";
         public const string Bearer = "Bearer";
 
         public const string ClientId = "client_id";
