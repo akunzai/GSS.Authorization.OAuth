@@ -30,17 +30,15 @@ namespace GSS.Authorization.OAuth
                 throw new ArgumentNullException(nameof(request));
             var tokenCredentials = await _options.TokenCredentialProvider(request).ConfigureAwait(false);
             var queryString = QueryHelpers.ParseQuery(request.RequestUri?.Query);
-            if (_options.SignedAsBody && request.Content != null && string.Equals(request.Content.Headers?.ContentType?.MediaType,
-                ApplicationFormUrlEncoded, StringComparison.OrdinalIgnoreCase))
+            if (_options.SignedAsBody && request.Content != null && string.Equals(
+                    request.Content.Headers?.ContentType?.MediaType,
+                    ApplicationFormUrlEncoded, StringComparison.OrdinalIgnoreCase))
             {
                 var urlEncoded = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var formData = QueryHelpers.ParseQuery(urlEncoded);
-                foreach (var query in queryString)
+                foreach (var query in queryString.Where(query => !formData.ContainsKey(query.Key)))
                 {
-                    if (!formData.ContainsKey(query.Key))
-                    {
-                        formData.Add(query.Key, query.Value);
-                    }
+                    formData.Add(query.Key, query.Value);
                 }
 
                 var parameters = _signer.AppendAuthorizationParameters(request.Method, request.RequestUri!, _options,
@@ -62,18 +60,12 @@ namespace GSS.Authorization.OAuth
             {
                 var parameters = _signer.AppendAuthorizationParameters(request.Method, request.RequestUri!, _options,
                     queryString, tokenCredentials);
-                var values = new List<string>();
-                foreach (var parameter in parameters)
-                {
-                    foreach (var value in parameter.Value)
-                    {
-                        values.Add($"{Uri.EscapeDataString(parameter.Key)}={Uri.EscapeDataString(value)}");
-                    }
-                }
-
+                var values = (from parameter in parameters
+                    from value in parameter.Value
+                    select $"{Uri.EscapeDataString(parameter.Key)}={Uri.EscapeDataString(value)}").ToList();
                 request.RequestUri = new UriBuilder(request.RequestUri!) { Query = "?" + string.Join("&", values) }.Uri;
             }
-            else
+            else if (request.Headers.Authorization == null)
             {
                 request.Headers.Authorization = _signer.GetAuthorizationHeader(
                     request.Method,

@@ -28,16 +28,19 @@ namespace GSS.Authorization.OAuth2
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
-            if (request.Headers.Authorization == null)
-            {
-                TrySetAuthorizationHeaderToRequest(await GetAccessTokenAsync(cancellationToken).ConfigureAwait(false), request);
-            }
+            if (request.Headers.Authorization != null)
+                return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+            TrySetAuthorizationHeaderToRequest(await GetAccessTokenAsync(cancellationToken).ConfigureAwait(false),
+                request);
             var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            // https://tools.ietf.org/html/rfc6750#section-3
-            var authenticateError = response.Headers.WwwAuthenticate.FirstOrDefault()?.Parameter;
-            if (string.IsNullOrWhiteSpace(authenticateError) && response.StatusCode != HttpStatusCode.Unauthorized)
+            // https://tools.ietf.org/html/rfc6749#section-5.2
+            var challenges = response.Headers.WwwAuthenticate;
+            if (response.StatusCode != HttpStatusCode.Unauthorized ||
+                challenges.Any() && !challenges.Any(c => c.Scheme.Equals(AuthorizerDefaults.Bearer)))
                 return response;
-            TrySetAuthorizationHeaderToRequest(await GetAccessTokenAsync(cancellationToken, forceRenew: true).ConfigureAwait(false), request);
+            TrySetAuthorizationHeaderToRequest(
+                await GetAccessTokenAsync(cancellationToken, forceRenew: true).ConfigureAwait(false), request);
             return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
 
@@ -61,6 +64,7 @@ namespace GSS.Authorization.OAuth2
                 {
                     _memoryCache.Set(_cacheKey, accessToken);
                 }
+
                 return accessToken;
             }
             finally
@@ -71,11 +75,9 @@ namespace GSS.Authorization.OAuth2
 
         private static void TrySetAuthorizationHeaderToRequest(AccessToken accessToken, HttpRequestMessage request)
         {
-            if (!string.IsNullOrWhiteSpace(accessToken.Token))
-            {
-                request.Headers.Authorization =
-                    new AuthenticationHeaderValue(AuthorizerDefaults.Bearer, accessToken.Token);
-            }
+            if (string.IsNullOrWhiteSpace(accessToken.Token)) return;
+            request.Headers.Authorization =
+                new AuthenticationHeaderValue(AuthorizerDefaults.Bearer, accessToken.Token);
         }
     }
 }

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,19 +56,19 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         }
 
         [SkippableFact]
-        public async Task HttpClient_AccessProtectedResourceWithPredefinedAuthorizationHeader_ShouldSkipAuthorized()
+        public async Task HttpClient_AccessProtectedResourceWithPredefinedAuthorizationHeader_ShouldPassThrough()
         {
             Skip.If(_mockHttp == null);
 
             // Arrange
-            const string invalidToken = "TEST";
+            var basicAuth = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_options.ClientId}:{_options.ClientSecret}"));
             _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
-                .WithHeaders("Authorization", $"{AuthorizerDefaults.Bearer} {invalidToken}")
+                .WithHeaders("Authorization", $"{AuthorizerDefaults.Basic} {basicAuth}")
                 .Respond(HttpStatusCode.Forbidden);
 
             // Act
             using var request = new HttpRequestMessage(HttpMethod.Get, _resourceEndpoint);
-            request.Headers.Authorization = new AuthenticationHeaderValue(AuthorizerDefaults.Bearer, invalidToken);
+            request.Headers.Authorization = new AuthenticationHeaderValue(AuthorizerDefaults.Basic, basicAuth);
             var response = await _client.HttpClient.SendAsync(request).ConfigureAwait(false);
 
             // Assert
@@ -123,9 +124,9 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             _mockHttp.VerifyNoOutstandingExpectation();
             _mockHttp.VerifyNoOutstandingRequest();
         }
-
+        
         [SkippableFact]
-        public async Task HttpClient_AccessProtectedResourceWithWwwAuthenticateError_ShouldAuthorized()
+        public async Task HttpClient_AccessProtectedResourceWithUnmatchedWwwAuthenticateScheme_ShouldPassThrough()
         {
             Skip.If(_mockHttp == null);
 
@@ -133,7 +134,31 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
                 .Respond(_ =>
                 {
-                    var res = new HttpResponseMessage(HttpStatusCode.BadRequest);
+                    var res = new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                    res.Headers.TryAddWithoutValidation("WWW-Authenticate",
+                        "Basic realm=\"authentication required\"");
+                    return res;
+                });
+
+            // Act
+            var response = await _client.HttpClient.GetAsync(_resourceEndpoint).ConfigureAwait(false);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            _mockHttp.VerifyNoOutstandingExpectation();
+            _mockHttp.VerifyNoOutstandingRequest();
+        }
+
+        [SkippableFact]
+        public async Task HttpClient_AccessProtectedResourceWithMatchedWwwAuthenticateScheme_ShouldAuthorized()
+        {
+            Skip.If(_mockHttp == null);
+
+            // Arrange
+            _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
+                .Respond(_ =>
+                {
+                    var res = new HttpResponseMessage(HttpStatusCode.Unauthorized);
                     res.Headers.TryAddWithoutValidation("WWW-Authenticate",
                         @"Bearer realm=""oauth2-resource"", error=""unauthorized"", error_description=""Full authentication is required to access this resource""");
                     return res;

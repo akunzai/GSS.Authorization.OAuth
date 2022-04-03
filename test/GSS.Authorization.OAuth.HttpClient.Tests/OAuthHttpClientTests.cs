@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,19 +20,21 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         private readonly MockHttpMessageHandler? _mockHttp;
         private readonly IRequestSigner _signer = new HmacSha1RequestSigner();
         private readonly IConfiguration _configuration;
+        private readonly OAuthCredential _clientCredentials;
         private readonly OAuthCredential _tokenCredentials;
 
         public OAuthHttpClientTests(OAuthFixture fixture)
         {
             _configuration = fixture.Configuration;
+            _clientCredentials = new OAuthCredential(
+                _configuration["OAuth:ClientId"],
+                _configuration["OAuth:ClientSecret"]);
             _tokenCredentials = new OAuthCredential(
                 _configuration["OAuth:TokenId"],
                 _configuration["OAuth:TokenSecret"]);
-            if (_configuration.GetValue("HttpClient:Mock", true))
-            {
-                _mockHttp = new MockHttpMessageHandler();
-                _mockHttp.Fallback.Respond(HttpStatusCode.Unauthorized);
-            }
+            if (!_configuration.GetValue("HttpClient:Mock", true)) return;
+            _mockHttp = new MockHttpMessageHandler();
+            _mockHttp.Fallback.Respond(HttpStatusCode.Unauthorized);
         }
 
         [Fact]
@@ -40,18 +44,14 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var services = new ServiceCollection()
                 .AddOAuthHttpClient<OAuthHttpClient>((_, handlerOptions) =>
                 {
-                    handlerOptions.ClientCredentials = new OAuthCredential(
-                        _configuration["OAuth:ClientId"],
-                        _configuration["OAuth:ClientSecret"]);
+                    handlerOptions.ClientCredentials = _clientCredentials;
                     handlerOptions.TokenCredentials = _tokenCredentials;
-                    if (_mockHttp != null)
-                    {
-                        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-                            .ToString(CultureInfo.InvariantCulture);
-                        var nonce = generateNonce();
-                        handlerOptions.TimestampProvider = () => timestamp;
-                        handlerOptions.NonceProvider = () => nonce;
-                    }
+                    if (_mockHttp == null) return;
+                    var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                        .ToString(CultureInfo.InvariantCulture);
+                    var nonce = GenerateNonce();
+                    handlerOptions.TimestampProvider = () => timestamp;
+                    handlerOptions.NonceProvider = () => nonce;
                 })
                 .ConfigurePrimaryHttpMessageHandler(_ => _mockHttp ?? new HttpClientHandler() as HttpMessageHandler)
                 .Services.BuildServiceProvider();
@@ -72,6 +72,36 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             _mockHttp?.VerifyNoOutstandingExpectation();
             _mockHttp?.VerifyNoOutstandingRequest();
         }
+        
+        [Fact]
+        public async Task HttpClient_AccessProtectedResourceWithPredefinedAuthorizationHeader_ShouldPassThrough()
+        {
+            // Arrange
+            var services = new ServiceCollection()
+                .AddOAuthHttpClient<OAuthHttpClient>((_, handlerOptions) =>
+                {
+                    handlerOptions.ClientCredentials = _clientCredentials;
+                    handlerOptions.TokenCredentials = _tokenCredentials;
+                })
+                .ConfigurePrimaryHttpMessageHandler(_ => _mockHttp ?? new HttpClientHandler() as HttpMessageHandler)
+                .Services.BuildServiceProvider();
+            var client = services.GetRequiredService<OAuthHttpClient>();
+            var resourceUri = _configuration.GetValue<Uri>("Request:Uri");
+            var basicAuth = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_clientCredentials.Key}:{_clientCredentials.Secret}"));
+            _mockHttp?.Expect(HttpMethod.Get, resourceUri.AbsoluteUri)
+                .WithHeaders("Authorization", $"Basic {basicAuth}")
+                .Respond(HttpStatusCode.Forbidden);
+
+            // Act
+            using var request = new HttpRequestMessage(HttpMethod.Get, resourceUri);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", basicAuth);
+            var response = await client.HttpClient.SendAsync(request).ConfigureAwait(false);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            _mockHttp?.VerifyNoOutstandingExpectation();
+            _mockHttp?.VerifyNoOutstandingRequest();
+        }
 
         [Fact]
         public async Task HttpClient_AccessProtectedResourceWithQueryString_ShouldAuthorized()
@@ -80,19 +110,15 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var services = new ServiceCollection()
                 .AddOAuthHttpClient<OAuthHttpClient>((_, handlerOptions) =>
                 {
-                    handlerOptions.ClientCredentials = new OAuthCredential(
-                        _configuration["OAuth:ClientId"],
-                        _configuration["OAuth:ClientSecret"]);
+                    handlerOptions.ClientCredentials = _clientCredentials;
                     handlerOptions.TokenCredentials = _tokenCredentials;
                     handlerOptions.SignedAsQuery = true;
-                    if (_mockHttp != null)
-                    {
-                        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-                            .ToString(CultureInfo.InvariantCulture);
-                        var nonce = generateNonce();
-                        handlerOptions.TimestampProvider = () => timestamp;
-                        handlerOptions.NonceProvider = () => nonce;
-                    }
+                    if (_mockHttp == null) return;
+                    var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                        .ToString(CultureInfo.InvariantCulture);
+                    var nonce = GenerateNonce();
+                    handlerOptions.TimestampProvider = () => timestamp;
+                    handlerOptions.NonceProvider = () => nonce;
                 })
                 .ConfigurePrimaryHttpMessageHandler(_ => _mockHttp ?? new HttpClientHandler() as HttpMessageHandler)
                 .Services.BuildServiceProvider();
@@ -104,14 +130,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                 : "?foo=v1&foo=v2";
             var parameters = _signer.AppendAuthorizationParameters(HttpMethod.Get, resourceUri.Uri,
                 options.Value, QueryHelpers.ParseQuery(resourceUri.Uri.Query), _tokenCredentials);
-            var values = new List<string>();
-            foreach (var parameter in parameters)
-            {
-                foreach (var value in parameter.Value)
-                {
-                    values.Add($"{Uri.EscapeDataString(parameter.Key)}={Uri.EscapeDataString(value)}");
-                }
-            }
+            var values = (from parameter in parameters from value in parameter.Value select $"{Uri.EscapeDataString(parameter.Key)}={Uri.EscapeDataString(value)}").ToList();
 
             _mockHttp?.Expect(HttpMethod.Get, resourceUri.Uri.AbsoluteUri)
                 .WithQueryString("?" + string.Join("&", values))
@@ -133,19 +152,15 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var services = new ServiceCollection()
                 .AddOAuthHttpClient<OAuthHttpClient>((_, handlerOptions) =>
                 {
-                    handlerOptions.ClientCredentials = new OAuthCredential(
-                        _configuration["OAuth:ClientId"],
-                        _configuration["OAuth:ClientSecret"]);
+                    handlerOptions.ClientCredentials = _clientCredentials;
                     handlerOptions.TokenCredentials = _tokenCredentials;
                     handlerOptions.SignedAsBody = true;
-                    if (_mockHttp != null)
-                    {
-                        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-                            .ToString(CultureInfo.InvariantCulture);
-                        var nonce = generateNonce();
-                        handlerOptions.TimestampProvider = () => timestamp;
-                        handlerOptions.NonceProvider = () => nonce;
-                    }
+                    if (_mockHttp == null) return;
+                    var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                        .ToString(CultureInfo.InvariantCulture);
+                    var nonce = GenerateNonce();
+                    handlerOptions.TimestampProvider = () => timestamp;
+                    handlerOptions.NonceProvider = () => nonce;
                 })
                 .ConfigurePrimaryHttpMessageHandler(_ => _mockHttp ?? new HttpClientHandler() as HttpMessageHandler)
                 .Services.BuildServiceProvider();
@@ -193,7 +208,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             _mockHttp?.VerifyNoOutstandingRequest();
         }
 
-        private static string generateNonce()
+        private static string GenerateNonce()
         {
             var bytes = new byte[16];
             _randomNumberGenerator.GetNonZeroBytes(bytes);
