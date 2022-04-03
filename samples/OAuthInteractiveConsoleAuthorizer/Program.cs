@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net.Http.Headers;
+using System.Reflection;
 using GSS.Authorization.OAuth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +26,13 @@ var host = Host.CreateDefaultBuilder()
         .ConfigureHttpClient(client =>
         {
             client.BaseAddress = context.Configuration.GetValue<Uri>("OAuth:BaseAddress");
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("OAuthInteractiveConsoleAuthorizer", "1.0"));
+            var assembly = Assembly.GetEntryAssembly();
+            var productName = assembly?.GetCustomAttribute<AssemblyProductAttribute>()?.Product;
+            var productVersion = assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? assembly?.GetName().Version?.ToString();
+            if (!string.IsNullOrEmpty(productName) && !string.IsNullOrEmpty(productVersion))
+            {
+                client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));
+            }
         });
     services.AddTransient<IAuthorizer>(resolver => resolver.GetRequiredService<InteractiveConsoleAuthorizer>());
 }).Build();

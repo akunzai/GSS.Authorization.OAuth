@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Reflection;
 using GSS.Authorization.OAuth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,13 @@ var host = Host.CreateDefaultBuilder(args)
             options.SignedAsBody = hostContext.Configuration.GetValue("OAuth:SignedAsBody", false);
         }).ConfigureHttpClient(client =>
         {
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("OAuthHttpClientSample", "1.0"));
+            var assembly = Assembly.GetEntryAssembly();
+            var productName = assembly?.GetCustomAttribute<AssemblyProductAttribute>()?.Product;
+            var productVersion = assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? assembly?.GetName().Version?.ToString();
+            if (!string.IsNullOrEmpty(productName) && !string.IsNullOrEmpty(productVersion))
+            {
+                client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));
+            }
         });
     }).Build();
 

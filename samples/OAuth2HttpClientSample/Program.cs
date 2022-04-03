@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Reflection;
 using GSS.Authorization.OAuth2;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +23,14 @@ static void ConfigureAuthorizerOptions(IServiceProvider resolver, AuthorizerOpti
 
 static void ConfigureHttpClient(HttpClient client)
 {
-    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("OAuth2HttpClientSample", "1.0"));
+    var assembly = Assembly.GetEntryAssembly();
+    var productName = assembly?.GetCustomAttribute<AssemblyProductAttribute>()?.Product;
+    var productVersion = assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? assembly?.GetName().Version?.ToString();
+    if (!string.IsNullOrEmpty(productName) && !string.IsNullOrEmpty(productVersion))
+    {
+        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));
+    }
+
     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 }
 
