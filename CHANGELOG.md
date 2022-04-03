@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.4.1 (2022-04-03)
+
+- [Avoid to override the Authorization header](https://tools.ietf.org/html/rfc6749#section-5.2)
+
 ## 2.4.0 (2022-04-02)
 
 - [Prefer to send the client credentials in Authorization header](https://tools.ietf.org/html/rfc6749#section-2.3.1)
