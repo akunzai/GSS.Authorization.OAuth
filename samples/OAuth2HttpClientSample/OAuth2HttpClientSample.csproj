@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <OutputType>Exe</OutputType>
+    <Product>OAuth2.Demo</Product>
   </PropertyGroup>
 
   <ItemGroup>
