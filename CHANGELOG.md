@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.5.0 (2022-04-20)
+
+- [Use the ASP.NET Core shared framework](https://docs.microsoft.com/aspnet/core/fundamentals/target-aspnetcore#use-the-aspnet-core-shared-framework)
+
 ## 2.4.1 (2022-04-03)
 
 - [Avoid to override the Authorization header](https://tools.ietf.org/html/rfc6749#section-5.2)
