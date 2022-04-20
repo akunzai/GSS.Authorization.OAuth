@@ -20,8 +20,4 @@
     <ProjectReference Include="..\..\src\GSS.Authorization.OAuth2.HttpClient\GSS.Authorization.OAuth2.HttpClient.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
-  </ItemGroup>
-
 </Project>
