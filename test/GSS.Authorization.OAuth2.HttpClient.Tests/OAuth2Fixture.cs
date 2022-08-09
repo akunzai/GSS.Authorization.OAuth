@@ -22,20 +22,20 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             var services = new ServiceCollection();
             if (Configuration.GetValue("OAuth2:GrantFlow", "ResourceOwnerCredentials").Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase))
             {
-                services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(ConfigureAuthroizerOptions,
+                services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(ConfigureAuthorizerOptions,
                         authorizer => authorizer.ConfigurePrimaryHttpMessageHandler(_ => handler))
                     .ConfigurePrimaryHttpMessageHandler(_ => handler);
             }
             else
             {
-                services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>(ConfigureAuthroizerOptions,
+                services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>(ConfigureAuthorizerOptions,
                         authorizer => authorizer.ConfigurePrimaryHttpMessageHandler(_ => handler))
                     .ConfigurePrimaryHttpMessageHandler(_ => handler);
             }
             return services.BuildServiceProvider();
         }
 
-        private void ConfigureAuthroizerOptions(IServiceProvider resolver, AuthorizerOptions options)
+        private void ConfigureAuthorizerOptions(IServiceProvider resolver, AuthorizerOptions options)
         {
             options.AccessTokenEndpoint = Configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
             options.ClientId = Configuration["OAuth2:ClientId"];

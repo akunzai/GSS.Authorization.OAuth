@@ -16,7 +16,7 @@ namespace GSS.Authorization.OAuth.Tests
             TemporaryCredentialRequestUri = new Uri("https://photos.example.net/initiate"),
             ResourceOwnerAuthorizeUri = new Uri("https://photos.example.net/authorize"),
             TokenRequestUri = new Uri("https://photos.example.net/token"),
-            CallBack = new Uri("http://printer.example.com/ready"),
+            CallBack = new Uri("https://printer.example.com/ready"),
             Realm = "Photos",
             ProvideVersion = false
         };

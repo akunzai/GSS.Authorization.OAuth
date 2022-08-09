@@ -27,7 +27,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var collection = new ServiceCollection();
 
             // Act
-            var builder = collection.AddOAuthHttpClient<OAuthHttpClient>((_, __) => { });
+            var builder = collection.AddOAuthHttpClient<OAuthHttpClient>((_, _) => { });
 
             // Assert
             Assert.NotNull(builder);
@@ -39,7 +39,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, __) => { }).Services.BuildServiceProvider();
+            var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, _) => { }).Services.BuildServiceProvider();
 
             // Act
             var ex = Assert.Throws<ArgumentNullException>(() => services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>().Value);
@@ -222,7 +222,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         public void AddTypedOAuthHttpClient_WithCustomConfigureOptions_ShouldAddInServiceProvider()
         {
             // Arrange
-            var baseAddress = new Uri("http://example.com");
+            var baseAddress = new Uri("https://example.com");
             var clientCredentials = new OAuthCredential(Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString());
             var tokenCredentials = new OAuthCredential(Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString());
             var collection = new ServiceCollection();
@@ -248,7 +248,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         public void AddNamedOAuthHttpClient_WithCustomConfigureOptions_ShouldAddInServiceProvider()
         {
             // Arrange
-            var baseAddress = new Uri("http://example.com");
+            var baseAddress = new Uri("https://example.com");
             var clientCredentials = new OAuthCredential(Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString());
             var tokenCredentials = new OAuthCredential(Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString());
             var collection = new ServiceCollection();
