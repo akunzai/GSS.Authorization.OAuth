@@ -222,7 +222,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         public void AddTypedOAuthHttpClient_WithCustomConfigureOptions_ShouldAddInServiceProvider()
         {
             // Arrange
-            var baseAddress = new Uri("http://example.com");
+            var baseAddress = new Uri("https://example.com");
             var clientCredentials = new OAuthCredential(Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString());
             var tokenCredentials = new OAuthCredential(Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString());
             var collection = new ServiceCollection();
@@ -248,7 +248,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         public void AddNamedOAuthHttpClient_WithCustomConfigureOptions_ShouldAddInServiceProvider()
         {
             // Arrange
-            var baseAddress = new Uri("http://example.com");
+            var baseAddress = new Uri("https://example.com");
             var clientCredentials = new OAuthCredential(Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString());
             var tokenCredentials = new OAuthCredential(Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString());
             var collection = new ServiceCollection();
