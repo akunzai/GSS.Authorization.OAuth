@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.6.0 (2022-08-29)
+
+- [Supports sending access token in form-encoded body or query parameter](https://www.rfc-editor.org/rfc/rfc6750#section-2.2)
+
 ## 2.5.0 (2022-04-20)
 
 - [Use the ASP.NET Core shared framework](https://docs.microsoft.com/aspnet/core/fundamentals/target-aspnetcore#use-the-aspnet-core-shared-framework)

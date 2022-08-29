@@ -10,7 +10,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <Nullable>enable</Nullable>
-    <Version>2.5.0</Version>
+    <Version>2.6.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release' ">
