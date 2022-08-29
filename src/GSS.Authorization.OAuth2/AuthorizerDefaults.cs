@@ -2,6 +2,8 @@ namespace GSS.Authorization.OAuth2
 {
     public static class AuthorizerDefaults
     {
+        public const string AccessToken = "access_token";
+        
         public const string Basic = "Basic";
         public const string Bearer = "Bearer";
 

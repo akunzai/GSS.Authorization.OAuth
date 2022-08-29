@@ -20,6 +20,10 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
         {
             handler ??= new HttpClientHandler();
             var services = new ServiceCollection();
+            services.AddOptions<OAuth2HttpHandlerOptions>().Configure(options =>
+            {
+                options.SendAccessTokenInQuery = Configuration.GetValue("OAuth2:SendAccessTokenInQuery", false);
+            });
             if (Configuration.GetValue("OAuth2:GrantFlow", "ResourceOwnerCredentials").Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase))
             {
                 services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(ConfigureAuthorizerOptions,

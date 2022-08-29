@@ -3,6 +3,7 @@ using System.Linq;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 namespace GSS.Authorization.OAuth2
 {
@@ -39,6 +40,7 @@ namespace GSS.Authorization.OAuth2
                 .AddMemoryCache()
                 .AddHttpClient<TClient>()
                 .AddHttpMessageHandler(resolver => new OAuth2HttpHandler(
+                    resolver.GetRequiredService<IOptions<OAuth2HttpHandlerOptions>>(),
                     resolver.GetRequiredService<TAuthorizer>(),
                     resolver.GetRequiredService<IMemoryCache>()));
         }
@@ -73,6 +75,7 @@ namespace GSS.Authorization.OAuth2
                 .AddMemoryCache()
                 .AddHttpClient(name)
                 .AddHttpMessageHandler(resolver => new OAuth2HttpHandler(
+                    resolver.GetRequiredService<IOptions<OAuth2HttpHandlerOptions>>(),
                     resolver.GetRequiredService<TAuthorizer>(),
                     resolver.GetRequiredService<IMemoryCache>()));
         }

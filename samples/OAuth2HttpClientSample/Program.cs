@@ -37,6 +37,11 @@ static void ConfigureHttpClient(HttpClient client)
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
+        services.AddOptions<OAuth2HttpHandlerOptions>().Configure(options =>
+        {
+            options.SendAccessTokenInBody = hostContext.Configuration.GetValue("OAuth2:SendAccessTokenInBody", false);
+            options.SendAccessTokenInQuery = hostContext.Configuration.GetValue("OAuth2:SendAccessTokenInQuery", false);
+        });
         var clientBuilder =
             hostContext.Configuration.GetValue("OAuth2:GrantFlow", "ClientCredentials")
                 .Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase)
