@@ -3,6 +3,7 @@ using System.Linq;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 namespace GSS.Authorization.OAuth2
 {
@@ -39,6 +40,7 @@ namespace GSS.Authorization.OAuth2
                 .AddMemoryCache()
                 .AddHttpClient<TClient>()
                 .AddHttpMessageHandler(resolver => new OAuth2HttpHandler(
+                    resolver.GetRequiredService<IOptions<OAuth2HttpHandlerOptions>>(),
                     resolver.GetRequiredService<TAuthorizer>(),
                     resolver.GetRequiredService<IMemoryCache>()));
         }
@@ -47,7 +49,7 @@ namespace GSS.Authorization.OAuth2
         /// Add named HttpClient with <see cref="OAuth2HttpHandler"/> and related services
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
+        /// <param name="name">The logical name of the <see cref="System.Net.Http.HttpClient"/> to configure.</param>
         /// <typeparam name="TAuthorizer">The type of the authorizer.</typeparam>
         /// <param name="configureOptions">A delegate that is used to configure an <see cref="AuthorizerOptions"/>.</param>
         /// <param name="configureAuthorizer">A delegate that is used to configure an <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> for the <see cref="Authorizer"/>.</param>
@@ -73,6 +75,7 @@ namespace GSS.Authorization.OAuth2
                 .AddMemoryCache()
                 .AddHttpClient(name)
                 .AddHttpMessageHandler(resolver => new OAuth2HttpHandler(
+                    resolver.GetRequiredService<IOptions<OAuth2HttpHandlerOptions>>(),
                     resolver.GetRequiredService<TAuthorizer>(),
                     resolver.GetRequiredService<IMemoryCache>()));
         }
@@ -83,8 +86,9 @@ namespace GSS.Authorization.OAuth2
         /// <typeparam name="TAuthorizer">The type of the authorizer.</typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="configureOptions">A delegate that is used to configure an <see cref="AuthorizerOptions"/>.</param>
-        /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the <see cref="AuthorizerHttpClient"/>.</returns>
-        internal static void TryAddOAuth2Authorizer<TAuthorizer>(this IServiceCollection services,
+        /// <param name="configureAuthorizer">A delegate that is used to configure an <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> for the <see cref="Authorizer"/>.</param>
+        /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the <see cref="Authorizer"/>.</returns>
+        private static void TryAddOAuth2Authorizer<TAuthorizer>(this IServiceCollection services,
             Action<IServiceProvider, AuthorizerOptions> configureOptions,
             Action<IHttpClientBuilder>? configureAuthorizer = null)
             where TAuthorizer : Authorizer

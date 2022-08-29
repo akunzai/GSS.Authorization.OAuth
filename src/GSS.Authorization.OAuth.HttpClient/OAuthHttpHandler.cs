@@ -53,7 +53,7 @@ namespace GSS.Authorization.OAuth
                     }
                 }
 
-                // The form-encoded httpContent, see https://tools.ietf.org/html/rfc5849#section-3.5.2
+                // The form-encoded httpContent, see https://www.rfc-editor.org/rfc/rfc5849#section-3.5.2
                 request.Content = new FormUrlEncodedContent(values);
             }
             else if (_options.SignedAsQuery)

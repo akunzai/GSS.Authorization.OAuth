@@ -1,9 +1,11 @@
 using System.Net;
+using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -40,11 +42,11 @@ namespace GSS.Authorization.OAuth2.Tests
         {
             // Arrange
             _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-                .WithHeaders("Authorization", _basicAuthHeaderValue)
+                .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
                 .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
                 .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
-                .Respond("application/json", JsonSerializer.Serialize(new AccessToken
+                .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(new AccessToken
                 {
                     Token = Guid.NewGuid().ToString(),
                     ExpiresInSeconds = 10
@@ -63,11 +65,11 @@ namespace GSS.Authorization.OAuth2.Tests
         {
             // Arrange
             _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-                .WithHeaders("Authorization", _basicAuthHeaderValue)
+                .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
                 .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
                 .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
-                .Respond("application/json", JsonSerializer.Serialize(new AccessToken
+                .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(new AccessToken
                 {
                     Token = Guid.NewGuid().ToString(),
                     ExpiresInSeconds = 10
@@ -88,7 +90,7 @@ namespace GSS.Authorization.OAuth2.Tests
 
             // Arrange
             _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-                .WithHeaders("Authorization", _basicAuthHeaderValue)
+                .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
                 .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
                 .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
@@ -110,11 +112,11 @@ namespace GSS.Authorization.OAuth2.Tests
             // Arrange
             var expectedErrorMessage = Guid.NewGuid().ToString();
             _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-                .WithHeaders("Authorization", _basicAuthHeaderValue)
+                .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
                 .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
                 .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
-                .Respond(HttpStatusCode.InternalServerError, "application/json", expectedErrorMessage);
+                .Respond(HttpStatusCode.InternalServerError, MediaTypeNames.Application.Json, expectedErrorMessage);
 
             // Act
             await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);

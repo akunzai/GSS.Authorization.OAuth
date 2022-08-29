@@ -15,11 +15,11 @@ namespace GSS.Authorization.OAuth2
 
         [Required]
         public string ClientSecret { get; set; } = default!;
-        
+
         /*
          * send the client credentials in the request-body? (default: Authorization header)
          *
-         * see https://tools.ietf.org/html/rfc6749#section-2.3.1
+         * see https://www.rfc-editor.org/rfc/rfc6749#section-2.3.1
          */
         public bool SendClientCredentialsInRequestBody { get; set; }
 

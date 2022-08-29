@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Mime;
 using System.Reflection;
 using GSS.Authorization.OAuth2;
 using Microsoft.Extensions.Configuration;
@@ -17,7 +18,7 @@ static void ConfigureAuthorizerOptions(IServiceProvider resolver, AuthorizerOpti
     options.Credentials = new NetworkCredential(
         configuration["OAuth2:Credentials:UserName"],
         configuration["OAuth2:Credentials:Password"]);
-    options.Scopes = configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
+    options.Scopes = configuration["OAuth2:Scope"]?.Split(" ");
     options.OnError = (code, message) => Console.Error.Write($"ERROR: [${code}]: {message}");
 }
 
@@ -25,18 +26,24 @@ static void ConfigureHttpClient(HttpClient client)
 {
     var assembly = Assembly.GetEntryAssembly();
     var productName = assembly?.GetCustomAttribute<AssemblyProductAttribute>()?.Product;
-    var productVersion = assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? assembly?.GetName().Version?.ToString();
+    var productVersion = assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ??
+                         assembly?.GetName().Version?.ToString();
     if (!string.IsNullOrEmpty(productName) && !string.IsNullOrEmpty(productVersion))
     {
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));
     }
 
-    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
 }
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
+        services.AddOptions<OAuth2HttpHandlerOptions>().Configure(options =>
+        {
+            options.SendAccessTokenInBody = hostContext.Configuration.GetValue("OAuth2:SendAccessTokenInBody", false);
+            options.SendAccessTokenInQuery = hostContext.Configuration.GetValue("OAuth2:SendAccessTokenInQuery", false);
+        });
         var clientBuilder =
             hostContext.Configuration.GetValue("OAuth2:GrantFlow", "ClientCredentials")
                 .Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase)
