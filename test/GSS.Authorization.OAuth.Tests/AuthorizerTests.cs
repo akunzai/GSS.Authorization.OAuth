@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -41,7 +42,7 @@ namespace GSS.Authorization.OAuth.Tests
                         : _options.CallBack.AbsoluteUri
                 });
             _mockHttp.When(HttpMethod.Post, _options.TemporaryCredentialRequestUri.ToString())
-                .WithHeaders("Authorization", authorizationHeader.ToString())
+                .WithHeaders(HeaderNames.Authorization, authorizationHeader.ToString())
                 .Respond(new FormUrlEncodedContent(new Dictionary<string, string>
                 {
                     [OAuthDefaults.OAuthToken] = expected.Key,
@@ -102,7 +103,7 @@ namespace GSS.Authorization.OAuth.Tests
                     [OAuthDefaults.OAuthVerifier] = verificationCode
                 }, temporaryCredential);
             _mockHttp.When(HttpMethod.Post, _options.TokenRequestUri.ToString())
-                .WithHeaders("Authorization", authorizationHeader.ToString())
+                .WithHeaders(HeaderNames.Authorization, authorizationHeader.ToString())
                 .Respond(new FormUrlEncodedContent(new Dictionary<string, string>
                 {
                     [OAuthDefaults.OAuthToken] = expected.Key,
@@ -133,7 +134,7 @@ namespace GSS.Authorization.OAuth.Tests
             _options.NonceProvider = () => "walatlh";
             _options.TimestampProvider = () => "137131201";
             _mockHttp.When(HttpMethod.Post, _options.TemporaryCredentialRequestUri.ToString())
-                .WithHeaders("Authorization", _signer.GetAuthorizationHeader(HttpMethod.Post,
+                .WithHeaders(HeaderNames.Authorization, _signer.GetAuthorizationHeader(HttpMethod.Post,
                     _options.TemporaryCredentialRequestUri,
                     _options,
                     new Dictionary<string, StringValues>
@@ -155,7 +156,7 @@ namespace GSS.Authorization.OAuth.Tests
                     [OAuthDefaults.OAuthVerifier] = verificationCode
                 }, temporaryCredentials);
             _mockHttp.When(HttpMethod.Post, _options.TokenRequestUri.ToString())
-                .WithHeaders("Authorization", header.ToString())
+                .WithHeaders(HeaderNames.Authorization, header.ToString())
                 .Respond(new FormUrlEncodedContent(new Dictionary<string, string>
                 {
                     [OAuthDefaults.OAuthToken] = expected.Key,

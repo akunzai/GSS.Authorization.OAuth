@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -59,7 +60,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var options = services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>();
             var resourceUri = _configuration.GetValue<Uri>("Request:Uri");
             _mockHttp?.Expect(HttpMethod.Get, resourceUri.AbsoluteUri)
-                .WithHeaders("Authorization", _signer.GetAuthorizationHeader(
+                .WithHeaders(HeaderNames.Authorization, _signer.GetAuthorizationHeader(
                     HttpMethod.Get, resourceUri, options.Value, QueryHelpers.ParseQuery(resourceUri.Query),
                     _tokenCredentials).ToString())
                 .Respond(HttpStatusCode.OK);
@@ -89,7 +90,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var resourceUri = _configuration.GetValue<Uri>("Request:Uri");
             var basicAuth = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_clientCredentials.Key}:{_clientCredentials.Secret}"));
             _mockHttp?.Expect(HttpMethod.Get, resourceUri.AbsoluteUri)
-                .WithHeaders("Authorization", $"Basic {basicAuth}")
+                .WithHeaders(HeaderNames.Authorization, $"Basic {basicAuth}")
                 .Respond(HttpStatusCode.Forbidden);
 
             // Act

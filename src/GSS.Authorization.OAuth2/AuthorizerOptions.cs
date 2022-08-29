@@ -15,7 +15,7 @@ namespace GSS.Authorization.OAuth2
 
         [Required]
         public string ClientSecret { get; set; } = default!;
-        
+
         /*
          * send the client credentials in the request-body? (default: Authorization header)
          *

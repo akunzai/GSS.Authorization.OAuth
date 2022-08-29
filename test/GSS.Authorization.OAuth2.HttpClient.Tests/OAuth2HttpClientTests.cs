@@ -119,7 +119,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             _mockHttp.VerifyNoOutstandingExpectation();
             _mockHttp.VerifyNoOutstandingRequest();
         }
-        
+
         [SkippableFact]
         public async Task HttpClient_AccessProtectedResourceWithUnmatchedWwwAuthenticateScheme_ShouldPassThrough()
         {
@@ -130,7 +130,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
                 .Respond(_ =>
                 {
                     var res = new HttpResponseMessage(HttpStatusCode.Unauthorized);
-                    res.Headers.TryAddWithoutValidation("WWW-Authenticate",
+                    res.Headers.TryAddWithoutValidation(HeaderNames.WWWAuthenticate,
                         "Basic realm=\"authentication required\"");
                     return res;
                 });
@@ -154,7 +154,7 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
                 .Respond(_ =>
                 {
                     var res = new HttpResponseMessage(HttpStatusCode.Unauthorized);
-                    res.Headers.TryAddWithoutValidation("WWW-Authenticate",
+                    res.Headers.TryAddWithoutValidation(HeaderNames.WWWAuthenticate,
                         @"Bearer realm=""oauth2-resource"", error=""unauthorized"", error_description=""Full authentication is required to access this resource""");
                     return res;
                 });
