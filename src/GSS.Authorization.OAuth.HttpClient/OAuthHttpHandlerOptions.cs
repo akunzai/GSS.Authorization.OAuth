@@ -26,13 +26,13 @@ namespace GSS.Authorization.OAuth
 
         /// <summary>
         /// sign request as query parameter ? (default: Authorization header)
-        /// , see https://tools.ietf.org/html/rfc5849#section-3.5.3
+        /// , see https://www.rfc-editor.org/rfc/rfc5849#section-3.5.3
         /// </summary>
         public bool SignedAsQuery { get; set; }
 
         /// <summary>
         /// sign request as form-encoded body ? (default: Authorization header)
-        /// , see https://tools.ietf.org/html/rfc5849#section-3.5.2
+        /// , see https://www.rfc-editor.org/rfc/rfc5849#section-3.5.2
         /// </summary>
         public bool SignedAsBody { get; set; }
     }

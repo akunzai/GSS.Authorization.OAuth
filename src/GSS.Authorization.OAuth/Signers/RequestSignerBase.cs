@@ -45,7 +45,7 @@ namespace GSS.Authorization.OAuth
                 throw new ArgumentNullException(nameof(parameters));
             }
             var baseUri = GetBaseStringUri(uri);
-            // Parameters Normalization, see https://tools.ietf.org/html/rfc5849#section-3.4.1.3.2
+            // Parameters Normalization, see https://www.rfc-editor.org/rfc/rfc5849#section-3.4.1.3.2
             var normalizationParameters = new List<KeyValuePair<string, string>>();
             foreach (var parameter in parameters
                 // the `oauth_signature`,`realm` parameter MUST be excluded
@@ -70,7 +70,7 @@ namespace GSS.Authorization.OAuth
         }
 
         /// <summary>
-        /// Base String URI, see https://tools.ietf.org/html/rfc5849#section-3.4.1.2
+        /// Base String URI, see https://www.rfc-editor.org/rfc/rfc5849#section-3.4.1.2
         /// </summary>
         /// <param name="uri"></param>
         /// <returns></returns>

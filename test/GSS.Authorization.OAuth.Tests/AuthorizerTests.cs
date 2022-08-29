@@ -8,7 +8,7 @@ using Xunit;
 
 namespace GSS.Authorization.OAuth.Tests
 {
-    // see https://tools.ietf.org/html/rfc5849#section-1.2
+    // see https://www.rfc-editor.org/rfc/rfc5849#section-1.2
     public class AuthorizerTests
     {
         private readonly AuthorizerOptions _options = new()

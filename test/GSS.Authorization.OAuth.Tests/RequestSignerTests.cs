@@ -8,7 +8,7 @@ namespace GSS.Authorization.OAuth.Tests
     {
         private readonly IRequestSigner _signer = new HmacSha1RequestSigner();
 
-        // see https://tools.ietf.org/html/rfc5849#section-3.4.1.3.2
+        // see https://www.rfc-editor.org/rfc/rfc5849#section-3.4.1.3.2
         [Fact]
         public void GetBaseString()
         {

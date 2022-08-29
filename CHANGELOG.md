@@ -8,11 +8,11 @@ All notable changes to this project will be documented in this file.
 
 ## 2.4.1 (2022-04-03)
 
-- [Avoid to override the Authorization header](https://tools.ietf.org/html/rfc6749#section-5.2)
+- [Avoid to override the Authorization header](https://www.rfc-editor.org/rfc/rfc6749#section-5.2)
 
 ## 2.4.0 (2022-04-02)
 
-- [Prefer to send the client credentials in Authorization header](https://tools.ietf.org/html/rfc6749#section-2.3.1)
+- [Prefer to send the client credentials in Authorization header](https://www.rfc-editor.org/rfc/rfc6749#section-2.3.1)
 
 ## 2.3.1 (2021-11-14)
 
@@ -55,7 +55,7 @@ All notable changes to this project will be documented in this file.
 
 ### GSS.Authorization.OAuth2.HttpClient 2.1.0
 
-- Handle WWW-Authenticate response error (https://tools.ietf.org/html/rfc6750#section-3)
+- Handle WWW-Authenticate response error (https://www.rfc-editor.org/rfc/rfc6750#section-3)
 
 ## 2020-07-27
 

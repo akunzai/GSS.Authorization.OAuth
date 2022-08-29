@@ -24,17 +24,17 @@ namespace GSS.Authorization.OAuth
         public Func<string> TimestampProvider { get; set; } = () => DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
 
         /// <summary>
-        /// Provides the version of the authentication process as defined in this specification. see https://tools.ietf.org/html/rfc5849#section-3.1
+        /// Provides the version of the authentication process as defined in this specification. see https://www.rfc-editor.org/rfc/rfc5849#section-3.1
         /// </summary>
         public bool ProvideVersion { get; set; }
 
         /// <summary>
-        /// The realm parameter defines a protection realm per (https://tools.ietf.org/html/rfc2617). see https://tools.ietf.org/html/rfc5849#section-3.5.1
+        /// The realm parameter defines a protection realm per (https://www.rfc-editor.org/rfc/rfc2617). see https://www.rfc-editor.org/rfc/rfc5849#section-3.5.1
         /// </summary>
         public string? Realm { get; set; }
 
         /// <summary>
-        /// The Percent-Encoder, see https://tools.ietf.org/html/rfc3986#section-2.1
+        /// The Percent-Encoder, see https://www.rfc-editor.org/rfc/rfc3986#section-2.1
         /// by default, the <see cref="Uri.EscapeDataString(string)"/> is RFC3986 compliant.
         /// </summary>
         public Func<string, string> PercentEncoder { get; set; } = Uri.EscapeDataString;

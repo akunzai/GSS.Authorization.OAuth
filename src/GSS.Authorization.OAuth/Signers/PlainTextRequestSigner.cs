@@ -6,7 +6,7 @@ using Microsoft.Extensions.Primitives;
 namespace GSS.Authorization.OAuth
 {
     /// <summary>
-    /// PLAINTEXT signature algorithm, see https://tools.ietf.org/html/rfc5849#section-3.4.4
+    /// PLAINTEXT signature algorithm, see https://www.rfc-editor.org/rfc/rfc5849#section-3.4.4
     /// </summary>
     public class PlainTextRequestSigner : RequestSignerBase
     {

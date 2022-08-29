@@ -42,7 +42,7 @@ namespace GSS.Authorization.OAuth
             var verificationCode =
                 await GetVerificationCodeAsync(authorizationUri, cancellationToken).ConfigureAwait(false);
 
-            // Step 3: Token Credentials, see https://tools.ietf.org/html/rfc5849#section-2.3
+            // Step 3: Token Credentials, see https://www.rfc-editor.org/rfc/rfc5849#section-2.3
             return await GetTokenCredentialAsync(temporaryCredentials, verificationCode, cancellationToken)
                 .ConfigureAwait(false);
         }
