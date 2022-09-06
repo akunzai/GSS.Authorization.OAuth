@@ -82,33 +82,33 @@ dotnet_naming_style.camel_case_underscore_style.capitalization = camel_case
 
 # name all constant fields using PascalCase
 dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = suggestion
-dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols  = constant_fields
-dotnet_naming_rule.constant_fields_should_be_pascal_case.style    = pascal_case_style
+dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols = constant_fields
+dotnet_naming_rule.constant_fields_should_be_pascal_case.style = pascal_case_style
 
-dotnet_naming_symbols.constant_fields.applicable_kinds   = field
+dotnet_naming_symbols.constant_fields.applicable_kinds = field
 dotnet_naming_symbols.constant_fields.required_modifiers = const
 
 # name all static fields using PascalCase
 dotnet_naming_rule.static_fields_should_be_pascal_case.severity = suggestion
-dotnet_naming_rule.static_fields_should_be_pascal_case.symbols  = static_fields
-dotnet_naming_rule.static_fields_should_be_pascal_case.style    = pascal_case_style
+dotnet_naming_rule.static_fields_should_be_pascal_case.symbols = static_fields
+dotnet_naming_rule.static_fields_should_be_pascal_case.style = pascal_case_style
 
-dotnet_naming_symbols.static_fields.applicable_kinds   = field
+dotnet_naming_symbols.static_fields.applicable_kinds = field
 dotnet_naming_symbols.static_fields.required_modifiers = static
 
 # private static fields should be _camelCase
 dotnet_naming_rule.private_static_fields_should_be_camel_case.severity = suggestion
-dotnet_naming_rule.private_static_fields_should_be_camel_case.symbols  = private_static_fields
-dotnet_naming_rule.private_static_fields_should_be_camel_case.style    = camel_case_underscore_style
+dotnet_naming_rule.private_static_fields_should_be_camel_case.symbols = private_static_fields
+dotnet_naming_rule.private_static_fields_should_be_camel_case.style = camel_case_underscore_style
 
-dotnet_naming_symbols.private_static_fields.applicable_kinds   = field
+dotnet_naming_symbols.private_static_fields.applicable_kinds = field
 dotnet_naming_symbols.private_static_fields.required_modifiers = static
 dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
 
 # internal and private fields should be _camelCase
 dotnet_naming_rule.camel_case_for_private_internal_fields.severity = suggestion
-dotnet_naming_rule.camel_case_for_private_internal_fields.symbols  = private_internal_fields
-dotnet_naming_rule.camel_case_for_private_internal_fields.style    = camel_case_underscore_style
+dotnet_naming_rule.camel_case_for_private_internal_fields.symbols = private_internal_fields
+dotnet_naming_rule.camel_case_for_private_internal_fields.style = camel_case_underscore_style
 
 dotnet_naming_symbols.private_internal_fields.applicable_kinds = field
 dotnet_naming_symbols.private_internal_fields.applicable_accessibilities = private, internal

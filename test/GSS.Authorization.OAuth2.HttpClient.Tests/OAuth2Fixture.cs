@@ -24,18 +24,16 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
             {
                 options.SendAccessTokenInQuery = Configuration.GetValue("OAuth2:SendAccessTokenInQuery", false);
             });
-            if (Configuration.GetValue("OAuth2:GrantFlow", "ResourceOwnerCredentials").Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase))
-            {
+            if (Configuration.GetValue("OAuth2:GrantFlow", "ResourceOwnerCredentials")
+                .Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase))
                 services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(ConfigureAuthorizerOptions,
                         authorizer => authorizer.ConfigurePrimaryHttpMessageHandler(_ => handler))
                     .ConfigurePrimaryHttpMessageHandler(_ => handler);
-            }
             else
-            {
-                services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>(ConfigureAuthorizerOptions,
+                services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>(
+                        ConfigureAuthorizerOptions,
                         authorizer => authorizer.ConfigurePrimaryHttpMessageHandler(_ => handler))
                     .ConfigurePrimaryHttpMessageHandler(_ => handler);
-            }
             return services.BuildServiceProvider();
         }
 

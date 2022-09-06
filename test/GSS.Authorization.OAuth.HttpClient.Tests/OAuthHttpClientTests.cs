@@ -17,11 +17,11 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
     public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
     {
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
+        private readonly OAuthCredential _clientCredentials;
+        private readonly IConfiguration _configuration;
 
         private readonly MockHttpMessageHandler? _mockHttp;
         private readonly IRequestSigner _signer = new HmacSha1RequestSigner();
-        private readonly IConfiguration _configuration;
-        private readonly OAuthCredential _clientCredentials;
         private readonly OAuthCredential _tokenCredentials;
 
         public OAuthHttpClientTests(OAuthFixture fixture)
@@ -73,7 +73,7 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             _mockHttp?.VerifyNoOutstandingExpectation();
             _mockHttp?.VerifyNoOutstandingRequest();
         }
-        
+
         [Fact]
         public async Task HttpClient_AccessProtectedResourceWithPredefinedAuthorizationHeader_ShouldPassThrough()
         {
@@ -88,7 +88,9 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                 .Services.BuildServiceProvider();
             var client = services.GetRequiredService<OAuthHttpClient>();
             var resourceUri = _configuration.GetValue<Uri>("Request:Uri");
-            var basicAuth = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_clientCredentials.Key}:{_clientCredentials.Secret}"));
+            var basicAuth =
+                Convert.ToBase64String(
+                    Encoding.ASCII.GetBytes($"{_clientCredentials.Key}:{_clientCredentials.Secret}"));
             _mockHttp?.Expect(HttpMethod.Get, resourceUri.AbsoluteUri)
                 .WithHeaders(HeaderNames.Authorization, $"Basic {basicAuth}")
                 .Respond(HttpStatusCode.Forbidden);
@@ -131,7 +133,9 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
                 : "?foo=v1&foo=v2";
             var parameters = _signer.AppendAuthorizationParameters(HttpMethod.Get, resourceUri.Uri,
                 options.Value, QueryHelpers.ParseQuery(resourceUri.Uri.Query), _tokenCredentials);
-            var values = (from parameter in parameters from value in parameter.Value select $"{Uri.EscapeDataString(parameter.Key)}={Uri.EscapeDataString(value)}").ToList();
+            var values = (from parameter in parameters
+                from value in parameter.Value
+                select $"{Uri.EscapeDataString(parameter.Key)}={Uri.EscapeDataString(value)}").ToList();
 
             _mockHttp?.Expect(HttpMethod.Get, resourceUri.Uri.AbsoluteUri)
                 .WithQueryString("?" + string.Join("&", values))

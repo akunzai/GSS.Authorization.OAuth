@@ -14,14 +14,8 @@ namespace GSS.Authorization.OAuth
 
         public Func<HttpRequestMessage, ValueTask<OAuthCredential>> TokenCredentialProvider
         {
-            get
-            {
-                return _tokenCredentialProvider ?? (_ => new ValueTask<OAuthCredential>(TokenCredentials));
-            }
-            set
-            {
-                _tokenCredentialProvider = value;
-            }
+            get => _tokenCredentialProvider ?? (_ => new ValueTask<OAuthCredential>(TokenCredentials));
+            set => _tokenCredentialProvider = value;
         }
 
         /// <summary>

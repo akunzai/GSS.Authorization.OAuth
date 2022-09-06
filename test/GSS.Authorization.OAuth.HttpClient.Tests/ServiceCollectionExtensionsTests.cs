@@ -39,13 +39,17 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, _) => { }).Services.BuildServiceProvider();
+            var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, _) => { }).Services
+                .BuildServiceProvider();
 
             // Act
-            var ex = Assert.Throws<ArgumentNullException>(() => services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>().Value);
+            var ex = Assert.Throws<ArgumentNullException>(() =>
+                services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>().Value);
 
             // Assert
-            Assert.Equal($"{nameof(OAuthHttpHandlerOptions.ClientCredentials)}.{nameof(OAuthHttpHandlerOptions.ClientCredentials.Key)}", ex.ParamName);
+            Assert.Equal(
+                $"{nameof(OAuthHttpHandlerOptions.ClientCredentials)}.{nameof(OAuthHttpHandlerOptions.ClientCredentials.Key)}",
+                ex.ParamName);
         }
 
         [Fact]
@@ -54,14 +58,19 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             // Arrange
             var collection = new ServiceCollection();
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-            var services = collection.AddOAuthHttpClient<OAuthHttpClient>((_, options) => options.ClientCredentials = new OAuthCredential("foo", null)).Services.BuildServiceProvider();
+            var services = collection
+                .AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
+                    options.ClientCredentials = new OAuthCredential("foo", null)).Services.BuildServiceProvider();
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
             // Act
-            var ex = Assert.Throws<ArgumentNullException>(() => services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>().Value);
+            var ex = Assert.Throws<ArgumentNullException>(() =>
+                services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>().Value);
 
             // Assert
-            Assert.Equal($"{nameof(OAuthHttpHandlerOptions.ClientCredentials)}.{nameof(OAuthHttpHandlerOptions.ClientCredentials.Secret)}", ex.ParamName);
+            Assert.Equal(
+                $"{nameof(OAuthHttpHandlerOptions.ClientCredentials)}.{nameof(OAuthHttpHandlerOptions.ClientCredentials.Secret)}",
+                ex.ParamName);
         }
 
         [Fact]
@@ -78,10 +87,13 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             }).Services.BuildServiceProvider();
 
             // Act
-            var ex = Assert.Throws<ArgumentNullException>(() => services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>().Value);
+            var ex = Assert.Throws<ArgumentNullException>(() =>
+                services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>().Value);
 
             // Assert
-            Assert.Equal($"{nameof(OAuthHttpHandlerOptions.TokenCredentials)}.{nameof(OAuthHttpHandlerOptions.TokenCredentials.Key)}", ex.ParamName);
+            Assert.Equal(
+                $"{nameof(OAuthHttpHandlerOptions.TokenCredentials)}.{nameof(OAuthHttpHandlerOptions.TokenCredentials.Key)}",
+                ex.ParamName);
         }
 
         [Fact]
@@ -98,10 +110,13 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             }).Services.BuildServiceProvider();
 
             // Act
-            var ex = Assert.Throws<ArgumentNullException>(() => services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>().Value);
+            var ex = Assert.Throws<ArgumentNullException>(() =>
+                services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>().Value);
 
             // Assert
-            Assert.Equal($"{nameof(OAuthHttpHandlerOptions.TokenCredentials)}.{nameof(OAuthHttpHandlerOptions.TokenCredentials.Secret)}", ex.ParamName);
+            Assert.Equal(
+                $"{nameof(OAuthHttpHandlerOptions.TokenCredentials)}.{nameof(OAuthHttpHandlerOptions.TokenCredentials.Secret)}",
+                ex.ParamName);
         }
 
         [Fact]
@@ -141,7 +156,8 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
         }
 
         [Fact]
-        public void AddOAuthHttpClient_WithGenericConfigurePrimaryHttpMessageHandler_ShouldAddInHttpMessageHandlerBuilderActions()
+        public void
+            AddOAuthHttpClient_WithGenericConfigurePrimaryHttpMessageHandler_ShouldAddInHttpMessageHandlerBuilderActions()
         {
             // Arrange
             var mockHttp = new MockHttpMessageHandler();
@@ -160,7 +176,8 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
 
             // Assert
             var httpClientFactoryOptions = optionsMonitor.Get(builder.Name);
-            Assert.Contains(httpClientFactoryOptions.HttpMessageHandlerBuilderActions, x => x.Target?.ToString()?.Contains("MockHttpMessageHandler") == true);
+            Assert.Contains(httpClientFactoryOptions.HttpMessageHandlerBuilderActions,
+                x => x.Target?.ToString()?.Contains("MockHttpMessageHandler") == true);
         }
 
         [Fact]
@@ -183,18 +200,6 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             Assert.NotNull(client);
         }
 
-        private class DemoOAuthClient
-        {
-#pragma warning disable IDE0052 // Remove unread private members
-            private readonly System.Net.Http.HttpClient _client;
-#pragma warning restore IDE0052 // Remove unread private members
-
-            public DemoOAuthClient(System.Net.Http.HttpClient client)
-            {
-                _client = client;
-            }
-        }
-
         [Fact]
         public void AddTypedOAuthHttpClient_WithValidConfigureOptions_ShouldAddInServiceProvider()
         {
@@ -213,11 +218,6 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             Assert.NotNull(client);
         }
 
-        private class DemoOptions : OAuthHttpHandlerOptions
-        {
-            public Uri BaseAddress { get; set; } = default!;
-        }
-
         [Fact]
         public void AddTypedOAuthHttpClient_WithCustomConfigureOptions_ShouldAddInServiceProvider()
         {
@@ -227,11 +227,11 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var tokenCredentials = new OAuthCredential(Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString());
             var collection = new ServiceCollection();
             var services = collection.AddOAuthHttpClient<DemoOAuthClient, DemoOptions>((_, options) =>
-             {
-                 options.BaseAddress = baseAddress;
-                 options.ClientCredentials = clientCredentials;
-                 options.TokenCredentials = tokenCredentials;
-             }).Services.BuildServiceProvider();
+            {
+                options.BaseAddress = baseAddress;
+                options.ClientCredentials = clientCredentials;
+                options.TokenCredentials = tokenCredentials;
+            }).Services.BuildServiceProvider();
 
             // Act
             var actual = services.GetService<IOptions<DemoOptions>>()?.Value;
@@ -253,11 +253,11 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             var tokenCredentials = new OAuthCredential(Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString());
             var collection = new ServiceCollection();
             var services = collection.AddOAuthHttpClient<DemoOptions>("client1", (_, options) =>
-             {
-                 options.BaseAddress = baseAddress;
-                 options.ClientCredentials = clientCredentials;
-                 options.TokenCredentials = tokenCredentials;
-             }).Services.BuildServiceProvider();
+            {
+                options.BaseAddress = baseAddress;
+                options.ClientCredentials = clientCredentials;
+                options.TokenCredentials = tokenCredentials;
+            }).Services.BuildServiceProvider();
 
             // Act
             var actual = services.GetService<IOptions<DemoOptions>>()?.Value;
@@ -276,14 +276,14 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             // Arrange
             var collection = new ServiceCollection();
             var services = collection.AddOAuthHttpClient<OAuthHttpClient, HmacSha1RequestSigner>((_, options) =>
-              {
-                  options.ClientCredentials = new OAuthCredential("foo", "bar");
-                  options.TokenCredentials = new OAuthCredential("foo", "bar");
-              }).Services.AddOAuthHttpClient<DemoOAuthClient, PlainTextRequestSigner>((_, options) =>
-             {
-                 options.ClientCredentials = new OAuthCredential("foo", "bar");
-                 options.TokenCredentials = new OAuthCredential("foo", "bar");
-             }).Services.BuildServiceProvider();
+            {
+                options.ClientCredentials = new OAuthCredential("foo", "bar");
+                options.TokenCredentials = new OAuthCredential("foo", "bar");
+            }).Services.AddOAuthHttpClient<DemoOAuthClient, PlainTextRequestSigner>((_, options) =>
+            {
+                options.ClientCredentials = new OAuthCredential("foo", "bar");
+                options.TokenCredentials = new OAuthCredential("foo", "bar");
+            }).Services.BuildServiceProvider();
 
             // Act
             var client1 = services.GetService<OAuthHttpClient>();
@@ -325,6 +325,23 @@ namespace GSS.Authorization.OAuth.HttpClient.Tests
             Assert.NotNull(client2);
             Assert.NotNull(signer1);
             Assert.NotNull(signer2);
+        }
+
+        private class DemoOAuthClient
+        {
+#pragma warning disable IDE0052 // Remove unread private members
+            private readonly System.Net.Http.HttpClient _client;
+#pragma warning restore IDE0052 // Remove unread private members
+
+            public DemoOAuthClient(System.Net.Http.HttpClient client)
+            {
+                _client = client;
+            }
+        }
+
+        private class DemoOptions : OAuthHttpHandlerOptions
+        {
+            public Uri BaseAddress { get; set; } = default!;
         }
     }
 }
