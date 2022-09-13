@@ -15,10 +15,10 @@ namespace GSS.Authorization.OAuth2.HttpClient.Tests
     public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
     {
         private readonly OAuth2HttpClient _client;
-        private readonly MockHttpMessageHandler? _mockHttp;
-        private readonly Uri _resourceEndpoint;
-        private readonly AuthorizerOptions _options;
         private readonly OAuth2HttpHandlerOptions _handlerOptions;
+        private readonly MockHttpMessageHandler? _mockHttp;
+        private readonly AuthorizerOptions _options;
+        private readonly Uri _resourceEndpoint;
 
         public OAuth2HttpClientTests(OAuth2Fixture fixture)
         {

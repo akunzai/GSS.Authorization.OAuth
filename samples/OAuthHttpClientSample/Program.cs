@@ -22,7 +22,9 @@ var host = Host.CreateDefaultBuilder(args)
         {
             var assembly = Assembly.GetEntryAssembly();
             var productName = assembly?.GetCustomAttribute<AssemblyProductAttribute>()?.Product;
-            var productVersion = assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? assembly?.GetName().Version?.ToString();
+            var productVersion =
+                assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ??
+                assembly?.GetName().Version?.ToString();
             if (!string.IsNullOrEmpty(productName) && !string.IsNullOrEmpty(productVersion))
             {
                 client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));

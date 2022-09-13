@@ -11,6 +11,8 @@ namespace GSS.Authorization.OAuth.Tests
     // see https://www.rfc-editor.org/rfc/rfc5849#section-1.2
     public class AuthorizerTests
     {
+        private readonly MockHttpMessageHandler _mockHttp = new();
+
         private readonly AuthorizerOptions _options = new()
         {
             ClientCredentials = new OAuthCredential("dpf43f3p2l4k3l03", "kd94hf93k423kf44"),
@@ -22,7 +24,6 @@ namespace GSS.Authorization.OAuth.Tests
             ProvideVersion = false
         };
 
-        private readonly MockHttpMessageHandler _mockHttp = new();
         private readonly IRequestSigner _signer = new HmacSha1RequestSigner();
 
         [Fact]
@@ -98,16 +99,13 @@ namespace GSS.Authorization.OAuth.Tests
             var temporaryCredential = new OAuthCredential("hh5s93j4hdidpola", "hdhd0244k9j7ao03");
             var authorizationHeader = _signer.GetAuthorizationHeader(HttpMethod.Post, _options.TokenRequestUri,
                 _options,
-                new Dictionary<string, StringValues>
-                {
-                    [OAuthDefaults.OAuthVerifier] = verificationCode
-                }, temporaryCredential);
+                new Dictionary<string, StringValues> { [OAuthDefaults.OAuthVerifier] = verificationCode },
+                temporaryCredential);
             _mockHttp.When(HttpMethod.Post, _options.TokenRequestUri.ToString())
                 .WithHeaders(HeaderNames.Authorization, authorizationHeader.ToString())
                 .Respond(new FormUrlEncodedContent(new Dictionary<string, string>
                 {
-                    [OAuthDefaults.OAuthToken] = expected.Key,
-                    [OAuthDefaults.OAuthTokenSecret] = expected.Secret
+                    [OAuthDefaults.OAuthToken] = expected.Key, [OAuthDefaults.OAuthTokenSecret] = expected.Secret
                 }));
             var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer)
             {
@@ -151,16 +149,13 @@ namespace GSS.Authorization.OAuth.Tests
                 }));
             var header = _signer.GetAuthorizationHeader(HttpMethod.Post, _options.TokenRequestUri,
                 _options,
-                new Dictionary<string, StringValues>
-                {
-                    [OAuthDefaults.OAuthVerifier] = verificationCode
-                }, temporaryCredentials);
+                new Dictionary<string, StringValues> { [OAuthDefaults.OAuthVerifier] = verificationCode },
+                temporaryCredentials);
             _mockHttp.When(HttpMethod.Post, _options.TokenRequestUri.ToString())
                 .WithHeaders(HeaderNames.Authorization, header.ToString())
                 .Respond(new FormUrlEncodedContent(new Dictionary<string, string>
                 {
-                    [OAuthDefaults.OAuthToken] = expected.Key,
-                    [OAuthDefaults.OAuthTokenSecret] = expected.Secret
+                    [OAuthDefaults.OAuthToken] = expected.Key, [OAuthDefaults.OAuthTokenSecret] = expected.Secret
                 }));
             var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer)
             {

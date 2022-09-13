@@ -22,14 +22,14 @@ namespace GSS.Authorization.OAuth
 
         public override string MethodName => "HMAC-SHA1";
 
-        public override string GetSignature(HttpMethod method, Uri uri, IEnumerable<KeyValuePair<string, StringValues>> parameters, string consumerSecret,
+        public override string GetSignature(HttpMethod method,
+            Uri uri,
+            IEnumerable<KeyValuePair<string, StringValues>> parameters,
+            string consumerSecret,
             string? tokenSecret = null)
         {
             var key = new StringBuilder(Options.PercentEncoder(consumerSecret)).Append('&');
-            if (tokenSecret != null)
-            {
-                key.Append(Options.PercentEncoder(tokenSecret));
-            }
+            if (tokenSecret != null) key.Append(Options.PercentEncoder(tokenSecret));
 #pragma warning disable CA5350 // Do Not Use Weak Cryptographic Algorithms
             using var hmacSha1 = new HMACSHA1(Encoding.ASCII.GetBytes(key.ToString()));
 #pragma warning restore CA5350 // Do Not Use Weak Cryptographic Algorithms

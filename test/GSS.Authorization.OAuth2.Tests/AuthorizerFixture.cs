@@ -16,7 +16,8 @@ namespace GSS.Authorization.OAuth2.Tests
 
         public IConfiguration Configuration { get; }
 
-        public IServiceProvider BuildAuthorizer<TAuthorizer>(HttpMessageHandler? handler, Action<HttpStatusCode, string>? errorHandler)
+        public IServiceProvider BuildAuthorizer<TAuthorizer>(HttpMessageHandler? handler,
+            Action<HttpStatusCode, string>? errorHandler)
             where TAuthorizer : class
         {
             handler ??= new HttpClientHandler();
@@ -31,7 +32,7 @@ namespace GSS.Authorization.OAuth2.Tests
                     Configuration["OAuth2:Credentials:Password"]);
                 options.Scopes = Configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
                 options.OnError = errorHandler;
-            }).PostConfigure(options => Validator.ValidateObject(options, new ValidationContext(options), validateAllProperties: true));
+            }).PostConfigure(options => Validator.ValidateObject(options, new ValidationContext(options), true));
 
             services.AddHttpClient<TAuthorizer>()
                 .ConfigurePrimaryHttpMessageHandler(_ => handler);

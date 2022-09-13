@@ -21,7 +21,8 @@ namespace GSS.Authorization.OAuth
         };
 
         [Required]
-        public Func<string> TimestampProvider { get; set; } = () => DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
+        public Func<string> TimestampProvider { get; set; } = () =>
+            DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
 
         /// <summary>
         /// Provides the version of the authentication process as defined in this specification. see https://www.rfc-editor.org/rfc/rfc5849#section-3.1

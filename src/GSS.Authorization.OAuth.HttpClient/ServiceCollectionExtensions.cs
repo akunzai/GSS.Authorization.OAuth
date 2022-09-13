@@ -10,15 +10,19 @@ namespace GSS.Authorization.OAuth
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// Add typed HttpClient with <see cref="OAuthHttpHandler"/> and related services
+        /// Add typed HttpClient with <see cref="OAuthHttpHandler" /> and related services
         /// </summary>
         /// <typeparam name="TClient">The type of the typed client.</typeparam>
         /// <typeparam name="TRequestSigner">The type of the request signer.</typeparam>
         /// <typeparam name="TOptions">The type of the configure options.</typeparam>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions"/>.</param>
-        /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the client.</returns>
-        public static IHttpClientBuilder AddOAuthHttpClient<TClient, TRequestSigner, TOptions>(this IServiceCollection services,
+        /// <param name="services">The <see cref="IServiceCollection" />.</param>
+        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions" />.</param>
+        /// <returns>
+        /// An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure
+        /// the client.
+        /// </returns>
+        public static IHttpClientBuilder AddOAuthHttpClient<TClient, TRequestSigner, TOptions>(
+            this IServiceCollection services,
             Action<IServiceProvider, TOptions> configureOptions)
             where TClient : class
             where TRequestSigner : class, IRequestSigner
@@ -49,14 +53,18 @@ namespace GSS.Authorization.OAuth
         }
 
         /// <summary>
-        /// Add typed HttpClient with <see cref="OAuthHttpHandler"/> and related services
+        /// Add typed HttpClient with <see cref="OAuthHttpHandler" /> and related services
         /// </summary>
         /// <typeparam name="TClient">The type of the typed client.</typeparam>
         /// <typeparam name="TRequestSigner">The type of the request signer.</typeparam>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions"/>.</param>
-        /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the client.</returns>
-        public static IHttpClientBuilder AddOAuthHttpClient<TClient, TRequestSigner>(this IServiceCollection services,
+        /// <param name="services">The <see cref="IServiceCollection" />.</param>
+        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions" />.</param>
+        /// <returns>
+        /// An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure
+        /// the client.
+        /// </returns>
+        public static IHttpClientBuilder AddOAuthHttpClient<TClient, TRequestSigner>(
+            this IServiceCollection services,
             Action<IServiceProvider, OAuthHttpHandlerOptions> configureOptions)
             where TClient : class
             where TRequestSigner : class, IRequestSigner
@@ -65,14 +73,18 @@ namespace GSS.Authorization.OAuth
         }
 
         /// <summary>
-        /// Add typed HttpClient with <see cref="OAuthHttpHandler"/> and default request signer (HMAC-SHA1)
+        /// Add typed HttpClient with <see cref="OAuthHttpHandler" /> and default request signer (HMAC-SHA1)
         /// </summary>
         /// <typeparam name="TClient">The type of the typed client.</typeparam>
         /// <typeparam name="TOptions">The type of the configure options.</typeparam>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions"/>.</param>
-        /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the client.</returns>
-        public static IHttpClientBuilder AddOAuthHttpClient<TClient, TOptions>(this IServiceCollection services,
+        /// <param name="services">The <see cref="IServiceCollection" />.</param>
+        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions" />.</param>
+        /// <returns>
+        /// An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure
+        /// the client.
+        /// </returns>
+        public static IHttpClientBuilder AddOAuthHttpClient<TClient, TOptions>(
+            this IServiceCollection services,
             Action<IServiceProvider, TOptions> configureOptions)
             where TClient : class
             where TOptions : OAuthHttpHandlerOptions, new()
@@ -81,13 +93,17 @@ namespace GSS.Authorization.OAuth
         }
 
         /// <summary>
-        /// Add typed HttpClient with <see cref="OAuthHttpHandler"/> and default request signer (HMAC-SHA1)
+        /// Add typed HttpClient with <see cref="OAuthHttpHandler" /> and default request signer (HMAC-SHA1)
         /// </summary>
         /// <typeparam name="TClient">The type of the typed client.</typeparam>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions"/>.</param>
-        /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the client.</returns>
-        public static IHttpClientBuilder AddOAuthHttpClient<TClient>(this IServiceCollection services,
+        /// <param name="services">The <see cref="IServiceCollection" />.</param>
+        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions" />.</param>
+        /// <returns>
+        /// An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure
+        /// the client.
+        /// </returns>
+        public static IHttpClientBuilder AddOAuthHttpClient<TClient>(
+            this IServiceCollection services,
             Action<IServiceProvider, OAuthHttpHandlerOptions> configureOptions)
             where TClient : class
         {
@@ -95,15 +111,20 @@ namespace GSS.Authorization.OAuth
         }
 
         /// <summary>
-        /// Add named HttpClient with <see cref="OAuthHttpHandler"/> and related services
+        /// Add named HttpClient with <see cref="OAuthHttpHandler" /> and related services
         /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
+        /// <param name="services">The <see cref="IServiceCollection" />.</param>
+        /// <param name="name">The logical name of the <see cref="HttpClient" /> to configure.</param>
         /// <typeparam name="TRequestSigner">The type of the request signer.</typeparam>
         /// <typeparam name="TOptions">The type of the configure options.</typeparam>
-        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions"/>.</param>
-        /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the client.</returns>
-        public static IHttpClientBuilder AddOAuthHttpClient<TRequestSigner, TOptions>(this IServiceCollection services, string name,
+        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions" />.</param>
+        /// <returns>
+        /// An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure
+        /// the client.
+        /// </returns>
+        public static IHttpClientBuilder AddOAuthHttpClient<TRequestSigner, TOptions>(
+            this IServiceCollection services,
+            string name,
             Action<IServiceProvider, TOptions> configureOptions)
             where TRequestSigner : class, IRequestSigner
             where TOptions : OAuthHttpHandlerOptions, new()
@@ -133,14 +154,18 @@ namespace GSS.Authorization.OAuth
         }
 
         /// <summary>
-        /// Add named HttpClient with <see cref="OAuthHttpHandler"/> and related services
+        /// Add named HttpClient with <see cref="OAuthHttpHandler" /> and related services
         /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
+        /// <param name="services">The <see cref="IServiceCollection" />.</param>
+        /// <param name="name">The logical name of the <see cref="HttpClient" /> to configure.</param>
         /// <typeparam name="TRequestSigner">The type of the request signer.</typeparam>
-        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions"/>.</param>
-        /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the client.</returns>
-        public static IHttpClientBuilder AddOAuthHttpClient<TRequestSigner>(this IServiceCollection services,
+        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions" />.</param>
+        /// <returns>
+        /// An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure
+        /// the client.
+        /// </returns>
+        public static IHttpClientBuilder AddOAuthHttpClient<TRequestSigner>(
+            this IServiceCollection services,
             string name,
             Action<IServiceProvider, OAuthHttpHandlerOptions> configureOptions)
             where TRequestSigner : class, IRequestSigner
@@ -149,13 +174,18 @@ namespace GSS.Authorization.OAuth
         }
 
         /// <summary>
-        /// Add named HttpClient with <see cref="OAuthHttpHandler"/> and default request signer (HMAC-SHA1)
+        /// Add named HttpClient with <see cref="OAuthHttpHandler" /> and default request signer (HMAC-SHA1)
         /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
-        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions"/>.</param>
-        /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the client.</returns>
-        public static IHttpClientBuilder AddOAuthHttpClient<TOptions>(this IServiceCollection services, string name,
+        /// <param name="services">The <see cref="IServiceCollection" />.</param>
+        /// <param name="name">The logical name of the <see cref="HttpClient" /> to configure.</param>
+        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions" />.</param>
+        /// <returns>
+        /// An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure
+        /// the client.
+        /// </returns>
+        public static IHttpClientBuilder AddOAuthHttpClient<TOptions>(
+            this IServiceCollection services,
+            string name,
             Action<IServiceProvider, TOptions> configureOptions)
             where TOptions : OAuthHttpHandlerOptions, new()
         {
@@ -163,13 +193,18 @@ namespace GSS.Authorization.OAuth
         }
 
         /// <summary>
-        /// Add named HttpClient with <see cref="OAuthHttpHandler"/> and default request signer (HMAC-SHA1)
+        /// Add named HttpClient with <see cref="OAuthHttpHandler" /> and default request signer (HMAC-SHA1)
         /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
-        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions"/>.</param>
-        /// <returns>An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure the client.</returns>
-        public static IHttpClientBuilder AddOAuthHttpClient(this IServiceCollection services, string name,
+        /// <param name="services">The <see cref="IServiceCollection" />.</param>
+        /// <param name="name">The logical name of the <see cref="HttpClient" /> to configure.</param>
+        /// <param name="configureOptions">A delegate that is used to configure an <see cref="OAuthHttpHandlerOptions" />.</param>
+        /// <returns>
+        /// An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure
+        /// the client.
+        /// </returns>
+        public static IHttpClientBuilder AddOAuthHttpClient(
+            this IServiceCollection services,
+            string name,
             Action<IServiceProvider, OAuthHttpHandlerOptions> configureOptions)
         {
             return services.AddOAuthHttpClient<OAuthHttpHandlerOptions>(name, configureOptions);
@@ -180,19 +215,26 @@ namespace GSS.Authorization.OAuth
             Validator.ValidateObject(options, new ValidationContext(options), true);
             if (string.IsNullOrWhiteSpace(options.ClientCredentials.Key))
             {
-                throw new ArgumentNullException($"{nameof(options.ClientCredentials)}.{nameof(options.ClientCredentials.Key)}");
+                throw new ArgumentNullException(
+                    $"{nameof(options.ClientCredentials)}.{nameof(options.ClientCredentials.Key)}");
             }
+
             if (string.IsNullOrWhiteSpace(options.ClientCredentials.Secret))
             {
-                throw new ArgumentNullException($"{nameof(options.ClientCredentials)}.{nameof(options.ClientCredentials.Secret)}");
+                throw new ArgumentNullException(
+                    $"{nameof(options.ClientCredentials)}.{nameof(options.ClientCredentials.Secret)}");
             }
+
             if (string.IsNullOrWhiteSpace(options.TokenCredentials.Key))
             {
-                throw new ArgumentNullException($"{nameof(options.TokenCredentials)}.{nameof(options.TokenCredentials.Key)}");
+                throw new ArgumentNullException(
+                    $"{nameof(options.TokenCredentials)}.{nameof(options.TokenCredentials.Key)}");
             }
+
             if (string.IsNullOrWhiteSpace(options.TokenCredentials.Secret))
             {
-                throw new ArgumentNullException($"{nameof(options.TokenCredentials)}.{nameof(options.TokenCredentials.Secret)}");
+                throw new ArgumentNullException(
+                    $"{nameof(options.TokenCredentials)}.{nameof(options.TokenCredentials.Secret)}");
             }
         }
     }

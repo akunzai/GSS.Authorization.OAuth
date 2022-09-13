@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
@@ -11,9 +12,12 @@ namespace GSS.Authorization.OAuth
 {
     public abstract class AuthorizerBase : IAuthorizer
     {
-        private const string UrlEncodedContentType = "application/x-www-form-urlencoded";
-        private readonly AuthorizerOptions _options;
+        private static readonly MediaTypeHeaderValue _urlEncodedContentType =
+            MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
+
         private readonly HttpClient _httpClient;
+
+        private readonly AuthorizerOptions _options;
         private readonly IRequestSigner _signer;
 
         protected AuthorizerBase(
@@ -65,10 +69,13 @@ namespace GSS.Authorization.OAuth
                 });
             using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            if (!string.Equals(response.Content.Headers?.ContentType?.MediaType, UrlEncodedContentType, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(response.Content.Headers?.ContentType?.MediaType, _urlEncodedContentType.MediaType,
+                    StringComparison.OrdinalIgnoreCase))
             {
-                throw new HttpRequestException($"Invalid response with media-type: {response.Content.Headers?.ContentType?.MediaType}");
+                throw new HttpRequestException(
+                    $"Invalid response with media-type: {response.Content.Headers?.ContentType?.MediaType}");
             }
+
             var urlEncoded = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var formData = QueryHelpers.ParseQuery(urlEncoded);
             HandleOAuthException(response, formData);
@@ -81,11 +88,13 @@ namespace GSS.Authorization.OAuth
         /// <param name="authorizationUri"></param>
         /// <param name="cancellationToken"></param>
         /// <returns>the verification code</returns>
-        public abstract Task<string> GetVerificationCodeAsync(Uri authorizationUri,
+        public abstract Task<string> GetVerificationCodeAsync(
+            Uri authorizationUri,
             CancellationToken cancellationToken = default);
 
         protected internal virtual async Task<OAuthCredential> GetTokenCredentialAsync(
-            OAuthCredential temporaryCredentials, string verificationCode,
+            OAuthCredential temporaryCredentials,
+            string verificationCode,
             CancellationToken cancellationToken = default)
         {
             using var request = new HttpRequestMessage(HttpMethod.Post, _options.TokenRequestUri);
@@ -95,33 +104,33 @@ namespace GSS.Authorization.OAuth
                     ? request.RequestUri
                     : new Uri(_httpClient.BaseAddress, request.RequestUri),
                 _options,
-                new Dictionary<string, StringValues>
-                {
-                    [OAuthDefaults.OAuthVerifier] = verificationCode
-                }, temporaryCredentials);
+                new Dictionary<string, StringValues> { [OAuthDefaults.OAuthVerifier] = verificationCode },
+                temporaryCredentials);
             var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            if (!string.Equals(response.Content.Headers?.ContentType?.MediaType, UrlEncodedContentType, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(response.Content.Headers?.ContentType?.MediaType, _urlEncodedContentType.MediaType,
+                    StringComparison.OrdinalIgnoreCase))
             {
-                throw new HttpRequestException($"Invalid response with media-type: {response.Content.Headers?.ContentType?.MediaType}");
+                throw new HttpRequestException(
+                    $"Invalid response with media-type: {response.Content.Headers?.ContentType?.MediaType}");
             }
+
             var urlEncoded = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var formData = QueryHelpers.ParseQuery(urlEncoded);
             HandleOAuthException(response, formData);
             return new OAuthCredential(formData[OAuthDefaults.OAuthToken], formData[OAuthDefaults.OAuthTokenSecret]);
         }
 
-        protected virtual void HandleOAuthException(HttpResponseMessage request,
+        protected virtual void HandleOAuthException(
+            HttpResponseMessage request,
             IDictionary<string, StringValues> formData)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
             if (formData == null)
                 throw new ArgumentNullException(nameof(formData));
-            if (!formData.ContainsKey(OAuthDefaults.OAuthProblem))
-            {
-                return;
-            }
+            if (!formData.ContainsKey(OAuthDefaults.OAuthProblem)) return;
+
             var oauthProblem = formData[OAuthDefaults.OAuthProblem].ToString();
             if (string.IsNullOrWhiteSpace(oauthProblem))
                 return;
@@ -129,7 +138,7 @@ namespace GSS.Authorization.OAuth
             {
                 OAuthDefaults.ParameterAbsent => new OAuthException(
                     $"Missing parameters: {formData[OAuthDefaults.OAuthParametersAbsent]}"),
-                _ => new OAuthException(string.Join(",", formData)),
+                _ => new OAuthException(string.Join(",", formData))
             };
         }
     }

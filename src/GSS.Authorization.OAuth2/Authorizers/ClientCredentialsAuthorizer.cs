@@ -7,7 +7,10 @@ namespace GSS.Authorization.OAuth2
 {
     public class ClientCredentialsAuthorizer : AccessTokenAuthorizerBase
     {
-        public ClientCredentialsAuthorizer(HttpClient client, IOptions<AuthorizerOptions> options) : base(client, options)
+        public ClientCredentialsAuthorizer(
+            HttpClient client,
+            IOptions<AuthorizerOptions> options)
+            : base(client, options)
         {
         }
 

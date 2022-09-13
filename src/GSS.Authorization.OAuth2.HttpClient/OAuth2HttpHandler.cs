@@ -14,12 +14,15 @@ namespace GSS.Authorization.OAuth2
 {
     public class OAuth2HttpHandler : DelegatingHandler
     {
-        private const string ApplicationFormUrlEncoded = "application/x-www-form-urlencoded";
+        private static readonly MediaTypeHeaderValue _urlEncodedContentType =
+            MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
+
+        private readonly IAuthorizer _authorizer;
+        private readonly string _cacheKey;
+        private readonly IMemoryCache _memoryCache;
+
         private readonly OAuth2HttpHandlerOptions _options;
         private readonly SemaphoreSlim _semaphore = new(1, 1);
-        private readonly IAuthorizer _authorizer;
-        private readonly IMemoryCache _memoryCache;
-        private readonly string _cacheKey;
 
         public OAuth2HttpHandler(
             IOptions<OAuth2HttpHandlerOptions> options,
@@ -32,7 +35,8 @@ namespace GSS.Authorization.OAuth2
             _cacheKey = Guid.NewGuid().ToString();
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
             if (request == null)
@@ -46,14 +50,15 @@ namespace GSS.Authorization.OAuth2
             // https://www.rfc-editor.org/rfc/rfc6750#section-3
             var challenges = response.Headers.WwwAuthenticate;
             if (response.StatusCode != HttpStatusCode.Unauthorized ||
-                challenges.Any() && !challenges.Any(c => c.Scheme.Equals(AuthorizerDefaults.Bearer)))
+                (challenges.Any() && !challenges.Any(c => c.Scheme.Equals(AuthorizerDefaults.Bearer))))
                 return response;
-            accessToken = await GetAccessTokenAsync(cancellationToken, forceRenew: true).ConfigureAwait(false);
+            accessToken = await GetAccessTokenAsync(cancellationToken, true).ConfigureAwait(false);
             await SendAccessTokenInRequestAsync(accessToken, request).ConfigureAwait(false);
             return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
 
-        private async ValueTask<AccessToken> GetAccessTokenAsync(CancellationToken cancellationToken,
+        private async ValueTask<AccessToken> GetAccessTokenAsync(
+            CancellationToken cancellationToken,
             bool forceRenew = false)
         {
             if (!forceRenew && _memoryCache.TryGetValue<AccessToken>(_cacheKey, out var accessTokenCache))
@@ -82,12 +87,14 @@ namespace GSS.Authorization.OAuth2
             }
         }
 
-        private async Task SendAccessTokenInRequestAsync(AccessToken accessToken, HttpRequestMessage request)
+        private async Task SendAccessTokenInRequestAsync(
+            AccessToken accessToken,
+            HttpRequestMessage request)
         {
             if (string.IsNullOrWhiteSpace(accessToken.Token)) return;
             if (_options.SendAccessTokenInBody && request.Content != null && string.Equals(
                     request.Content.Headers?.ContentType?.MediaType,
-                    ApplicationFormUrlEncoded, StringComparison.OrdinalIgnoreCase))
+                    _urlEncodedContentType.MediaType, StringComparison.OrdinalIgnoreCase))
             {
                 var parameters =
                     QueryHelpers.ParseQuery(await request.Content.ReadAsStringAsync().ConfigureAwait(false));

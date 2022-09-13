@@ -7,16 +7,16 @@
     <RootNamespace>GSS.Authorization.OAuth2</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\GSS.Authorization.OAuth2\GSS.Authorization.OAuth2.csproj" />
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="2.2.0" />
     <PackageReference Include="System.Text.Encodings.Web" Version="4.7.2" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GSS.Authorization.OAuth2\GSS.Authorization.OAuth2.csproj" />
   </ItemGroup>
 
 </Project>

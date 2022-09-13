@@ -9,7 +9,8 @@ namespace GSS.Authorization.OAuth2
     {
         public ResourceOwnerCredentialsAuthorizer(
             HttpClient client,
-            IOptions<AuthorizerOptions> options) : base(client, options)
+            IOptions<AuthorizerOptions> options)
+            : base(client, options)
         {
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
             if (options.Value.Credentials == null)
@@ -20,6 +21,7 @@ namespace GSS.Authorization.OAuth2
             {
                 throw new ArgumentNullException(nameof(options.Value.Credentials.UserName));
             }
+
             if (string.IsNullOrWhiteSpace(options.Value.Credentials.Password))
             {
                 throw new ArgumentNullException(nameof(options.Value.Credentials.Password));
@@ -38,6 +40,7 @@ namespace GSS.Authorization.OAuth2
                 throw new ArgumentNullException(nameof(Options.Credentials));
 #pragma warning restore CA2208 // Instantiate argument exceptions correctly
             }
+
             formData[AuthorizerDefaults.Username] = Options.Credentials.UserName;
             formData[AuthorizerDefaults.Password] = Options.Credentials.Password;
         }

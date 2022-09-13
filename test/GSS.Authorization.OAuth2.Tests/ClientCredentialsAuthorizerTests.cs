@@ -14,11 +14,11 @@ namespace GSS.Authorization.OAuth2.Tests
     public class ClientCredentialsAuthorizerTests : IClassFixture<AuthorizerFixture>
     {
         private readonly IAuthorizer _authorizer;
+        private readonly string _basicAuthHeaderValue;
         private readonly MockHttpMessageHandler? _mockHttp;
         private readonly AuthorizerOptions _options;
-        private HttpStatusCode _errorStatusCode;
         private string? _errorMessage;
-        private readonly string _basicAuthHeaderValue;
+        private HttpStatusCode _errorStatusCode;
 
         public ClientCredentialsAuthorizerTests(AuthorizerFixture fixture)
         {

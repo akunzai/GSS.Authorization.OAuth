@@ -31,8 +31,8 @@ namespace GSS.Authorization.OAuth
         public override int GetHashCode()
         {
             var hashCode = -1923984941;
-            hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(Key);
-            hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(Secret);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Key);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Secret);
             return hashCode;
         }
 

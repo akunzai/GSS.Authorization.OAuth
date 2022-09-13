@@ -20,11 +20,12 @@ namespace GSS.Authorization.OAuth
         /// <param name="tokenCredentials">Token Credentials.</param>
         /// <returns>The authorization header.</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static AuthenticationHeaderValue GetAuthorizationHeader(this IRequestSigner signer,
+        public static AuthenticationHeaderValue GetAuthorizationHeader(
+            this IRequestSigner signer,
             HttpMethod method,
             Uri uri,
             OAuthOptions options,
-            IDictionary<string,StringValues>? parameters = null,
+            IDictionary<string, StringValues>? parameters = null,
             OAuthCredential? tokenCredentials = null)
         {
             if (options == null)
@@ -57,9 +58,13 @@ namespace GSS.Authorization.OAuth
         /// <param name="tokenCredentials">Token Credentials.</param>
         /// <returns>The authorization header.</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static IDictionary<string,StringValues> AppendAuthorizationParameters(
-            this IRequestSigner signer, HttpMethod method, Uri uri, OAuthOptions options,
-            IDictionary<string,StringValues>? parameters = null, OAuthCredential? tokenCredentials = null)
+        public static IDictionary<string, StringValues> AppendAuthorizationParameters(
+            this IRequestSigner signer,
+            HttpMethod method,
+            Uri uri,
+            OAuthOptions options,
+            IDictionary<string, StringValues>? parameters = null,
+            OAuthCredential? tokenCredentials = null)
         {
             if (signer == null)
                 throw new ArgumentNullException(nameof(signer));
@@ -79,7 +84,8 @@ namespace GSS.Authorization.OAuth
             }
             parameters[OAuthDefaults.OAuthConsumerKey] = options.ClientCredentials.Key;
             parameters[OAuthDefaults.OAuthSignatureMethod] = signer.MethodName;
-            parameters[OAuthDefaults.OAuthSignature] = signer.GetSignature(method, uri, parameters, options.ClientCredentials.Secret, tokenCredentials?.Secret);
+            parameters[OAuthDefaults.OAuthSignature] = signer.GetSignature(method, uri, parameters,
+                options.ClientCredentials.Secret, tokenCredentials?.Secret);
             return parameters;
         }
     }

@@ -3,11 +3,15 @@
 [![Build Status][ci-badge]][ci] [![Code Coverage][codecov-badge]][codecov]
 
 [ci]: https://github.com/akunzai/GSS.Authorization.OAuth/actions?query=workflow%3ACI
+
 [ci-badge]: https://github.com/akunzai/GSS.Authorization.OAuth/workflows/CI/badge.svg
+
 [codecov]: https://codecov.io/gh/akunzai/GSS.Authorization.OAuth
+
 [codecov-badge]: https://codecov.io/gh/akunzai/GSS.Authorization.OAuth/branch/main/graph/badge.svg?token=YHAPVX7R97
 
-OAuth authorized HttpClient, friendly with [HttpClientFactory](https://docs.microsoft.com/aspnet/core/fundamentals/http-requests)
+OAuth authorized HttpClient, friendly
+with [HttpClientFactory](https://docs.microsoft.com/aspnet/core/fundamentals/http-requests)
 
 ## NuGet Packages
 
@@ -30,12 +34,15 @@ dotnet add package GSS.Authorization.OAuth2.HttpClient
 
 ### OAuth 1.0 protocol
 
-- Only provide `HMAC-SHA1` and `PLAINTEXT` signature method. You can implement `GSS.Authorization.OAuth.IRequestSigner` to support more signature methods.
-- Only provide `InteractiveConsoleAuthorizer` grant flow. You can implement `GSS.Authorization.OAuth.IAuthorizer` to support more grant flows.
+- Only provide `HMAC-SHA1` and `PLAINTEXT` signature method. You can implement `GSS.Authorization.OAuth.IRequestSigner`
+  to support more signature methods.
+- Only provide `InteractiveConsoleAuthorizer` grant flow. You can implement `GSS.Authorization.OAuth.IAuthorizer` to
+  support more grant flows.
 
 ### OAuth 2.0 protocol
 
-- Only provide `Client-Credentials` and `Resource-Owner-Credentials` grant flow, You can implement `GSS.Authorization.OAuth2.IAuthorizer` to support more grant flows.
+- Only provide `Client-Credentials` and `Resource-Owner-Credentials` grant flow, You can
+  implement `GSS.Authorization.OAuth2.IAuthorizer` to support more grant flows.
 
 ## Usage
 

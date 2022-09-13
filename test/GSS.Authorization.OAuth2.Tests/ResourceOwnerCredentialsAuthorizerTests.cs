@@ -14,11 +14,11 @@ namespace GSS.Authorization.OAuth2.Tests
     public class ResourceOwnerCredentialsAuthorizerTests : IClassFixture<AuthorizerFixture>
     {
         private readonly IAuthorizer _authorizer;
+        private readonly string _basicAuthHeaderValue;
         private readonly MockHttpMessageHandler? _mockHttp;
         private readonly AuthorizerOptions _options;
-        private HttpStatusCode _errorStatusCode;
         private string? _errorMessage;
-        private readonly string _basicAuthHeaderValue;
+        private HttpStatusCode _errorStatusCode;
 
         public ResourceOwnerCredentialsAuthorizerTests(AuthorizerFixture fixture)
         {
@@ -46,11 +46,11 @@ namespace GSS.Authorization.OAuth2.Tests
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
                 .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
                 .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
-                .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(new AccessToken
-                {
-                    Token = Guid.NewGuid().ToString(),
-                    ExpiresInSeconds = 10
-                }));
+                .Respond(MediaTypeNames.Application.Json,
+                    JsonSerializer.Serialize(new AccessToken
+                    {
+                        Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10
+                    }));
 
             // Act
             var accessToken = await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
@@ -69,11 +69,11 @@ namespace GSS.Authorization.OAuth2.Tests
                 .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
                 .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
                 .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
-                .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(new AccessToken
-                {
-                    Token = Guid.NewGuid().ToString(),
-                    ExpiresInSeconds = 10
-                }));
+                .Respond(MediaTypeNames.Application.Json,
+                    JsonSerializer.Serialize(new AccessToken
+                    {
+                        Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10
+                    }));
 
             // Act
             var accessToken = await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);

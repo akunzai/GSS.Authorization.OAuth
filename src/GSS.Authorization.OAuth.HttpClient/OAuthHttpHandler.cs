@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
@@ -11,7 +12,9 @@ namespace GSS.Authorization.OAuth
 {
     public class OAuthHttpHandler : DelegatingHandler
     {
-        private const string ApplicationFormUrlEncoded = "application/x-www-form-urlencoded";
+        private static readonly MediaTypeHeaderValue _urlEncodedContentType =
+            MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
+
         private readonly OAuthHttpHandlerOptions _options;
         private readonly IRequestSigner _signer;
 
@@ -23,7 +26,8 @@ namespace GSS.Authorization.OAuth
             _signer = signer;
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
             if (request == null)
@@ -32,7 +36,7 @@ namespace GSS.Authorization.OAuth
             var queryString = QueryHelpers.ParseQuery(request.RequestUri?.Query);
             if (_options.SignedAsBody && request.Content != null && string.Equals(
                     request.Content.Headers?.ContentType?.MediaType,
-                    ApplicationFormUrlEncoded, StringComparison.OrdinalIgnoreCase))
+                    _urlEncodedContentType.MediaType, StringComparison.OrdinalIgnoreCase))
             {
                 var urlEncoded = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var formData = QueryHelpers.ParseQuery(urlEncoded);

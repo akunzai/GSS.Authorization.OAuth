@@ -16,7 +16,7 @@ namespace GSS.Authorization.OAuth.Tests
             var parameter = new Dictionary<string, StringValues>
             {
                 ["b5"] = "=%3D",
-                ["a3"] = new[] {"a", "2 q"},
+                ["a3"] = new[] { "a", "2 q" },
                 ["c@"] = "",
                 ["a2"] = "r b",
                 [OAuthDefaults.OAuthConsumerKey] = "9djdj82h48djs9d2",
