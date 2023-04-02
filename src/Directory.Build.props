@@ -5,12 +5,13 @@
   <PropertyGroup>
     <PackageProjectUrl>https://github.com/akunzai/GSS.Authorization.OAuth</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <Nullable>enable</Nullable>
-    <Version>2.6.0</Version>
+    <Version>2.6.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release' ">

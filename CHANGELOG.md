@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.6.1 (2023-04-02)
+
+- [Build symbol package and publish it to NuGet.org](https://learn.microsoft.com/nuget/create-packages/symbol-packages-snupkg)
+- [Enabling Central Package Management](https://learn.microsoft.com/nuget/consume-packages/central-package-management)
+
 ## 2.6.0 (2022-08-29)
 
 - [Supports sending access token in form-encoded body or query parameter](https://www.rfc-editor.org/rfc/rfc6750#section-2.2)
