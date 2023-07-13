@@ -9,115 +9,114 @@ using Microsoft.Net.Http.Headers;
 using RichardSzalay.MockHttp;
 using Xunit;
 
-namespace GSS.Authorization.OAuth2.Tests
+namespace GSS.Authorization.OAuth2.Tests;
+
+public class ClientCredentialsAuthorizerTests : IClassFixture<AuthorizerFixture>
 {
-    public class ClientCredentialsAuthorizerTests : IClassFixture<AuthorizerFixture>
+    private readonly IAuthorizer _authorizer;
+    private readonly string _basicAuthHeaderValue;
+    private readonly MockHttpMessageHandler? _mockHttp;
+    private readonly AuthorizerOptions _options;
+    private string? _errorMessage;
+    private HttpStatusCode _errorStatusCode;
+
+    public ClientCredentialsAuthorizerTests(AuthorizerFixture fixture)
     {
-        private readonly IAuthorizer _authorizer;
-        private readonly string _basicAuthHeaderValue;
-        private readonly MockHttpMessageHandler? _mockHttp;
-        private readonly AuthorizerOptions _options;
-        private string? _errorMessage;
-        private HttpStatusCode _errorStatusCode;
-
-        public ClientCredentialsAuthorizerTests(AuthorizerFixture fixture)
+        if (fixture.Configuration.GetValue("HttpClient:Mock", true))
         {
-            if (fixture.Configuration.GetValue("HttpClient:Mock", true))
-            {
-                _mockHttp = new MockHttpMessageHandler();
-            }
-
-            var services = fixture.BuildAuthorizer<ClientCredentialsAuthorizer>(_mockHttp, (code, s) =>
-            {
-                _errorStatusCode = code;
-                _errorMessage = s;
-            });
-            _authorizer = services.GetRequiredService<ClientCredentialsAuthorizer>();
-            _options = services.GetRequiredService<IOptions<AuthorizerOptions>>().Value;
-            _basicAuthHeaderValue =
-                $"Basic {Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_options.ClientId}:{_options.ClientSecret}"))}";
+            _mockHttp = new MockHttpMessageHandler();
         }
 
-        [Fact]
-        public async Task Authorizer_GetAccessToken_ShouldNotNull()
+        var services = fixture.BuildAuthorizer<ClientCredentialsAuthorizer>(_mockHttp, (code, s) =>
         {
-            // Arrange
-            _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-                .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
-                .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.ClientCredentials)
-                .Respond(MediaTypeNames.Application.Json,
-                    JsonSerializer.Serialize(new AccessToken
-                    {
-                        Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10
-                    }));
+            _errorStatusCode = code;
+            _errorMessage = s;
+        });
+        _authorizer = services.GetRequiredService<ClientCredentialsAuthorizer>();
+        _options = services.GetRequiredService<IOptions<AuthorizerOptions>>().Value;
+        _basicAuthHeaderValue =
+            $"Basic {Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_options.ClientId}:{_options.ClientSecret}"))}";
+    }
 
-            // Act
-            var accessToken = await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
+    [Fact]
+    public async Task Authorizer_GetAccessToken_ShouldNotNull()
+    {
+        // Arrange
+        _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
+            .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.ClientCredentials)
+            .Respond(MediaTypeNames.Application.Json,
+                JsonSerializer.Serialize(new AccessToken
+                {
+                    Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10
+                }));
 
-            // Assert
-            Assert.NotNull(accessToken.Token);
-            _mockHttp?.VerifyNoOutstandingExpectation();
-        }
+        // Act
+        var accessToken = await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
 
-        [Fact]
-        public async Task Authorizer_GetAccessToken_ShouldNotEmpty()
-        {
-            // Arrange
-            _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-                .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
-                .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.ClientCredentials)
-                .Respond(MediaTypeNames.Application.Json,
-                    JsonSerializer.Serialize(new AccessToken
-                    {
-                        Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10
-                    }));
+        // Assert
+        Assert.NotNull(accessToken.Token);
+        _mockHttp?.VerifyNoOutstandingExpectation();
+    }
 
-            // Act
-            var accessToken = await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
+    [Fact]
+    public async Task Authorizer_GetAccessToken_ShouldNotEmpty()
+    {
+        // Arrange
+        _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
+            .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.ClientCredentials)
+            .Respond(MediaTypeNames.Application.Json,
+                JsonSerializer.Serialize(new AccessToken
+                {
+                    Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10
+                }));
 
-            // Assert
-            Assert.NotEmpty(accessToken.Token);
-            _mockHttp?.VerifyNoOutstandingExpectation();
-        }
+        // Act
+        var accessToken = await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
 
-        [SkippableFact]
-        public async Task Authorizer_GetAccessTokenWithException_ShouldReturnNull()
-        {
-            Skip.If(_mockHttp == null);
+        // Assert
+        Assert.NotEmpty(accessToken.Token);
+        _mockHttp?.VerifyNoOutstandingExpectation();
+    }
 
-            // Arrange
-            _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-                .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
-                .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.ClientCredentials)
-                .Respond(HttpStatusCode.InternalServerError);
+    [SkippableFact]
+    public async Task Authorizer_GetAccessTokenWithException_ShouldReturnNull()
+    {
+        Skip.If(_mockHttp == null);
 
-            // Act
-            var accessToken = await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
+        // Arrange
+        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
+            .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.ClientCredentials)
+            .Respond(HttpStatusCode.InternalServerError);
 
-            // Assert
-            Assert.Null(accessToken.Token);
-            _mockHttp.VerifyNoOutstandingExpectation();
-        }
+        // Act
+        var accessToken = await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
 
-        [SkippableFact]
-        public async Task Authorizer_GetAccessTokenWithException_ShouldInvokeErrorHandler()
-        {
-            Skip.If(_mockHttp == null);
+        // Assert
+        Assert.Null(accessToken.Token);
+        _mockHttp.VerifyNoOutstandingExpectation();
+    }
 
-            // Arrange
-            var expectedErrorMessage = Guid.NewGuid().ToString();
-            _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-                .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
-                .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.ClientCredentials)
-                .Respond(HttpStatusCode.InternalServerError, MediaTypeNames.Application.Json, expectedErrorMessage);
+    [SkippableFact]
+    public async Task Authorizer_GetAccessTokenWithException_ShouldInvokeErrorHandler()
+    {
+        Skip.If(_mockHttp == null);
 
-            // Act
-            await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
+        // Arrange
+        var expectedErrorMessage = Guid.NewGuid().ToString();
+        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
+            .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.ClientCredentials)
+            .Respond(HttpStatusCode.InternalServerError, MediaTypeNames.Application.Json, expectedErrorMessage);
 
-            // Assert
-            Assert.Equal(HttpStatusCode.InternalServerError, _errorStatusCode);
-            Assert.Equal(expectedErrorMessage, _errorMessage);
-            _mockHttp.VerifyNoOutstandingExpectation();
-        }
+        // Act
+        await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.InternalServerError, _errorStatusCode);
+        Assert.Equal(expectedErrorMessage, _errorMessage);
+        _mockHttp.VerifyNoOutstandingExpectation();
     }
 }
