@@ -10,6 +10,7 @@
     ":automergeRequireAllStatusChecks"
   ],
   "ignorePresets": [
-    "group:dotnetMonorepo"
+    "group:dotnetMonorepo",
+    "helpers:pinGitHubActionDigests"
   ]
 }
