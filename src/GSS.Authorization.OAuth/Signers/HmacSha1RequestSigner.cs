@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
+// ReSharper disable once CheckNamespace
 namespace GSS.Authorization.OAuth;
 
 /// <summary>

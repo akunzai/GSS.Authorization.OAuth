@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Primitives;
 
+// ReSharper disable once CheckNamespace
 namespace GSS.Authorization.OAuth;
 
 [DebuggerDisplay("Method = {MethodName}")]
