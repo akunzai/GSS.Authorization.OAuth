@@ -53,7 +53,7 @@ public class AuthorizerTests
         var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer);
 
         // Act
-        var actual = await authorizer.GetTemporaryCredentialAsync().ConfigureAwait(false);
+        var actual = await authorizer.GetTemporaryCredentialAsync();
 
         // Assert
         Assert.Equal(expected.Key, actual.Key);
@@ -81,7 +81,7 @@ public class AuthorizerTests
         };
 
         // Act
-        var actual = await authorizer.GetVerificationCodeAsync(authorizeUri).ConfigureAwait(false);
+        var actual = await authorizer.GetVerificationCodeAsync(authorizeUri);
 
         // Assert
         Assert.Equal(expected, actual);
@@ -113,8 +113,7 @@ public class AuthorizerTests
         };
 
         // Act
-        var actual = await authorizer.GetTokenCredentialAsync(temporaryCredential, authorizer.VerificationCode)
-            .ConfigureAwait(false);
+        var actual = await authorizer.GetTokenCredentialAsync(temporaryCredential, authorizer.VerificationCode);
 
         // Assert
         Assert.Equal(expected.Key, actual.Key);
@@ -163,7 +162,7 @@ public class AuthorizerTests
         };
 
         // Act
-        var actual = await authorizer.GrantAccessAsync().ConfigureAwait(false);
+        var actual = await authorizer.GrantAccessAsync();
 
         // Assert
         Assert.Equal(expected.Key, actual.Key);
