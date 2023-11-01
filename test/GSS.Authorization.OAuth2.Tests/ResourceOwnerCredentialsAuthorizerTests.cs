@@ -44,8 +44,8 @@ public class ResourceOwnerCredentialsAuthorizerTests : IClassFixture<AuthorizerF
         _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
             .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
             .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
-            .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
-            .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
+            .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName!)
+            .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password!)
             .Respond(MediaTypeNames.Application.Json,
                 JsonSerializer.Serialize(new AccessToken
                 {
@@ -67,8 +67,8 @@ public class ResourceOwnerCredentialsAuthorizerTests : IClassFixture<AuthorizerF
         _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
             .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
             .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
-            .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
-            .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
+            .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName!)
+            .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password!)
             .Respond(MediaTypeNames.Application.Json,
                 JsonSerializer.Serialize(new AccessToken
                 {
@@ -92,8 +92,8 @@ public class ResourceOwnerCredentialsAuthorizerTests : IClassFixture<AuthorizerF
         _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
             .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
             .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
-            .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
-            .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
+            .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName!)
+            .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password!)
             .Respond(HttpStatusCode.InternalServerError);
 
         // Act
@@ -114,8 +114,8 @@ public class ResourceOwnerCredentialsAuthorizerTests : IClassFixture<AuthorizerF
         _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
             .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
             .WithFormData(AuthorizerDefaults.GrantType, AuthorizerDefaults.Password)
-            .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName)
-            .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password)
+            .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName!)
+            .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password!)
             .Respond(HttpStatusCode.InternalServerError, MediaTypeNames.Application.Json, expectedErrorMessage);
 
         // Act
