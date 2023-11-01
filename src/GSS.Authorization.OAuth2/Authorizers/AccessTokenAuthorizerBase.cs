@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
+// ReSharper disable once CheckNamespace
 namespace GSS.Authorization.OAuth2;
 
 public abstract class AccessTokenAuthorizerBase : Authorizer

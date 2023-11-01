@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.Extensions.Options;
 
+// ReSharper disable once CheckNamespace
 namespace GSS.Authorization.OAuth2;
 
 public class ClientCredentialsAuthorizer : AccessTokenAuthorizerBase
