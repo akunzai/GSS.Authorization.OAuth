@@ -84,6 +84,8 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         Skip.If(_mockHttp == null);
 
         // Arrange
+        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .Respond(HttpStatusCode.NotFound);
         _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
             .Respond(HttpStatusCode.Forbidden);
 
@@ -102,9 +104,13 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         Skip.If(_mockHttp == null);
 
         // Arrange
+        var accessToken = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10 };
+        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
+            .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
+            .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(accessToken));
         _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
             .Respond(HttpStatusCode.Unauthorized);
-        var accessToken = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10 };
         _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
             .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
             .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
@@ -126,6 +132,8 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         Skip.If(_mockHttp == null);
 
         // Arrange
+        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .Respond(HttpStatusCode.NotFound);
         _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
             .Respond(_ =>
             {
@@ -150,6 +158,11 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         Skip.If(_mockHttp == null);
 
         // Arrange
+        var accessToken = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10 };
+        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
+            .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
+            .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(accessToken));
         _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
             .Respond(_ =>
             {
@@ -158,7 +171,6 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
                     @"Bearer realm=""oauth2-resource"", error=""unauthorized"", error_description=""Full authentication is required to access this resource""");
                 return res;
             });
-        var accessToken = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10 };
         _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
             .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
             .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
