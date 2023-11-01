@@ -52,7 +52,7 @@ public class ClientCredentialsAuthorizerTests : IClassFixture<AuthorizerFixture>
                 }));
 
         // Act
-        var accessToken = await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
+        var accessToken = await _authorizer.GetAccessTokenAsync();
 
         // Assert
         Assert.NotNull(accessToken.Token);
@@ -73,7 +73,7 @@ public class ClientCredentialsAuthorizerTests : IClassFixture<AuthorizerFixture>
                 }));
 
         // Act
-        var accessToken = await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
+        var accessToken = await _authorizer.GetAccessTokenAsync();
 
         // Assert
         Assert.NotEmpty(accessToken.Token);
@@ -92,7 +92,7 @@ public class ClientCredentialsAuthorizerTests : IClassFixture<AuthorizerFixture>
             .Respond(HttpStatusCode.InternalServerError);
 
         // Act
-        var accessToken = await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
+        var accessToken = await _authorizer.GetAccessTokenAsync();
 
         // Assert
         Assert.Null(accessToken.Token);
@@ -112,7 +112,7 @@ public class ClientCredentialsAuthorizerTests : IClassFixture<AuthorizerFixture>
             .Respond(HttpStatusCode.InternalServerError, MediaTypeNames.Application.Json, expectedErrorMessage);
 
         // Act
-        await _authorizer.GetAccessTokenAsync().ConfigureAwait(false);
+        await _authorizer.GetAccessTokenAsync();
 
         // Assert
         Assert.Equal(HttpStatusCode.InternalServerError, _errorStatusCode);

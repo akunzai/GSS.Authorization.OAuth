@@ -47,7 +47,7 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint).ConfigureAwait(false);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
 
         // Assert
         Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -70,7 +70,7 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         // Act
         using var request = new HttpRequestMessage(HttpMethod.Get, _resourceEndpoint);
         request.Headers.Authorization = new AuthenticationHeaderValue(AuthorizerDefaults.Basic, basicAuth);
-        var response = await _client.HttpClient.SendAsync(request).ConfigureAwait(false);
+        var response = await _client.HttpClient.SendAsync(request);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -88,7 +88,7 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
             .Respond(HttpStatusCode.Forbidden);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint).ConfigureAwait(false);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -112,7 +112,7 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint).ConfigureAwait(false);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -136,7 +136,7 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
             });
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint).ConfigureAwait(false);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -166,7 +166,7 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint).ConfigureAwait(false);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -186,8 +186,8 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken, 2);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint).ConfigureAwait(false);
-        var response2 = await _client.HttpClient.GetAsync(_resourceEndpoint).ConfigureAwait(false);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response2 = await _client.HttpClient.GetAsync(_resourceEndpoint);
 
         // Assert
         Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -218,7 +218,7 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken2);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint).ConfigureAwait(false);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -246,9 +246,9 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken2);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint).ConfigureAwait(false);
-        await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
-        var response2 = await _client.HttpClient.GetAsync(_resourceEndpoint).ConfigureAwait(false);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        await Task.Delay(TimeSpan.FromSeconds(2));
+        var response2 = await _client.HttpClient.GetAsync(_resourceEndpoint);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
