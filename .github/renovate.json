@@ -8,8 +8,5 @@
     ":automergeMinor",
     ":automergeTesters",
     ":automergeRequireAllStatusChecks"
-  ],
-  "ignorePresets": [
-    "group:dotnetMonorepo"
   ]
 }
