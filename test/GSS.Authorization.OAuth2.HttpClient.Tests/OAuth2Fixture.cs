@@ -24,7 +24,7 @@ public class OAuth2Fixture
         {
             options.SendAccessTokenInQuery = Configuration.GetValue("OAuth2:SendAccessTokenInQuery", false);
         });
-        if (Configuration.GetValue("OAuth2:GrantFlow", "ResourceOwnerCredentials")
+        if (Configuration.GetValue("OAuth2:GrantFlow", "ResourceOwnerCredentials")!
             .Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase))
             services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(ConfigureAuthorizerOptions,
                     authorizer => authorizer.ConfigurePrimaryHttpMessageHandler(_ => handler))
@@ -39,9 +39,9 @@ public class OAuth2Fixture
 
     private void ConfigureAuthorizerOptions(IServiceProvider resolver, AuthorizerOptions options)
     {
-        options.AccessTokenEndpoint = Configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
-        options.ClientId = Configuration["OAuth2:ClientId"];
-        options.ClientSecret = Configuration["OAuth2:ClientSecret"];
+        options.AccessTokenEndpoint = Configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint")!;
+        options.ClientId = Configuration["OAuth2:ClientId"]!;
+        options.ClientSecret = Configuration["OAuth2:ClientSecret"]!;
         options.SendClientCredentialsInRequestBody = true;
         options.Credentials = new NetworkCredential(
             Configuration["OAuth2:Credentials:UserName"],

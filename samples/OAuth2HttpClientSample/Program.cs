@@ -10,9 +10,9 @@ using Microsoft.Extensions.Hosting;
 static void ConfigureAuthorizerOptions(IServiceProvider resolver, AuthorizerOptions options)
 {
     var configuration = resolver.GetRequiredService<IConfiguration>();
-    options.AccessTokenEndpoint = configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint");
-    options.ClientId = configuration["OAuth2:ClientId"];
-    options.ClientSecret = configuration["OAuth2:ClientSecret"];
+    options.AccessTokenEndpoint = configuration.GetValue<Uri>("OAuth2:AccessTokenEndpoint")!;
+    options.ClientId = configuration["OAuth2:ClientId"]!;
+    options.ClientSecret = configuration["OAuth2:ClientSecret"]!;
     options.SendClientCredentialsInRequestBody =
         configuration.GetValue("OAuth2:SendClientCredentialsInRequestBody", false);
     options.Credentials = new NetworkCredential(
@@ -45,7 +45,7 @@ var host = Host.CreateDefaultBuilder(args)
             options.SendAccessTokenInQuery = hostContext.Configuration.GetValue("OAuth2:SendAccessTokenInQuery", false);
         });
         var clientBuilder =
-            hostContext.Configuration.GetValue("OAuth2:GrantFlow", "ClientCredentials")
+            hostContext.Configuration.GetValue("OAuth2:GrantFlow", "ClientCredentials")!
                 .Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase)
                 ? services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(
                     ConfigureAuthorizerOptions, builder => builder.ConfigureHttpClient(ConfigureHttpClient))
