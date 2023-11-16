@@ -8,5 +8,9 @@
     ":automergeMinor",
     ":automergeTesters",
     ":automergeRequireAllStatusChecks"
-  ]
+  ],
+  "recreateWhen": "never",
+  "major": {
+    "dependencyDashboardApproval": true
+  }
 }
