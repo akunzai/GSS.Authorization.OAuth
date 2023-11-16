@@ -31,7 +31,7 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         _client = services.GetRequiredService<OAuth2HttpClient>();
         _options = services.GetRequiredService<IOptions<AuthorizerOptions>>().Value;
         _handlerOptions = services.GetRequiredService<IOptions<OAuth2HttpHandlerOptions>>().Value;
-        _resourceEndpoint = fixture.Configuration.GetValue<Uri>("OAuth2:ResourceEndpoint");
+        _resourceEndpoint = fixture.Configuration.GetValue<Uri>("OAuth2:ResourceEndpoint")!;
     }
 
     [Fact]

@@ -11,11 +11,11 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
         {
             options.ClientCredentials = new OAuthCredential(
-                hostContext.Configuration["OAuth:ClientId"],
-                hostContext.Configuration["OAuth:ClientSecret"]);
+                hostContext.Configuration["OAuth:ClientId"]!,
+                hostContext.Configuration["OAuth:ClientSecret"]!);
             options.TokenCredentials = new OAuthCredential(
-                hostContext.Configuration["OAuth:TokenId"],
-                hostContext.Configuration["OAuth:TokenSecret"]);
+                hostContext.Configuration["OAuth:TokenId"]!,
+                hostContext.Configuration["OAuth:TokenSecret"]!);
             options.SignedAsQuery = hostContext.Configuration.GetValue("OAuth:SignedAsQuery", false);
             options.SignedAsBody = hostContext.Configuration.GetValue("OAuth:SignedAsBody", false);
         }).ConfigureHttpClient(client =>
@@ -38,7 +38,7 @@ Console.WriteLine("Creating a client...");
 var oauthClient = host.Services.GetRequiredService<OAuthHttpClient>();
 
 Console.WriteLine("Sending a request...");
-var method = new HttpMethod(configuration.GetValue("Request:Method", HttpMethod.Get.Method));
+var method = new HttpMethod(configuration.GetValue("Request:Method", HttpMethod.Get.Method)!);
 var request = new HttpRequestMessage(method, configuration.GetValue<Uri>("Request:Uri"));
 var accept = configuration["Request:Accept"];
 if (!string.IsNullOrWhiteSpace(accept))

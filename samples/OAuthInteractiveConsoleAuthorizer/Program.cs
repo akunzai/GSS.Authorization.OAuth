@@ -13,14 +13,14 @@ var host = Host.CreateDefaultBuilder()
             .Configure(options =>
             {
                 options.ClientCredentials = new OAuthCredential(
-                    context.Configuration["OAuth:ClientId"],
-                    context.Configuration["OAuth:ClientSecret"]);
+                    context.Configuration["OAuth:ClientId"]!,
+                    context.Configuration["OAuth:ClientSecret"]!);
                 options.CallBack = context.Configuration.GetValue<Uri>("OAuth:Callback");
                 options.TemporaryCredentialRequestUri =
-                    context.Configuration.GetValue<Uri>("OAuth:TemporaryCredentialRequestUri");
+                    context.Configuration.GetValue<Uri>("OAuth:TemporaryCredentialRequestUri")!;
                 options.ResourceOwnerAuthorizeUri =
-                    context.Configuration.GetValue<Uri>("OAuth:ResourceOwnerAuthorizeUri");
-                options.TokenRequestUri = context.Configuration.GetValue<Uri>("OAuth:TokenRequestUri");
+                    context.Configuration.GetValue<Uri>("OAuth:ResourceOwnerAuthorizeUri")!;
+                options.TokenRequestUri = context.Configuration.GetValue<Uri>("OAuth:TokenRequestUri")!;
             })
             .PostConfigure(options => Validator.ValidateObject(options, new ValidationContext(options), true));
         services.AddSingleton<IRequestSigner, HmacSha1RequestSigner>();

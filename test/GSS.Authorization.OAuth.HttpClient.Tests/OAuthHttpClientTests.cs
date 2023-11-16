@@ -28,11 +28,11 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
     {
         _configuration = fixture.Configuration;
         _clientCredentials = new OAuthCredential(
-            _configuration["OAuth:ClientId"],
-            _configuration["OAuth:ClientSecret"]);
+            _configuration["OAuth:ClientId"]!,
+            _configuration["OAuth:ClientSecret"]!);
         _tokenCredentials = new OAuthCredential(
-            _configuration["OAuth:TokenId"],
-            _configuration["OAuth:TokenSecret"]);
+            _configuration["OAuth:TokenId"]!,
+            _configuration["OAuth:TokenSecret"]!);
         if (!_configuration.GetValue("HttpClient:Mock", true)) return;
         _mockHttp = new MockHttpMessageHandler();
         _mockHttp.Fallback.Respond(HttpStatusCode.Unauthorized);
@@ -58,7 +58,7 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
             .Services.BuildServiceProvider();
         var client = services.GetRequiredService<OAuthHttpClient>();
         var options = services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>();
-        var resourceUri = _configuration.GetValue<Uri>("Request:Uri");
+        var resourceUri = _configuration.GetValue<Uri>("Request:Uri")!;
         _mockHttp?.Expect(HttpMethod.Get, resourceUri.AbsoluteUri)
             .WithHeaders(HeaderNames.Authorization, _signer.GetAuthorizationHeader(
                 HttpMethod.Get, resourceUri, options.Value, QueryHelpers.ParseQuery(resourceUri.Query),
@@ -87,7 +87,7 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
             .ConfigurePrimaryHttpMessageHandler(_ => _mockHttp ?? new HttpClientHandler() as HttpMessageHandler)
             .Services.BuildServiceProvider();
         var client = services.GetRequiredService<OAuthHttpClient>();
-        var resourceUri = _configuration.GetValue<Uri>("Request:Uri");
+        var resourceUri = _configuration.GetValue<Uri>("Request:Uri")!;
         var basicAuth =
             Convert.ToBase64String(
                 Encoding.ASCII.GetBytes($"{_clientCredentials.Key}:{_clientCredentials.Secret}"));
@@ -127,7 +127,7 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
             .Services.BuildServiceProvider();
         var client = services.GetRequiredService<OAuthHttpClient>();
         var options = services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>();
-        var resourceUri = new UriBuilder(_configuration["Request:Uri"]);
+        var resourceUri = new UriBuilder(_configuration["Request:Uri"]!);
         resourceUri.Query += resourceUri.Query.Contains('?', StringComparison.Ordinal)
             ? "&foo=v1&foo=v2"
             : "?foo=v1&foo=v2";
@@ -171,9 +171,9 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
             .Services.BuildServiceProvider();
         var client = services.GetRequiredService<OAuthHttpClient>();
         var options = services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>();
-        var resourceUri = new UriBuilder(_configuration["Request:Uri"]);
+        var resourceUri = new UriBuilder(_configuration["Request:Uri"]!);
         var queryString = QueryHelpers.ParseQuery(resourceUri.Uri.Query);
-        var body = _configuration.GetSection("Request:Body").Get<IDictionary<string, string>>();
+        var body = _configuration.GetSection("Request:Body").Get<IDictionary<string, string>>()!;
         var formData = new Dictionary<string, StringValues>();
         foreach (var (key, value) in body)
         {
@@ -182,10 +182,7 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
 
         foreach (var query in queryString)
         {
-            if (!formData.ContainsKey(query.Key))
-            {
-                formData.Add(query.Key, query.Value);
-            }
+            formData.TryAdd(query.Key, query.Value);
         }
 
         var parameters = _signer.AppendAuthorizationParameters(HttpMethod.Post, resourceUri.Uri,
@@ -195,7 +192,7 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
         {
             if (!queryString.ContainsKey(parameter.Key))
             {
-                values.AddRange(parameter.Value.Select(value => new KeyValuePair<string, string>(parameter.Key, value)));
+                values.AddRange(parameter.Value.Select(value => new KeyValuePair<string, string>(parameter.Key, value!)));
             }
         }
 
