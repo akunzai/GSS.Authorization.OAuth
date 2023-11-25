@@ -7,10 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="Microsoft.Extensions.Options" VersionOverride="2.2.0" />
-    <PackageReference Include="System.ComponentModel.Annotations" VersionOverride="4.7.0" />
-    <PackageReference Include="System.Text.Encodings.Web" VersionOverride="4.7.2" />
-    <PackageReference Include="System.Text.Json" VersionOverride="4.7.2" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="System.ComponentModel.Annotations" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">

@@ -8,11 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" VersionOverride="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" VersionOverride="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" VersionOverride="2.2.0" />
-    <PackageReference Include="System.Text.Encodings.Web" VersionOverride="4.7.2" />
-    <PackageReference Include="System.Text.Json" VersionOverride="4.7.2" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 
