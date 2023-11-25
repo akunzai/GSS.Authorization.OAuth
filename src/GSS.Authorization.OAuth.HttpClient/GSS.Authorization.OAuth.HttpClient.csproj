@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" VersionOverride="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Http" VersionOverride="2.2.0" />
     <PackageReference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
