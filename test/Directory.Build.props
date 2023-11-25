@@ -11,10 +11,7 @@
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="RichardSzalay.MockHttp" />
-    <PackageReference Include="System.Net.Http" />
-    <PackageReference Include="System.Text.RegularExpressions" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="All" />
     <PackageReference Include="Xunit.SkippableFact" />
