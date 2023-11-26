@@ -27,7 +27,7 @@ public class AuthorizerTests
     private readonly IRequestSigner _signer = new HmacSha1RequestSigner();
 
     [Fact]
-    public async Task GetTemporaryCredentialAsync()
+    public async Task GetTemporaryCredential()
     {
         // Arrange
         var expected = new OAuthCredential("hh5s93j4hdidpola", "hdhd0244k9j7ao03");
@@ -62,7 +62,7 @@ public class AuthorizerTests
     }
 
     [Fact]
-    public async Task GetVerificationCodeAsync()
+    public async Task GetVerificationCode()
     {
         // Arrange
         const string expected = "hfdp7dh39dks9884";
@@ -89,7 +89,7 @@ public class AuthorizerTests
     }
 
     [Fact]
-    public async Task GetTokenCredentialAsync()
+    public async Task GetTokenCredential()
     {
         // Arrange
         var expected = new OAuthCredential("nnch734d00sl2jdk", "pfkkdhi9sl3r4s00");
@@ -122,7 +122,7 @@ public class AuthorizerTests
     }
 
     [Fact]
-    public async Task GrantAccessAsync()
+    public async Task GrantAccess()
     {
         // Arrange
         var expected = new OAuthCredential("nnch734d00sl2jdk", "pfkkdhi9sl3r4s00");
