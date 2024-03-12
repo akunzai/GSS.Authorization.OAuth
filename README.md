@@ -2,12 +2,9 @@
 
 [![Build Status][build-badge]][build] [![Code Coverage][codecov-badge]][codecov]
 
-[build]: https://github.com/akunzai/GSS.Authorization.OAuth/actions?query=workflow%3ABuild
-
-[build-badge]: https://github.com/akunzai/GSS.Authorization.OAuth/workflows/Build/badge.svg
-
+[build]: https://github.com/akunzai/GSS.Authorization.OAuth/actions/workflows/build.yml
+[build-badge]: https://github.com/akunzai/GSS.Authorization.OAuth/actions/workflows/build.yml/badge.svg
 [codecov]: https://codecov.io/gh/akunzai/GSS.Authorization.OAuth
-
 [codecov-badge]: https://codecov.io/gh/akunzai/GSS.Authorization.OAuth/branch/main/graph/badge.svg?token=YHAPVX7R97
 
 OAuth authorized HttpClient, friendly
