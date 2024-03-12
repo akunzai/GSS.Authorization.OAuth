@@ -1,10 +1,10 @@
 # GSS.Authorization.OAuth
 
-[![Build Status][ci-badge]][ci] [![Code Coverage][codecov-badge]][codecov]
+[![Build Status][build-badge]][build] [![Code Coverage][codecov-badge]][codecov]
 
-[ci]: https://github.com/akunzai/GSS.Authorization.OAuth/actions?query=workflow%3ACI
+[build]: https://github.com/akunzai/GSS.Authorization.OAuth/actions?query=workflow%3ABuild
 
-[ci-badge]: https://github.com/akunzai/GSS.Authorization.OAuth/workflows/CI/badge.svg
+[build-badge]: https://github.com/akunzai/GSS.Authorization.OAuth/workflows/Build/badge.svg
 
 [codecov]: https://codecov.io/gh/akunzai/GSS.Authorization.OAuth
 
