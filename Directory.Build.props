@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
+    <!-- https://learn.microsoft.com/nuget/concepts/auditing-packages -->
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>moderate</NuGetAuditLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
 </Project>
