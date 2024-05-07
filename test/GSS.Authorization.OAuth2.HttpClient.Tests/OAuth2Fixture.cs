@@ -9,9 +9,8 @@ public class OAuth2Fixture
 {
     public OAuth2Fixture()
     {
-        var host = Host.CreateDefaultBuilder()
-            .Build();
-        Configuration = host.Services.GetRequiredService<IConfiguration>();
+        Configuration = Host.CreateDefaultBuilder().Build()
+            .Services.GetRequiredService<IConfiguration>();
     }
 
     public IConfiguration Configuration { get; }

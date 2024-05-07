@@ -6,40 +6,38 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-var host = Host.CreateDefaultBuilder()
-    .ConfigureServices((context, services) =>
+var builder = Host.CreateApplicationBuilder(args);
+builder.Services.AddOptions<AuthorizerOptions>()
+    .Configure(options =>
     {
-        services.AddOptions<AuthorizerOptions>()
-            .Configure(options =>
-            {
-                options.ClientCredentials = new OAuthCredential(
-                    context.Configuration["OAuth:ClientId"]!,
-                    context.Configuration["OAuth:ClientSecret"]!);
-                options.CallBack = context.Configuration.GetValue<Uri>("OAuth:Callback");
-                options.TemporaryCredentialRequestUri =
-                    context.Configuration.GetValue<Uri>("OAuth:TemporaryCredentialRequestUri")!;
-                options.ResourceOwnerAuthorizeUri =
-                    context.Configuration.GetValue<Uri>("OAuth:ResourceOwnerAuthorizeUri")!;
-                options.TokenRequestUri = context.Configuration.GetValue<Uri>("OAuth:TokenRequestUri")!;
-            })
-            .PostConfigure(options => Validator.ValidateObject(options, new ValidationContext(options), true));
-        services.AddSingleton<IRequestSigner, HmacSha1RequestSigner>();
-        services.AddHttpClient<InteractiveConsoleAuthorizer>()
-            .ConfigureHttpClient(client =>
-            {
-                client.BaseAddress = context.Configuration.GetValue<Uri>("OAuth:BaseAddress");
-                var assembly = Assembly.GetEntryAssembly();
-                var productName = assembly?.GetCustomAttribute<AssemblyProductAttribute>()?.Product;
-                var productVersion =
-                    assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ??
-                    assembly?.GetName().Version?.ToString();
-                if (!string.IsNullOrEmpty(productName) && !string.IsNullOrEmpty(productVersion))
-                {
-                    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));
-                }
-            });
-        services.AddTransient<IAuthorizer>(resolver => resolver.GetRequiredService<InteractiveConsoleAuthorizer>());
-    }).Build();
+        options.ClientCredentials = new OAuthCredential(
+            builder.Configuration["OAuth:ClientId"]!,
+            builder.Configuration["OAuth:ClientSecret"]!);
+        options.CallBack = builder.Configuration.GetValue<Uri>("OAuth:Callback");
+        options.TemporaryCredentialRequestUri =
+            builder.Configuration.GetValue<Uri>("OAuth:TemporaryCredentialRequestUri")!;
+        options.ResourceOwnerAuthorizeUri =
+            builder.Configuration.GetValue<Uri>("OAuth:ResourceOwnerAuthorizeUri")!;
+        options.TokenRequestUri = builder.Configuration.GetValue<Uri>("OAuth:TokenRequestUri")!;
+    })
+    .PostConfigure(options => Validator.ValidateObject(options, new ValidationContext(options), true));
+builder.Services.AddSingleton<IRequestSigner, HmacSha1RequestSigner>();
+builder.Services.AddHttpClient<InteractiveConsoleAuthorizer>()
+    .ConfigureHttpClient(client =>
+    {
+        client.BaseAddress = builder.Configuration.GetValue<Uri>("OAuth:BaseAddress");
+        var assembly = Assembly.GetEntryAssembly();
+        var productName = assembly?.GetCustomAttribute<AssemblyProductAttribute>()?.Product;
+        var productVersion =
+            assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ??
+            assembly?.GetName().Version?.ToString();
+        if (!string.IsNullOrEmpty(productName) && !string.IsNullOrEmpty(productVersion))
+        {
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));
+        }
+    });
+builder.Services.AddTransient<IAuthorizer>(resolver => resolver.GetRequiredService<InteractiveConsoleAuthorizer>());
+var host = builder.Build();
 
 var authorizer = host.Services.GetRequiredService<IAuthorizer>();
 var tokenCredentials = await authorizer.GrantAccessAsync().ConfigureAwait(false);
