@@ -36,23 +36,22 @@ static void ConfigureHttpClient(HttpClient client)
     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
 }
 
-var host = Host.CreateDefaultBuilder(args)
-    .ConfigureServices((hostContext, services) =>
-    {
-        services.AddOptions<OAuth2HttpHandlerOptions>().Configure(options =>
-        {
-            options.SendAccessTokenInBody = hostContext.Configuration.GetValue("OAuth2:SendAccessTokenInBody", false);
-            options.SendAccessTokenInQuery = hostContext.Configuration.GetValue("OAuth2:SendAccessTokenInQuery", false);
-        });
-        var clientBuilder =
-            hostContext.Configuration.GetValue("OAuth2:GrantFlow", "ClientCredentials")!
-                .Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase)
-                ? services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(
-                    ConfigureAuthorizerOptions, builder => builder.ConfigureHttpClient(ConfigureHttpClient))
-                : services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>(
-                    ConfigureAuthorizerOptions, builder => builder.ConfigureHttpClient(ConfigureHttpClient));
-        clientBuilder.ConfigureHttpClient(ConfigureHttpClient);
-    }).Build();
+var builder = Host.CreateApplicationBuilder(args);
+builder.Services.AddOptions<OAuth2HttpHandlerOptions>().Configure(options =>
+{
+    options.SendAccessTokenInBody = builder.Configuration.GetValue("OAuth2:SendAccessTokenInBody", false);
+    options.SendAccessTokenInQuery = builder.Configuration.GetValue("OAuth2:SendAccessTokenInQuery", false);
+});
+var clientBuilder =
+    builder.Configuration.GetValue("OAuth2:GrantFlow", "ClientCredentials")!
+        .Equals("ClientCredentials", StringComparison.OrdinalIgnoreCase)
+        ? builder.Services.AddOAuth2HttpClient<OAuth2HttpClient, ClientCredentialsAuthorizer>(
+            ConfigureAuthorizerOptions, b => b.ConfigureHttpClient(ConfigureHttpClient))
+        : builder.Services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorizer>(
+            ConfigureAuthorizerOptions, b => b.ConfigureHttpClient(ConfigureHttpClient));
+clientBuilder.ConfigureHttpClient(ConfigureHttpClient);
+var host = builder.Build();
+
 var configuration = host.Services.GetRequiredService<IConfiguration>();
 
 Console.WriteLine("Creating a client...");

@@ -8,9 +8,8 @@ public class OAuthFixture
 {
     public OAuthFixture()
     {
-        var host = Host.CreateDefaultBuilder()
-            .Build();
-        Configuration = host.Services.GetRequiredService<IConfiguration>();
+        Configuration = Host.CreateDefaultBuilder().Build()
+            .Services.GetRequiredService<IConfiguration>();
     }
 
     public IConfiguration Configuration { get; }

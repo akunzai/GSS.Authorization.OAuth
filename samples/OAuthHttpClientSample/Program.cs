@@ -5,32 +5,30 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-var host = Host.CreateDefaultBuilder(args)
-    .ConfigureServices((hostContext, services) =>
+var builder = Host.CreateApplicationBuilder(args);
+builder.Services.AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
+{
+    options.ClientCredentials = new OAuthCredential(
+        builder.Configuration["OAuth:ClientId"]!,
+        builder.Configuration["OAuth:ClientSecret"]!);
+    options.TokenCredentials = new OAuthCredential(
+        builder.Configuration["OAuth:TokenId"]!,
+        builder.Configuration["OAuth:TokenSecret"]!);
+    options.SignedAsQuery = builder.Configuration.GetValue("OAuth:SignedAsQuery", false);
+    options.SignedAsBody = builder.Configuration.GetValue("OAuth:SignedAsBody", false);
+}).ConfigureHttpClient(client =>
+{
+    var assembly = Assembly.GetEntryAssembly();
+    var productName = assembly?.GetCustomAttribute<AssemblyProductAttribute>()?.Product;
+    var productVersion =
+        assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ??
+        assembly?.GetName().Version?.ToString();
+    if (!string.IsNullOrEmpty(productName) && !string.IsNullOrEmpty(productVersion))
     {
-        services.AddOAuthHttpClient<OAuthHttpClient>((_, options) =>
-        {
-            options.ClientCredentials = new OAuthCredential(
-                hostContext.Configuration["OAuth:ClientId"]!,
-                hostContext.Configuration["OAuth:ClientSecret"]!);
-            options.TokenCredentials = new OAuthCredential(
-                hostContext.Configuration["OAuth:TokenId"]!,
-                hostContext.Configuration["OAuth:TokenSecret"]!);
-            options.SignedAsQuery = hostContext.Configuration.GetValue("OAuth:SignedAsQuery", false);
-            options.SignedAsBody = hostContext.Configuration.GetValue("OAuth:SignedAsBody", false);
-        }).ConfigureHttpClient(client =>
-        {
-            var assembly = Assembly.GetEntryAssembly();
-            var productName = assembly?.GetCustomAttribute<AssemblyProductAttribute>()?.Product;
-            var productVersion =
-                assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ??
-                assembly?.GetName().Version?.ToString();
-            if (!string.IsNullOrEmpty(productName) && !string.IsNullOrEmpty(productVersion))
-            {
-                client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));
-            }
-        });
-    }).Build();
+        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));
+    }
+});
+var host = builder.Build();
 
 var configuration = host.Services.GetRequiredService<IConfiguration>();
 
