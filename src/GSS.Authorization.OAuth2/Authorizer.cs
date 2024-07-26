@@ -7,14 +7,9 @@ namespace GSS.Authorization.OAuth2;
 /// <summary>
 /// Typed HttpClient to get access token
 /// </summary>
-public abstract class Authorizer : IAuthorizer
+public abstract class Authorizer(HttpClient client) : IAuthorizer
 {
-    protected Authorizer(HttpClient client)
-    {
-        Client = client;
-    }
-
-    protected HttpClient Client { get; }
+    protected HttpClient Client { get; } = client;
 
     public abstract Task<AccessToken> GetAccessTokenAsync(CancellationToken cancellationToken = default);
 }

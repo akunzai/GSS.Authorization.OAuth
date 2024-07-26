@@ -5,12 +5,7 @@ namespace GSS.Authorization.OAuth;
 /// <summary>
 /// Typed HttpClient for OAuth protected resource
 /// </summary>
-public class OAuthHttpClient
+public class OAuthHttpClient(HttpClient httpClient)
 {
-    public OAuthHttpClient(HttpClient httpClient)
-    {
-        HttpClient = httpClient;
-    }
-
-    public HttpClient HttpClient { get; }
+    public HttpClient HttpClient { get; } = httpClient;
 }

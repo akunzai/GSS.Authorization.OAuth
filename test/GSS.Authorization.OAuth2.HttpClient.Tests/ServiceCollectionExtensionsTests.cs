@@ -290,13 +290,8 @@ public class ServiceCollectionExtensionsTests
         Assert.NotNull(authorizer);
     }
 
-    private class DemoOAuthClient
+    private class DemoOAuthClient(System.Net.Http.HttpClient client)
     {
-        private readonly System.Net.Http.HttpClient _client;
-
-        public DemoOAuthClient(System.Net.Http.HttpClient client)
-        {
-            _client = client;
-        }
+        private readonly System.Net.Http.HttpClient _client = client;
     }
 }

@@ -8,15 +8,12 @@ using Microsoft.Extensions.Options;
 
 namespace GSS.Authorization.OAuth;
 
-public class InteractiveConsoleAuthorizer : AuthorizerBase
+public class InteractiveConsoleAuthorizer(
+    IOptions<AuthorizerOptions> options,
+    HttpClient httpClient,
+    IRequestSigner signer)
+    : AuthorizerBase(options, httpClient, signer)
 {
-    public InteractiveConsoleAuthorizer(
-        IOptions<AuthorizerOptions> options,
-        HttpClient httpClient,
-        IRequestSigner signer) : base(options, httpClient, signer)
-    {
-    }
-
     public override Task<string> GetVerificationCodeAsync(Uri authorizationUri,
         CancellationToken cancellationToken = default)
     {

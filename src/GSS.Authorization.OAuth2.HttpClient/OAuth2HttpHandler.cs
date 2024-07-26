@@ -12,28 +12,19 @@ using Microsoft.Extensions.Options;
 
 namespace GSS.Authorization.OAuth2;
 
-public class OAuth2HttpHandler : DelegatingHandler
+public class OAuth2HttpHandler(
+    IOptions<OAuth2HttpHandlerOptions> options,
+    IAuthorizer authorizer,
+    IMemoryCache memoryCache)
+    : DelegatingHandler
 {
     private static readonly MediaTypeHeaderValue _urlEncodedContentType =
         MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
 
-    private readonly IAuthorizer _authorizer;
-    private readonly string _cacheKey;
-    private readonly IMemoryCache _memoryCache;
+    private readonly string _cacheKey = Guid.NewGuid().ToString();
 
-    private readonly OAuth2HttpHandlerOptions _options;
+    private readonly OAuth2HttpHandlerOptions _options = options.Value;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
-
-    public OAuth2HttpHandler(
-        IOptions<OAuth2HttpHandlerOptions> options,
-        IAuthorizer authorizer,
-        IMemoryCache memoryCache)
-    {
-        _options = options.Value;
-        _authorizer = authorizer;
-        _memoryCache = memoryCache;
-        _cacheKey = Guid.NewGuid().ToString();
-    }
 
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
@@ -50,7 +41,7 @@ public class OAuth2HttpHandler : DelegatingHandler
         // https://www.rfc-editor.org/rfc/rfc6750#section-3
         var challenges = response.Headers.WwwAuthenticate;
         if (response.StatusCode != HttpStatusCode.Unauthorized ||
-            (challenges.Any() && !challenges.Any(c => c.Scheme.Equals(AuthorizerDefaults.Bearer))))
+            (challenges.Count != 0 && !challenges.Any(c => c.Scheme.Equals(AuthorizerDefaults.Bearer))))
             return response;
         accessToken = await GetAccessTokenAsync(cancellationToken, true).ConfigureAwait(false);
         await SendAccessTokenInRequestAsync(accessToken, request).ConfigureAwait(false);
@@ -61,7 +52,7 @@ public class OAuth2HttpHandler : DelegatingHandler
         CancellationToken cancellationToken,
         bool forceRenew = false)
     {
-        if (!forceRenew && _memoryCache.TryGetValue<AccessToken>(_cacheKey, out var accessTokenCache))
+        if (!forceRenew && memoryCache.TryGetValue<AccessToken>(_cacheKey, out var accessTokenCache))
         {
             return accessTokenCache;
         }
@@ -69,16 +60,16 @@ public class OAuth2HttpHandler : DelegatingHandler
         await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var accessToken = await _authorizer.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
+            var accessToken = await authorizer.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(accessToken.Token)) return accessToken;
             if (accessToken.ExpiresInSeconds > 0)
             {
-                _memoryCache.Set(_cacheKey, accessToken, accessToken.ExpiresIn);
+                memoryCache.Set(_cacheKey, accessToken, accessToken.ExpiresIn);
             }
             else
             {
-                _memoryCache.Set(_cacheKey, accessToken);
+                memoryCache.Set(_cacheKey, accessToken);
             }
-
             return accessToken;
         }
         finally

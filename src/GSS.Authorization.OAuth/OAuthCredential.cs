@@ -5,17 +5,11 @@ using System.Diagnostics;
 namespace GSS.Authorization.OAuth;
 
 [DebuggerDisplay("Key = {Key}")]
-public readonly struct OAuthCredential : IEquatable<OAuthCredential>
+public readonly struct OAuthCredential(string key, string secret) : IEquatable<OAuthCredential>
 {
-    public OAuthCredential(string key, string secret)
-    {
-        Key = key;
-        Secret = secret;
-    }
+    public string Key { get; } = key;
 
-    public string Key { get; }
-
-    public string Secret { get; }
+    public string Secret { get; } = secret;
 
     public override bool Equals(object? obj)
     {
