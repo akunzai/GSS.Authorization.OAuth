@@ -10,19 +10,13 @@ using Microsoft.Extensions.Primitives;
 namespace GSS.Authorization.OAuth;
 
 [DebuggerDisplay("Method = {MethodName}")]
-public abstract class RequestSignerBase : IRequestSigner
+public abstract class RequestSignerBase(OAuthOptions options) : IRequestSigner
 {
-    protected RequestSignerBase(OAuthOptions options)
+    protected RequestSignerBase() : this(new OAuthOptions())
     {
-        Options = options;
     }
 
-    protected RequestSignerBase()
-    {
-        Options = new OAuthOptions();
-    }
-
-    protected OAuthOptions Options { get; }
+    protected OAuthOptions Options { get; } = options;
 
     public abstract string MethodName { get; }
 
