@@ -13,7 +13,7 @@ namespace GSS.Authorization.OAuth2.Tests;
 
 public class ClientCredentialsAuthorizerTests : IClassFixture<AuthorizerFixture>
 {
-    private readonly IAuthorizer _authorizer;
+    private readonly ClientCredentialsAuthorizer _authorizer;
     private readonly string _basicAuthHeaderValue;
     private readonly MockHttpMessageHandler? _mockHttp;
     private readonly AuthorizerOptions _options;

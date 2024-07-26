@@ -57,10 +57,8 @@ public abstract class AccessTokenAuthorizerBase : Authorizer
 
         PrepareFormData(formData);
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, Options.AccessTokenEndpoint)
-        {
-            Content = new FormUrlEncodedContent(formData)
-        };
+        using var request = new HttpRequestMessage(HttpMethod.Post, Options.AccessTokenEndpoint);
+        request.Content = new FormUrlEncodedContent(formData);
         if (!Options.SendClientCredentialsInRequestBody)
         {
             request.Headers.Authorization = new AuthenticationHeaderValue(AuthorizerDefaults.Basic,

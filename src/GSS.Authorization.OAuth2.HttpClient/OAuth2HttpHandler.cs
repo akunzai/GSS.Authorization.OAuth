@@ -70,6 +70,7 @@ public class OAuth2HttpHandler : DelegatingHandler
         try
         {
             var accessToken = await _authorizer.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(accessToken.Token)) return accessToken;
             if (accessToken.ExpiresInSeconds > 0)
             {
                 _memoryCache.Set(_cacheKey, accessToken, accessToken.ExpiresIn);
@@ -78,7 +79,6 @@ public class OAuth2HttpHandler : DelegatingHandler
             {
                 _memoryCache.Set(_cacheKey, accessToken);
             }
-
             return accessToken;
         }
         finally
