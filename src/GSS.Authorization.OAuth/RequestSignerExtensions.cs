@@ -34,10 +34,7 @@ public static class RequestSignerExtensions
         var values = new List<string>();
         foreach (var entry in query.Where(p => p.Key.StartsWith(OAuthDefaults.OAuthPrefix, StringComparison.Ordinal)))
         {
-            foreach (var value in entry.Value)
-            {
-                values.Add($"{options.PercentEncoder(entry.Key)}=\"{options.PercentEncoder(value)}\"");
-            }
+            values.AddRange(entry.Value.OfType<string>().Select(value => $"{options.PercentEncoder(entry.Key)}=\"{options.PercentEncoder(value)}\""));
         }
         var headerValue = string.Join(",", values);
         if (options.Realm != null && !string.IsNullOrWhiteSpace(options.Realm))
