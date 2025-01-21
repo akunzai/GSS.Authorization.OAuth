@@ -54,7 +54,7 @@ public class OAuth2HttpHandler(
     {
         if (!forceRenew && memoryCache.TryGetValue<AccessToken>(_cacheKey, out var accessTokenCache))
         {
-            return accessTokenCache;
+            return accessTokenCache ?? AccessToken.Empty;
         }
 
         await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);

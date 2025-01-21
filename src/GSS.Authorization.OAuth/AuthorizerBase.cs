@@ -79,7 +79,8 @@ public abstract class AuthorizerBase : IAuthorizer
         var urlEncoded = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         var formData = QueryHelpers.ParseQuery(urlEncoded);
         HandleOAuthException(response, formData);
-        return new OAuthCredential(formData[OAuthDefaults.OAuthToken], formData[OAuthDefaults.OAuthTokenSecret]);
+        return new OAuthCredential(formData[OAuthDefaults.OAuthToken].ToString(),
+            formData[OAuthDefaults.OAuthTokenSecret].ToString());
     }
 
     /// <summary>
@@ -118,7 +119,8 @@ public abstract class AuthorizerBase : IAuthorizer
         var urlEncoded = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         var formData = QueryHelpers.ParseQuery(urlEncoded);
         HandleOAuthException(response, formData);
-        return new OAuthCredential(formData[OAuthDefaults.OAuthToken], formData[OAuthDefaults.OAuthTokenSecret]);
+        return new OAuthCredential(formData[OAuthDefaults.OAuthToken].ToString(),
+            formData[OAuthDefaults.OAuthTokenSecret].ToString());
     }
 
     protected virtual void HandleOAuthException(
@@ -129,9 +131,9 @@ public abstract class AuthorizerBase : IAuthorizer
             throw new ArgumentNullException(nameof(request));
         if (formData == null)
             throw new ArgumentNullException(nameof(formData));
-        if (!formData.ContainsKey(OAuthDefaults.OAuthProblem)) return;
+        if (!formData.TryGetValue(OAuthDefaults.OAuthProblem, out var value)) return;
 
-        var oauthProblem = formData[OAuthDefaults.OAuthProblem].ToString();
+        var oauthProblem = value.ToString();
         if (string.IsNullOrWhiteSpace(oauthProblem))
             return;
         throw oauthProblem switch

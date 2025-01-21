@@ -71,8 +71,8 @@ public abstract class AccessTokenAuthorizerBase : Authorizer
         if (response.IsSuccessStatusCode)
         {
             var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            return await JsonSerializer.DeserializeAsync<AccessToken>(stream, null, cancellationToken)
-                .ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync<AccessToken>(stream, cancellationToken: cancellationToken)
+                .ConfigureAwait(false) ?? AccessToken.Empty;
         }
 
         if (Options.OnError == null) return AccessToken.Empty;

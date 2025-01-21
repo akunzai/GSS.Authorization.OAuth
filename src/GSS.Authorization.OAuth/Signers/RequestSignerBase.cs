@@ -53,11 +53,7 @@ public abstract class RequestSignerBase(OAuthOptions options) : IRequestSigner
                      .Where(p => !(p.Key.Equals(OAuthDefaults.OAuthSignature, StringComparison.Ordinal) ||
                                    p.Key.Equals(OAuthDefaults.Realm, StringComparison.Ordinal))))
         {
-            foreach (var value in parameter.Value)
-            {
-                normalizationParameters.Add(new KeyValuePair<string, string>(Options.PercentEncoder(parameter.Key),
-                    Options.PercentEncoder(value)));
-            }
+            normalizationParameters.AddRange(parameter.Value.OfType<string>().Select(value => new KeyValuePair<string, string>(Options.PercentEncoder(parameter.Key), Options.PercentEncoder(value))));
         }
 
         var values = normalizationParameters
