@@ -1,0 +1,39 @@
+<Solution>
+  <Folder Name="/samples/">
+    <File Path="samples/Directory.Build.props" />
+    <Project Path="samples/OAuth2HttpClientSample/OAuth2HttpClientSample.csproj" />
+    <Project Path="samples/OAuthHttpClientSample/OAuthHttpClientSample.csproj" />
+    <Project Path="samples/OAuthInteractiveConsoleAuthorizer/OAuthInteractiveConsoleAuthorizer.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".config/dotnet-tools.json" />
+    <File Path=".editorconfig" />
+    <File Path=".github/dependabot.yml" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <File Path="src/Directory.Build.props" />
+    <Project Path="src/GSS.Authorization.OAuth.HttpClient/GSS.Authorization.OAuth.HttpClient.csproj" />
+    <Project Path="src/GSS.Authorization.OAuth/GSS.Authorization.OAuth.csproj" />
+    <Project Path="src/GSS.Authorization.OAuth2.HttpClient/GSS.Authorization.OAuth2.HttpClient.csproj" />
+    <Project Path="src/GSS.Authorization.OAuth2/GSS.Authorization.OAuth2.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <File Path="test/Directory.Build.props" />
+    <Project Path="test/GSS.Authorization.OAuth.HttpClient.Tests/GSS.Authorization.OAuth.HttpClient.Tests.csproj">
+      <Build Solution="Release|*" Project="false" />
+    </Project>
+    <Project Path="test/GSS.Authorization.OAuth.Tests/GSS.Authorization.OAuth.Tests.csproj">
+      <Build Solution="Release|*" Project="false" />
+    </Project>
+    <Project Path="test/GSS.Authorization.OAuth2.HttpClient.Tests/GSS.Authorization.OAuth2.HttpClient.Tests.csproj">
+      <Build Solution="Release|*" Project="false" />
+    </Project>
+    <Project Path="test/GSS.Authorization.OAuth2.Tests/GSS.Authorization.OAuth2.Tests.csproj">
+      <Build Solution="Release|*" Project="false" />
+    </Project>
+  </Folder>
+</Solution>
