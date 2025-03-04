@@ -1,6 +1,4 @@
-using System.Net;
 using System.Net.Http.Headers;
-using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
@@ -9,6 +7,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using RichardSzalay.MockHttp;
 using Xunit;
+using static System.Net.Http.HttpMethod;
+using static System.Net.HttpStatusCode;
+using static System.Net.Mime.MediaTypeNames;
+using static GSS.Authorization.OAuth2.AuthorizerDefaults;
 
 namespace GSS.Authorization.OAuth2.HttpClient.Tests;
 
@@ -39,149 +41,149 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
     {
         // Arrange
         var accessToken = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10 };
-        _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-            .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
-            .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-            .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(accessToken));
+        _mockHttp?.Expect(Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithFormData(ClientId, _options.ClientId)
+            .WithFormData(ClientSecret, _options.ClientSecret)
+            .Respond(Application.Json, JsonSerializer.Serialize(accessToken));
 
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.NotEqual(Unauthorized, response.StatusCode);
         _mockHttp?.VerifyNoOutstandingExpectation();
         _mockHttp?.VerifyNoOutstandingRequest();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task HttpClient_AccessProtectedResourceWithPredefinedAuthorizationHeader_ShouldPassThrough()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
         var basicAuth =
             Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_options.ClientId}:{_options.ClientSecret}"));
-        _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
-            .WithHeaders(HeaderNames.Authorization, $"{AuthorizerDefaults.Basic} {basicAuth}")
-            .Respond(HttpStatusCode.Forbidden);
+        _mockHttp.Expect(Get, _resourceEndpoint.AbsoluteUri)
+            .WithHeaders(HeaderNames.Authorization, $"{Basic} {basicAuth}")
+            .Respond(Forbidden);
 
         // Act
-        using var request = new HttpRequestMessage(HttpMethod.Get, _resourceEndpoint);
-        request.Headers.Authorization = new AuthenticationHeaderValue(AuthorizerDefaults.Basic, basicAuth);
-        var response = await _client.HttpClient.SendAsync(request);
+        using var request = new HttpRequestMessage(Get, _resourceEndpoint);
+        request.Headers.Authorization = new AuthenticationHeaderValue(Basic, basicAuth);
+        var response = await _client.HttpClient.SendAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(Forbidden, response.StatusCode);
         _mockHttp.VerifyNoOutstandingExpectation();
         _mockHttp.VerifyNoOutstandingRequest();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task HttpClient_AccessProtectedResourceWithoutAccessToken_ShouldPassThrough()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
-        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-            .Respond(HttpStatusCode.NotFound);
-        _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
-            .Respond(HttpStatusCode.Forbidden);
+        _mockHttp.Expect(Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .Respond(NotFound);
+        _mockHttp.Expect(Get, _resourceEndpoint.AbsoluteUri)
+            .Respond(Forbidden);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(Forbidden, response.StatusCode);
         _mockHttp.VerifyNoOutstandingExpectation();
         _mockHttp.VerifyNoOutstandingRequest();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task HttpClient_AccessProtectedResourceWithUnauthorizedResponse_ShouldAuthorized()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
         var accessToken = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10 };
-        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-            .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
-            .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-            .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(accessToken));
-        _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
-            .Respond(HttpStatusCode.Unauthorized);
-        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-            .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
-            .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-            .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(accessToken));
+        _mockHttp.Expect(Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithFormData(ClientId, _options.ClientId)
+            .WithFormData(ClientSecret, _options.ClientSecret)
+            .Respond(Application.Json, JsonSerializer.Serialize(accessToken));
+        _mockHttp.Expect(Get, _resourceEndpoint.AbsoluteUri)
+            .Respond(Unauthorized);
+        _mockHttp.Expect(Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithFormData(ClientId, _options.ClientId)
+            .WithFormData(ClientSecret, _options.ClientSecret)
+            .Respond(Application.Json, JsonSerializer.Serialize(accessToken));
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(OK, response.StatusCode);
         _mockHttp.VerifyNoOutstandingExpectation();
         _mockHttp.VerifyNoOutstandingRequest();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task HttpClient_AccessProtectedResourceWithUnmatchedWwwAuthenticateScheme_ShouldPassThrough()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
-        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-            .Respond(HttpStatusCode.NotFound);
-        _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
+        _mockHttp.Expect(Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .Respond(NotFound);
+        _mockHttp.Expect(Get, _resourceEndpoint.AbsoluteUri)
             .Respond(_ =>
             {
-                var res = new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                var res = new HttpResponseMessage(Unauthorized);
                 res.Headers.TryAddWithoutValidation(HeaderNames.WWWAuthenticate,
                     "Basic realm=\"authentication required\"");
                 return res;
             });
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal(Unauthorized, response.StatusCode);
         _mockHttp.VerifyNoOutstandingExpectation();
         _mockHttp.VerifyNoOutstandingRequest();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task HttpClient_AccessProtectedResourceWithMatchedWwwAuthenticateScheme_ShouldAuthorized()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
         var accessToken = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10 };
-        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-            .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
-            .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-            .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(accessToken));
-        _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
+        _mockHttp.Expect(Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithFormData(ClientId, _options.ClientId)
+            .WithFormData(ClientSecret, _options.ClientSecret)
+            .Respond(Application.Json, JsonSerializer.Serialize(accessToken));
+        _mockHttp.Expect(Get, _resourceEndpoint.AbsoluteUri)
             .Respond(_ =>
             {
-                var res = new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                var res = new HttpResponseMessage(Unauthorized);
                 res.Headers.TryAddWithoutValidation(HeaderNames.WWWAuthenticate,
                     @"Bearer realm=""oauth2-resource"", error=""unauthorized"", error_description=""Full authentication is required to access this resource""");
                 return res;
             });
-        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-            .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
-            .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-            .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(accessToken));
+        _mockHttp.Expect(Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithFormData(ClientId, _options.ClientId)
+            .WithFormData(ClientSecret, _options.ClientSecret)
+            .Respond(Application.Json, JsonSerializer.Serialize(accessToken));
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(OK, response.StatusCode);
         _mockHttp.VerifyNoOutstandingExpectation();
         _mockHttp.VerifyNoOutstandingRequest();
     }
@@ -191,80 +193,80 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
     {
         // Arrange
         var accessToken = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10 };
-        _mockHttp?.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-            .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
-            .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-            .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(accessToken));
+        _mockHttp?.Expect(Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithFormData(ClientId, _options.ClientId)
+            .WithFormData(ClientSecret, _options.ClientSecret)
+            .Respond(Application.Json, JsonSerializer.Serialize(accessToken));
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken, 2);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
-        var response2 = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
+        var response2 = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
-        Assert.NotEqual(HttpStatusCode.Unauthorized, response2.StatusCode);
+        Assert.NotEqual(Unauthorized, response.StatusCode);
+        Assert.NotEqual(Unauthorized, response2.StatusCode);
         _mockHttp?.VerifyNoOutstandingExpectation();
         _mockHttp?.VerifyNoOutstandingRequest();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task
         HttpClient_AccessProtectedResourceWithCachedAccessToken_ShouldReAuthorizedWithUnauthorizedResponse()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
         var accessToken = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 1 };
         var accessToken2 = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 2 };
-        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-            .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
-            .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-            .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(accessToken));
-        _mockHttp.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
-            .Respond(HttpStatusCode.Unauthorized);
-        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-            .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
-            .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-            .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(accessToken2));
+        _mockHttp.Expect(Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithFormData(ClientId, _options.ClientId)
+            .WithFormData(ClientSecret, _options.ClientSecret)
+            .Respond(Application.Json, JsonSerializer.Serialize(accessToken));
+        _mockHttp.Expect(Get, _resourceEndpoint.AbsoluteUri)
+            .Respond(Unauthorized);
+        _mockHttp.Expect(Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithFormData(ClientId, _options.ClientId)
+            .WithFormData(ClientSecret, _options.ClientSecret)
+            .Respond(Application.Json, JsonSerializer.Serialize(accessToken2));
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken2);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(OK, response.StatusCode);
         _mockHttp.VerifyNoOutstandingExpectation();
         _mockHttp.VerifyNoOutstandingRequest();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task HttpClient_AccessProtectedResourceWithExpiredAccessToken_ShouldReAuthorized()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
         var accessToken = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 1 };
         var accessToken2 = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 2 };
-        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-            .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
-            .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-            .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(accessToken));
+        _mockHttp.Expect(Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithFormData(ClientId, _options.ClientId)
+            .WithFormData(ClientSecret, _options.ClientSecret)
+            .Respond(Application.Json, JsonSerializer.Serialize(accessToken));
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken);
-        _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
-            .WithFormData(AuthorizerDefaults.ClientId, _options.ClientId)
-            .WithFormData(AuthorizerDefaults.ClientSecret, _options.ClientSecret)
-            .Respond(MediaTypeNames.Application.Json, JsonSerializer.Serialize(accessToken2));
+        _mockHttp.Expect(Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithFormData(ClientId, _options.ClientId)
+            .WithFormData(ClientSecret, _options.ClientSecret)
+            .Respond(Application.Json, JsonSerializer.Serialize(accessToken2));
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken2);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
-        await Task.Delay(TimeSpan.FromSeconds(2));
-        var response2 = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
+        await Task.Delay(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
+        var response2 = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
+        Assert.Equal(OK, response.StatusCode);
+        Assert.Equal(OK, response2.StatusCode);
         _mockHttp.VerifyNoOutstandingExpectation();
         _mockHttp.VerifyNoOutstandingRequest();
     }
@@ -275,15 +277,15 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         {
             if (_handlerOptions.SendAccessTokenInQuery)
             {
-                _mockHttp?.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
+                _mockHttp?.Expect(Get, _resourceEndpoint.AbsoluteUri)
                     .WithQueryString(AuthorizerDefaults.AccessToken, accessToken.Token)
-                    .Respond(HttpStatusCode.OK);
+                    .Respond(OK);
             }
             else
             {
-                _mockHttp?.Expect(HttpMethod.Get, _resourceEndpoint.AbsoluteUri)
-                    .WithHeaders(HeaderNames.Authorization, $"{AuthorizerDefaults.Bearer} {accessToken.Token}")
-                    .Respond(HttpStatusCode.OK);
+                _mockHttp?.Expect(Get, _resourceEndpoint.AbsoluteUri)
+                    .WithHeaders(HeaderNames.Authorization, $"{Bearer} {accessToken.Token}")
+                    .Respond(OK);
             }
         }
     }

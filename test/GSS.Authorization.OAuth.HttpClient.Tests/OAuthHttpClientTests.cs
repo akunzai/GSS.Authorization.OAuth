@@ -1,8 +1,6 @@
 using System.Globalization;
-using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
-using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +9,10 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using RichardSzalay.MockHttp;
 using Xunit;
+using static System.Net.Http.HttpMethod;
+using static System.Net.HttpStatusCode;
+using static System.Text.Encoding;
+using Convert = System.Convert;
 
 namespace GSS.Authorization.OAuth.HttpClient.Tests;
 
@@ -35,7 +37,7 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
             _configuration["OAuth:TokenSecret"]!);
         if (!_configuration.GetValue("HttpClient:Mock", true)) return;
         _mockHttp = new MockHttpMessageHandler();
-        _mockHttp.Fallback.Respond(HttpStatusCode.Unauthorized);
+        _mockHttp.Fallback.Respond(Unauthorized);
     }
 
     [Fact]
@@ -59,17 +61,17 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
         var client = services.GetRequiredService<OAuthHttpClient>();
         var options = services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>();
         var resourceUri = _configuration.GetValue<Uri>("Request:Uri")!;
-        _mockHttp?.Expect(HttpMethod.Get, resourceUri.AbsoluteUri)
+        _mockHttp?.Expect(Get, resourceUri.AbsoluteUri)
             .WithHeaders(HeaderNames.Authorization, _signer.GetAuthorizationHeader(
-                HttpMethod.Get, resourceUri, options.Value, QueryHelpers.ParseQuery(resourceUri.Query),
+                Get, resourceUri, options.Value, QueryHelpers.ParseQuery(resourceUri.Query),
                 _tokenCredentials).ToString())
-            .Respond(HttpStatusCode.OK);
+            .Respond(OK);
 
         // Act
-        var response = await client.HttpClient.GetAsync(resourceUri);
+        var response = await client.HttpClient.GetAsync(resourceUri, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.NotEqual(Unauthorized, response.StatusCode);
         _mockHttp?.VerifyNoOutstandingExpectation();
         _mockHttp?.VerifyNoOutstandingRequest();
     }
@@ -90,18 +92,18 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
         var resourceUri = _configuration.GetValue<Uri>("Request:Uri")!;
         var basicAuth =
             Convert.ToBase64String(
-                Encoding.ASCII.GetBytes($"{_clientCredentials.Key}:{_clientCredentials.Secret}"));
-        _mockHttp?.Expect(HttpMethod.Get, resourceUri.AbsoluteUri)
+                ASCII.GetBytes($"{_clientCredentials.Key}:{_clientCredentials.Secret}"));
+        _mockHttp?.Expect(Get, resourceUri.AbsoluteUri)
             .WithHeaders(HeaderNames.Authorization, $"Basic {basicAuth}")
-            .Respond(HttpStatusCode.Forbidden);
+            .Respond(Forbidden);
 
         // Act
-        using var request = new HttpRequestMessage(HttpMethod.Get, resourceUri);
+        using var request = new HttpRequestMessage(Get, resourceUri);
         request.Headers.Authorization = new AuthenticationHeaderValue("Basic", basicAuth);
-        var response = await client.HttpClient.SendAsync(request);
+        var response = await client.HttpClient.SendAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(Forbidden, response.StatusCode);
         _mockHttp?.VerifyNoOutstandingExpectation();
         _mockHttp?.VerifyNoOutstandingRequest();
     }
@@ -131,21 +133,21 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
         resourceUri.Query += resourceUri.Query.Contains('?', StringComparison.Ordinal)
             ? "&foo=v1&foo=v2"
             : "?foo=v1&foo=v2";
-        var parameters = _signer.AppendAuthorizationParameters(HttpMethod.Get, resourceUri.Uri,
+        var parameters = _signer.AppendAuthorizationParameters(Get, resourceUri.Uri,
             options.Value, QueryHelpers.ParseQuery(resourceUri.Uri.Query), _tokenCredentials);
         var values = (from parameter in parameters
             from value in parameter.Value
             select $"{Uri.EscapeDataString(parameter.Key)}={Uri.EscapeDataString(value)}").ToList();
 
-        _mockHttp?.Expect(HttpMethod.Get, resourceUri.Uri.AbsoluteUri)
+        _mockHttp?.Expect(Get, resourceUri.Uri.AbsoluteUri)
             .WithQueryString("?" + string.Join("&", values))
-            .Respond(HttpStatusCode.OK);
+            .Respond(OK);
 
         // Act
-        var response = await client.HttpClient.GetAsync(resourceUri.Uri);
+        var response = await client.HttpClient.GetAsync(resourceUri.Uri, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.NotEqual(Unauthorized, response.StatusCode);
         _mockHttp?.VerifyNoOutstandingExpectation();
         _mockHttp?.VerifyNoOutstandingRequest();
     }
@@ -185,7 +187,7 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
             formData.TryAdd(query.Key, query.Value);
         }
 
-        var parameters = _signer.AppendAuthorizationParameters(HttpMethod.Post, resourceUri.Uri,
+        var parameters = _signer.AppendAuthorizationParameters(Post, resourceUri.Uri,
             options.Value, formData, _tokenCredentials);
         var values = new List<KeyValuePair<string, string>>();
         foreach (var parameter in parameters)
@@ -196,16 +198,16 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
             }
         }
 
-        _mockHttp?.Expect(HttpMethod.Post, resourceUri.Uri.AbsoluteUri)
+        _mockHttp?.Expect(Post, resourceUri.Uri.AbsoluteUri)
             .WithFormData(values)
-            .Respond(HttpStatusCode.OK);
+            .Respond(OK);
 
         // Act
         using var content = new FormUrlEncodedContent(body);
-        var response = await client.HttpClient.PostAsync(resourceUri.Uri, content);
+        var response = await client.HttpClient.PostAsync(resourceUri.Uri, content, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.NotEqual(Unauthorized, response.StatusCode);
         _mockHttp?.VerifyNoOutstandingExpectation();
         _mockHttp?.VerifyNoOutstandingRequest();
     }
