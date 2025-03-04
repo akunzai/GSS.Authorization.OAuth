@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 using Xunit;
+using static System.Net.Http.HttpMethod;
+using static GSS.Authorization.OAuth.OAuthDefaults;
 
 namespace GSS.Authorization.OAuth.Tests;
 
@@ -19,18 +21,18 @@ public class RequestSignerTests
             ["a3"] = new[] { "a", "2 q" },
             ["c@"] = "",
             ["a2"] = "r b",
-            [OAuthDefaults.OAuthConsumerKey] = "9djdj82h48djs9d2",
-            [OAuthDefaults.OAuthToken] = "kkk9d7dh3k39sjv7",
-            [OAuthDefaults.OAuthSignatureMethod] = _signer.MethodName,
-            [OAuthDefaults.OAuthTimestamp] = "137131201",
-            [OAuthDefaults.OAuthNonce] = "7d8f3e4a",
+            [OAuthConsumerKey] = "9djdj82h48djs9d2",
+            [OAuthToken] = "kkk9d7dh3k39sjv7",
+            [OAuthSignatureMethod] = _signer.MethodName,
+            [OAuthTimestamp] = "137131201",
+            [OAuthNonce] = "7d8f3e4a",
             ["c2"] = ""
         };
         const string expected =
             "POST&http%3A%2F%2Fexample.com%2Frequest&a2%3Dr%2520b%26a3%3D2%2520q%26a3%3Da%26b5%3D%253D%25253D%26c%2540%3D%26c2%3D%26oauth_consumer_key%3D9djdj82h48djs9d2%26oauth_nonce%3D7d8f3e4a%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D137131201%26oauth_token%3Dkkk9d7dh3k39sjv7";
 
         // Act
-        var actual = ((RequestSignerBase)_signer).GetBaseString(HttpMethod.Post,
+        var actual = ((RequestSignerBase)_signer).GetBaseString(Post,
             new Uri("http://example.com/request?b5=%3D%253D&a3=a&c%40=&a2=r%20b"), parameter);
 
         // Assert
@@ -46,17 +48,17 @@ public class RequestSignerTests
         var uri = new Uri("https://photos.example.net/initiate");
         var parameters = new Dictionary<string, StringValues>
         {
-            [OAuthDefaults.Realm] = "Photos",
-            [OAuthDefaults.OAuthConsumerKey] = clientCredentials.Key,
-            [OAuthDefaults.OAuthSignatureMethod] = _signer.MethodName,
-            [OAuthDefaults.OAuthTimestamp] = "137131200",
-            [OAuthDefaults.OAuthNonce] = "wIjqoS",
-            [OAuthDefaults.OAuthCallback] = "http://printer.example.com/ready",
-            [OAuthDefaults.OAuthSignature] = expected
+            [Realm] = "Photos",
+            [OAuthConsumerKey] = clientCredentials.Key,
+            [OAuthSignatureMethod] = _signer.MethodName,
+            [OAuthTimestamp] = "137131200",
+            [OAuthNonce] = "wIjqoS",
+            [OAuthCallback] = "http://printer.example.com/ready",
+            [OAuthSignature] = expected
         };
 
         // Act
-        var actual = _signer.GetSignature(HttpMethod.Post, uri,
+        var actual = _signer.GetSignature(Post, uri,
             parameters, clientCredentials.Secret);
 
         // Assert
@@ -73,18 +75,18 @@ public class RequestSignerTests
         var uri = new Uri("https://photos.example.net/token");
         var parameters = new Dictionary<string, StringValues>
         {
-            [OAuthDefaults.Realm] = "Photos",
-            [OAuthDefaults.OAuthConsumerKey] = clientCredentials.Key,
-            [OAuthDefaults.OAuthToken] = temporaryCredentials.Key,
-            [OAuthDefaults.OAuthSignatureMethod] = _signer.MethodName,
-            [OAuthDefaults.OAuthTimestamp] = "137131201",
-            [OAuthDefaults.OAuthNonce] = "walatlh",
-            [OAuthDefaults.OAuthVerifier] = "hfdp7dh39dks9884",
-            [OAuthDefaults.OAuthSignature] = expected
+            [Realm] = "Photos",
+            [OAuthConsumerKey] = clientCredentials.Key,
+            [OAuthToken] = temporaryCredentials.Key,
+            [OAuthSignatureMethod] = _signer.MethodName,
+            [OAuthTimestamp] = "137131201",
+            [OAuthNonce] = "walatlh",
+            [OAuthVerifier] = "hfdp7dh39dks9884",
+            [OAuthSignature] = expected
         };
 
         // Act
-        var actual = _signer.GetSignature(HttpMethod.Post, uri,
+        var actual = _signer.GetSignature(Post, uri,
             parameters, clientCredentials.Secret, temporaryCredentials.Secret);
 
         // Assert
@@ -101,14 +103,14 @@ public class RequestSignerTests
         var uri = new Uri("http://photos.example.net/photos?file=vacation.jpg&size=original");
 
         var parameters = QueryHelpers.ParseQuery(uri.Query);
-        parameters[OAuthDefaults.OAuthConsumerKey] = clientCredentials.Key;
-        parameters[OAuthDefaults.OAuthToken] = tokenCredentials.Key;
-        parameters[OAuthDefaults.OAuthNonce] = "chapoH";
-        parameters[OAuthDefaults.OAuthTimestamp] = "137131202";
-        parameters[OAuthDefaults.OAuthSignatureMethod] = _signer.MethodName;
+        parameters[OAuthConsumerKey] = clientCredentials.Key;
+        parameters[OAuthToken] = tokenCredentials.Key;
+        parameters[OAuthNonce] = "chapoH";
+        parameters[OAuthTimestamp] = "137131202";
+        parameters[OAuthSignatureMethod] = _signer.MethodName;
 
         // Act
-        var actual = _signer.GetSignature(HttpMethod.Get, uri,
+        var actual = _signer.GetSignature(Get, uri,
             parameters, clientCredentials.Secret, tokenCredentials.Secret);
 
         // Assert
