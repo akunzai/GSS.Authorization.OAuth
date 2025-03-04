@@ -47,7 +47,7 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -55,10 +55,10 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         _mockHttp?.VerifyNoOutstandingRequest();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task HttpClient_AccessProtectedResourceWithPredefinedAuthorizationHeader_ShouldPassThrough()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
         var basicAuth =
@@ -70,7 +70,7 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         // Act
         using var request = new HttpRequestMessage(HttpMethod.Get, _resourceEndpoint);
         request.Headers.Authorization = new AuthenticationHeaderValue(AuthorizerDefaults.Basic, basicAuth);
-        var response = await _client.HttpClient.SendAsync(request);
+        var response = await _client.HttpClient.SendAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -78,10 +78,10 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         _mockHttp.VerifyNoOutstandingRequest();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task HttpClient_AccessProtectedResourceWithoutAccessToken_ShouldPassThrough()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
         _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
@@ -90,7 +90,7 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
             .Respond(HttpStatusCode.Forbidden);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -98,10 +98,10 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         _mockHttp.VerifyNoOutstandingRequest();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task HttpClient_AccessProtectedResourceWithUnauthorizedResponse_ShouldAuthorized()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
         var accessToken = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10 };
@@ -118,7 +118,7 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -126,10 +126,10 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         _mockHttp.VerifyNoOutstandingRequest();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task HttpClient_AccessProtectedResourceWithUnmatchedWwwAuthenticateScheme_ShouldPassThrough()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
         _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
@@ -144,7 +144,7 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
             });
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -152,10 +152,10 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         _mockHttp.VerifyNoOutstandingRequest();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task HttpClient_AccessProtectedResourceWithMatchedWwwAuthenticateScheme_ShouldAuthorized()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
         var accessToken = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10 };
@@ -178,7 +178,7 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -198,8 +198,8 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken, 2);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
-        var response2 = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
+        var response2 = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -208,11 +208,11 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         _mockHttp?.VerifyNoOutstandingRequest();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task
         HttpClient_AccessProtectedResourceWithCachedAccessToken_ShouldReAuthorizedWithUnauthorizedResponse()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
         var accessToken = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 1 };
@@ -230,7 +230,7 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken2);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -238,10 +238,10 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         _mockHttp.VerifyNoOutstandingRequest();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task HttpClient_AccessProtectedResourceWithExpiredAccessToken_ShouldReAuthorized()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
         var accessToken = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 1 };
@@ -258,9 +258,9 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         ExpectSendAccessTokenInRequestAndResponseOk(accessToken2);
 
         // Act
-        var response = await _client.HttpClient.GetAsync(_resourceEndpoint);
-        await Task.Delay(TimeSpan.FromSeconds(2));
-        var response2 = await _client.HttpClient.GetAsync(_resourceEndpoint);
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
+        await Task.Delay(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
+        var response2 = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

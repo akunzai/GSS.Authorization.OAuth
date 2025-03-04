@@ -66,7 +66,7 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
             .Respond(HttpStatusCode.OK);
 
         // Act
-        var response = await client.HttpClient.GetAsync(resourceUri);
+        var response = await client.HttpClient.GetAsync(resourceUri, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -98,7 +98,7 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
         // Act
         using var request = new HttpRequestMessage(HttpMethod.Get, resourceUri);
         request.Headers.Authorization = new AuthenticationHeaderValue("Basic", basicAuth);
-        var response = await client.HttpClient.SendAsync(request);
+        var response = await client.HttpClient.SendAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -142,7 +142,7 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
             .Respond(HttpStatusCode.OK);
 
         // Act
-        var response = await client.HttpClient.GetAsync(resourceUri.Uri);
+        var response = await client.HttpClient.GetAsync(resourceUri.Uri, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -202,7 +202,7 @@ public class OAuthHttpClientTests : IClassFixture<OAuthFixture>
 
         // Act
         using var content = new FormUrlEncodedContent(body);
-        var response = await client.HttpClient.PostAsync(resourceUri.Uri, content);
+        var response = await client.HttpClient.PostAsync(resourceUri.Uri, content, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);

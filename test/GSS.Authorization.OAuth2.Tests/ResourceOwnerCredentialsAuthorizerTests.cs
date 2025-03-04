@@ -26,6 +26,7 @@ public class ResourceOwnerCredentialsAuthorizerTests : IClassFixture<AuthorizerF
         {
             _mockHttp = new MockHttpMessageHandler();
         }
+
         var services = fixture.BuildAuthorizer<ResourceOwnerCredentialsAuthorizer>(_mockHttp, (code, s) =>
         {
             _errorStatusCode = code;
@@ -47,13 +48,10 @@ public class ResourceOwnerCredentialsAuthorizerTests : IClassFixture<AuthorizerF
             .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName!)
             .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password!)
             .Respond(MediaTypeNames.Application.Json,
-                JsonSerializer.Serialize(new AccessToken
-                {
-                    Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10
-                }));
+                JsonSerializer.Serialize(new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10 }));
 
         // Act
-        var accessToken = await _authorizer.GetAccessTokenAsync();
+        var accessToken = await _authorizer.GetAccessTokenAsync(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.NotNull(accessToken.Token);
@@ -70,23 +68,20 @@ public class ResourceOwnerCredentialsAuthorizerTests : IClassFixture<AuthorizerF
             .WithFormData(AuthorizerDefaults.Username, _options.Credentials?.UserName!)
             .WithFormData(AuthorizerDefaults.Password, _options.Credentials?.Password!)
             .Respond(MediaTypeNames.Application.Json,
-                JsonSerializer.Serialize(new AccessToken
-                {
-                    Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10
-                }));
+                JsonSerializer.Serialize(new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 10 }));
 
         // Act
-        var accessToken = await _authorizer.GetAccessTokenAsync();
+        var accessToken = await _authorizer.GetAccessTokenAsync(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.NotEmpty(accessToken.Token);
         _mockHttp?.VerifyNoOutstandingExpectation();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task Authorizer_GetAccessTokenWithException_ShouldReturnNull()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
         _mockHttp.Expect(HttpMethod.Post, _options.AccessTokenEndpoint.AbsoluteUri)
@@ -97,17 +92,17 @@ public class ResourceOwnerCredentialsAuthorizerTests : IClassFixture<AuthorizerF
             .Respond(HttpStatusCode.InternalServerError);
 
         // Act
-        var accessToken = await _authorizer.GetAccessTokenAsync();
+        var accessToken = await _authorizer.GetAccessTokenAsync(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Null(accessToken.Token);
         _mockHttp.VerifyNoOutstandingExpectation();
     }
 
-    [SkippableFact]
+    [Fact]
     public async Task Authorizer_GetAccessTokenWithException_ShouldInvokeErrorHandler()
     {
-        Skip.If(_mockHttp == null);
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
 
         // Arrange
         var expectedErrorMessage = Guid.NewGuid().ToString();
@@ -119,7 +114,7 @@ public class ResourceOwnerCredentialsAuthorizerTests : IClassFixture<AuthorizerF
             .Respond(HttpStatusCode.InternalServerError, MediaTypeNames.Application.Json, expectedErrorMessage);
 
         // Act
-        await _authorizer.GetAccessTokenAsync();
+        await _authorizer.GetAccessTokenAsync(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.InternalServerError, _errorStatusCode);
