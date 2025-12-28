@@ -271,6 +271,30 @@ public class OAuth2HttpClientTests : IClassFixture<OAuth2Fixture>
         _mockHttp.VerifyNoOutstandingRequest();
     }
 
+    [Fact]
+    public async Task HttpClient_AccessProtectedResourceWithAccessTokenNoExpiry_ShouldCacheIndefinitely()
+    {
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
+
+        // Arrange
+        var accessToken = new AccessToken { Token = Guid.NewGuid().ToString(), ExpiresInSeconds = 0 };
+        _mockHttp.Expect(Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithFormData(ClientId, _options.ClientId)
+            .WithFormData(ClientSecret, _options.ClientSecret)
+            .Respond(Application.Json, JsonSerializer.Serialize(accessToken));
+        ExpectSendAccessTokenInRequestAndResponseOk(accessToken, 2);
+
+        // Act
+        var response = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
+        var response2 = await _client.HttpClient.GetAsync(_resourceEndpoint, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(OK, response.StatusCode);
+        Assert.Equal(OK, response2.StatusCode);
+        _mockHttp.VerifyNoOutstandingExpectation();
+        _mockHttp.VerifyNoOutstandingRequest();
+    }
+
     private void ExpectSendAccessTokenInRequestAndResponseOk(AccessToken accessToken, int repeatCount = 1)
     {
         for (var i = 0; i < repeatCount; i++)

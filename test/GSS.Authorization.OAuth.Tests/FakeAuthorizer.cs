@@ -1,4 +1,6 @@
+using System.Net.Http;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace GSS.Authorization.OAuth.Tests;
 
@@ -14,5 +16,11 @@ internal class FakeAuthorizer(
         CancellationToken cancellationToken = default)
     {
         return Task.FromResult(VerificationCode);
+    }
+
+    // Expose protected method for testing
+    public void TestHandleOAuthException(HttpResponseMessage response, IDictionary<string, StringValues> formData)
+    {
+        HandleOAuthException(response, formData);
     }
 }
