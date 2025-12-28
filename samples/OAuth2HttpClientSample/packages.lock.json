@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0": {
+      "gss.authorization.oauth2": {
+        "type": "Project"
+      },
+      "gss.authorization.oauth2.httpclient": {
+        "type": "Project",
+        "dependencies": {
+          "GSS.Authorization.OAuth2": "[2.7.0, )"
+        }
+      }
+    }
+  }
+}
