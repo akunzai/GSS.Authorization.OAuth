@@ -172,4 +172,113 @@ public class AuthorizerTests
         Assert.Equal(expected.Secret, actual.Secret);
         _mockHttp.VerifyNoOutstandingRequest();
     }
+
+    [Fact]
+    public void HandleOAuthException_WithNullRequest_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer);
+        var formData = new Dictionary<string, StringValues>();
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentNullException>(() => 
+            authorizer.TestHandleOAuthException(null!, formData));
+        Assert.Equal("request", exception.ParamName);
+    }
+
+    [Fact]
+    public void HandleOAuthException_WithNullFormData_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer);
+        var response = new HttpResponseMessage();
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentNullException>(() => 
+            authorizer.TestHandleOAuthException(response, null!));
+        Assert.Equal("formData", exception.ParamName);
+    }
+
+    [Fact]
+    public void HandleOAuthException_WithParameterAbsent_ShouldThrowOAuthException()
+    {
+        // Arrange
+        var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer);
+        var response = new HttpResponseMessage();
+        var formData = new Dictionary<string, StringValues>
+        {
+            [OAuthProblem] = ParameterAbsent,
+            [OAuthParametersAbsent] = "oauth_consumer_key,oauth_signature"
+        };
+
+        // Act & Assert
+        var exception = Assert.Throws<OAuthException>(() => 
+            authorizer.TestHandleOAuthException(response, formData));
+        Assert.Contains("Missing parameters", exception.Message);
+        Assert.Contains("oauth_consumer_key,oauth_signature", exception.Message);
+    }
+
+    [Fact]
+    public void HandleOAuthException_WithOtherProblem_ShouldThrowOAuthException()
+    {
+        // Arrange
+        var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer);
+        var response = new HttpResponseMessage();
+        var formData = new Dictionary<string, StringValues>
+        {
+            [OAuthProblem] = "invalid_signature",
+            ["oauth_error_description"] = "Invalid signature"
+        };
+
+        // Act & Assert
+        var exception = Assert.Throws<OAuthException>(() => 
+            authorizer.TestHandleOAuthException(response, formData));
+        Assert.Contains("oauth_problem", exception.Message);
+        Assert.Contains("invalid_signature", exception.Message);
+    }
+
+    [Fact]
+    public void HandleOAuthException_WithEmptyProblem_ShouldNotThrow()
+    {
+        // Arrange
+        var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer);
+        var response = new HttpResponseMessage();
+        var formData = new Dictionary<string, StringValues>
+        {
+            [OAuthProblem] = ""
+        };
+
+        // Act & Assert - Should not throw
+        authorizer.TestHandleOAuthException(response, formData);
+    }
+
+    [Fact]
+    public void HandleOAuthException_WithWhitespaceProblem_ShouldNotThrow()
+    {
+        // Arrange
+        var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer);
+        var response = new HttpResponseMessage();
+        var formData = new Dictionary<string, StringValues>
+        {
+            [OAuthProblem] = "   "
+        };
+
+        // Act & Assert - Should not throw
+        authorizer.TestHandleOAuthException(response, formData);
+    }
+
+    [Fact]
+    public void HandleOAuthException_WithoutProblemKey_ShouldNotThrow()
+    {
+        // Arrange
+        var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer);
+        var response = new HttpResponseMessage();
+        var formData = new Dictionary<string, StringValues>
+        {
+            ["some_other_key"] = "some_value"
+        };
+
+        // Act & Assert - Should not throw
+        authorizer.TestHandleOAuthException(response, formData);
+    }
 }

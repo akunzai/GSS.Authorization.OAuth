@@ -8,6 +8,7 @@ using Microsoft.Net.Http.Headers;
 using RichardSzalay.MockHttp;
 using Xunit;
 using static System.Net.Http.HttpMethod;
+using OptionsPattern = Microsoft.Extensions.Options.Options;
 using static System.Net.HttpStatusCode;
 using static System.Net.Mime.MediaTypeNames;
 using static GSS.Authorization.OAuth2.AuthorizerDefaults;
@@ -123,5 +124,98 @@ public class ResourceOwnerCredentialsAuthorizerTests : IClassFixture<AuthorizerF
         Assert.Equal(InternalServerError, _errorStatusCode);
         Assert.Equal(expectedErrorMessage, _errorMessage);
         _mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public void Constructor_WithNullCredentials_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var options = new AuthorizerOptions
+        {
+            ClientId = "test_client",
+            ClientSecret = "test_secret",
+            AccessTokenEndpoint = new Uri("https://example.com/token"),
+            Credentials = null
+        };
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentNullException>(() =>
+            new ResourceOwnerCredentialsAuthorizer(new HttpClient(), OptionsPattern.Create(options)));
+        Assert.Contains("Credentials", exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null, "password")]
+    [InlineData("", "password")]
+    [InlineData("   ", "password")]
+    public void Constructor_WithInvalidUserName_ShouldThrowArgumentNullException(string? userName, string password)
+    {
+        // Arrange
+        var options = new AuthorizerOptions
+        {
+            ClientId = "test_client",
+            ClientSecret = "test_secret",
+            AccessTokenEndpoint = new Uri("https://example.com/token"),
+            Credentials = new NetworkCredential(userName, password)
+        };
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentNullException>(() =>
+            new ResourceOwnerCredentialsAuthorizer(new HttpClient(), OptionsPattern.Create(options)));
+        Assert.Contains("UserName", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("username", null)]
+    [InlineData("username", "")]
+    [InlineData("username", "   ")]
+    public void Constructor_WithInvalidPassword_ShouldThrowArgumentNullException(string userName, string? password)
+    {
+        // Arrange
+        var options = new AuthorizerOptions
+        {
+            ClientId = "test_client",
+            ClientSecret = "test_secret",
+            AccessTokenEndpoint = new Uri("https://example.com/token"),
+            Credentials = new NetworkCredential(userName, password)
+        };
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentNullException>(() =>
+            new ResourceOwnerCredentialsAuthorizer(new HttpClient(), OptionsPattern.Create(options)));
+        Assert.Contains("Password", exception.Message);
+    }
+
+    [Fact]
+    public void PrepareFormData_WithNullFormData_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var options = new AuthorizerOptions
+        {
+            ClientId = "test_client",
+            ClientSecret = "test_secret",
+            AccessTokenEndpoint = new Uri("https://example.com/token"),
+            Credentials = new NetworkCredential("user", "pass")
+        };
+        var authorizer = new TestResourceOwnerCredentialsAuthorizer(new HttpClient(), OptionsPattern.Create(options));
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentNullException>(() =>
+            authorizer.TestPrepareFormData(null!));
+        Assert.Equal("formData", exception.ParamName);
+    }
+
+    // Test class to expose protected methods
+    private class TestResourceOwnerCredentialsAuthorizer : ResourceOwnerCredentialsAuthorizer
+    {
+        public TestResourceOwnerCredentialsAuthorizer(HttpClient client, IOptions<AuthorizerOptions> options)
+            : base(client, options)
+        {
+        }
+
+        public void TestPrepareFormData(IDictionary<string, string> formData)
+        {
+            PrepareFormData(formData);
+        }
     }
 }
