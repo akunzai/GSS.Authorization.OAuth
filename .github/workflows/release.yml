@@ -19,7 +19,7 @@ jobs:
         with:
           dotnet-version: 10.0.x
           cache: true
-          cache-dependency-path: '**/packages.lock.json'
+          cache-dependency-path: '**/Directory.Packages.props'
       - name: Build packages
         run: |
           dotnet --info
