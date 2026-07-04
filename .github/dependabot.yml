@@ -14,7 +14,34 @@ updates:
     schedule:
       interval: weekly
     groups:
-      nuget:
+      # Published-package dependencies (netstandard2.0 target): these set the
+      # minimum version floor forced on every consumer, so major/minor bumps
+      # are reviewed manually and only taken when required (e.g. security
+      # advisory or end-of-support). Patch updates still flow automatically.
+      nuget-production-floor:
+        patterns:
+          - "Microsoft.AspNetCore.WebUtilities"
+          - "Microsoft.Extensions.*"
+          - "System.ComponentModel.Annotations"
+          - "System.Text.Encodings.Web"
+          - "System.Text.Json"
+          - "System.Threading.Tasks.Extensions"
+      # Test/build-only tooling: no impact on package consumers, safe to
+      # always track latest.
+      nuget-dev-tooling:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "Microsoft.AspNetCore.WebUtilities"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "Microsoft.Extensions.*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "System.ComponentModel.Annotations"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "System.Text.Encodings.Web"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "System.Text.Json"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "System.Threading.Tasks.Extensions"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
