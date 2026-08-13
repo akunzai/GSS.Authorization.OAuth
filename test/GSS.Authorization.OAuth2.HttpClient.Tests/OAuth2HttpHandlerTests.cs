@@ -75,6 +75,32 @@ public class OAuth2HttpHandlerTests
         Assert.Equal("Bearer access-token", Assert.Single(innerHandler.Authorizations));
     }
 
+    [Fact]
+    public async Task SendAsync_WithConcurrentCacheMisses_ShouldRequestAccessTokenOnce()
+    {
+        // Arrange
+        var authorizerCalls = 0;
+        var innerHandler = new RecordingHandler();
+        using var client = CreateClient(
+            new OAuth2HttpHandlerOptions(),
+            async cancellationToken =>
+            {
+                Interlocked.Increment(ref authorizerCalls);
+                await Task.Delay(50, cancellationToken);
+                return new AccessToken { Token = "access-token", ExpiresInSeconds = 60 };
+            },
+            innerHandler);
+
+        // Act
+        await Task.WhenAll(Enumerable.Range(0, 5).Select(index =>
+            client.GetAsync($"https://example.com/resource/{index}", TestContext.Current.CancellationToken)));
+
+        // Assert
+        Assert.Equal(1, authorizerCalls);
+        Assert.Equal(5, innerHandler.Authorizations.Count);
+        Assert.All(innerHandler.Authorizations, authorization => Assert.Equal("Bearer access-token", authorization));
+    }
+
     private static System.Net.Http.HttpClient CreateClient(
         OAuth2HttpHandlerOptions options,
         Func<CancellationToken, Task<AccessToken>> getAccessToken,
