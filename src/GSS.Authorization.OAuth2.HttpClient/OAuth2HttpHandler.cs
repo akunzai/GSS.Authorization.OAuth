@@ -60,6 +60,11 @@ public class OAuth2HttpHandler(
         await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            if (!forceRenew && memoryCache.TryGetValue<AccessToken>(_cacheKey, out accessTokenCache))
+            {
+                return accessTokenCache!;
+            }
+
             var accessToken = await authorizer.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(accessToken.Token)) return accessToken;
             if (accessToken.ExpiresInSeconds > 0)
