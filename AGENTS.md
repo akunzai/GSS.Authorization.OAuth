@@ -5,6 +5,8 @@ OAuth 1.0 / OAuth 2.0 authorized `HttpClient`, friendly with `HttpClientFactory`
 
 See [README.md](README.md) for usage/samples and [CONTRIBUTING.md](CONTRIBUTING.md) for the PR workflow.
 
+When opening or updating a PR, satisfy [the release-label check](.github/workflows/release-label.yml); do not merge until it passes.
+
 ## Commands
 
 - Build: `dotnet build -c Release`
