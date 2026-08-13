@@ -1,0 +1,35 @@
+name: Release label
+
+on:
+  pull_request:
+    types: [opened, labeled, unlabeled, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate release label
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require exactly one release label
+        env:
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          if [[ "$AUTHOR" == "dependabot[bot]" ]]; then
+            exit 0
+          fi
+
+          count=$(jq '[.[] | select(
+            . == "breaking" or
+            . == "enhancement" or
+            . == "bug" or
+            . == "maintenance" or
+            . == "ignore-for-release"
+          )] | length' <<< "$LABELS")
+
+          if [[ "$count" -ne 1 ]]; then
+            echo "::error::Apply exactly one release label: breaking, enhancement, bug, maintenance, or ignore-for-release."
+            exit 1
+          fi
