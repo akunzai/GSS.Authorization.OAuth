@@ -65,6 +65,50 @@ public class AuthorizerTests
     }
 
     [Fact]
+    public async Task GetTemporaryCredential_WithoutCallback_ShouldUseOutOfBandCallback()
+    {
+        // Arrange
+        _options.CallBack = null;
+        _options.NonceProvider = () => "nonce";
+        _options.TimestampProvider = () => "137131200";
+        var authorizationHeader = _signer.GetAuthorizationHeader(Post,
+            _options.TemporaryCredentialRequestUri,
+            _options,
+            new Dictionary<string, StringValues> { [OAuthCallback] = OutOfBand });
+        _mockHttp.Expect(Post, _options.TemporaryCredentialRequestUri.ToString())
+            .WithHeaders(HeaderNames.Authorization, authorizationHeader.ToString())
+            .Respond(new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                [OAuthToken] = "token",
+                [OAuthTokenSecret] = "secret"
+            }));
+        var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer);
+
+        // Act
+        await authorizer.GetTemporaryCredentialAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        _mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task GetTemporaryCredential_WithInvalidMediaType_ShouldThrowHttpRequestException()
+    {
+        // Arrange
+        _mockHttp.Expect(Post, _options.TemporaryCredentialRequestUri.ToString())
+            .Respond("application/json", "{}");
+        var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
+            authorizer.GetTemporaryCredentialAsync(TestContext.Current.CancellationToken));
+
+        // Assert
+        Assert.Contains("application/json", exception.Message);
+        _mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
     public async Task GetVerificationCode()
     {
         // Arrange
@@ -122,6 +166,26 @@ public class AuthorizerTests
         Assert.Equal(expected.Key, actual.Key);
         Assert.Equal(expected.Secret, actual.Secret);
         _mockHttp.VerifyNoOutstandingRequest();
+    }
+
+    [Fact]
+    public async Task GetTokenCredential_WithInvalidMediaType_ShouldThrowHttpRequestException()
+    {
+        // Arrange
+        _mockHttp.Expect(Post, _options.TokenRequestUri.ToString())
+            .Respond("application/json", "{}");
+        var authorizer = new FakeAuthorizer(Options.Create(_options), _mockHttp.ToHttpClient(), _signer);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
+            authorizer.GetTokenCredentialAsync(
+                new OAuthCredential("token", "secret"),
+                "verification-code",
+                TestContext.Current.CancellationToken));
+
+        // Assert
+        Assert.Contains("application/json", exception.Message);
+        _mockHttp.VerifyNoOutstandingExpectation();
     }
 
     [Fact]

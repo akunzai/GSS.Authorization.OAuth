@@ -78,6 +78,27 @@ public class ClientCredentialsAuthorizerTests : IClassFixture<AuthorizerFixture>
     }
 
     [Fact]
+    public async Task Authorizer_GetAccessTokenWithScopes_ShouldSendSpaceSeparatedScopes()
+    {
+        Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
+
+        // Arrange
+        _options.Scopes = ["read", "write"];
+        _mockHttp.Expect(Post, _options.AccessTokenEndpoint.AbsoluteUri)
+            .WithHeaders(HeaderNames.Authorization, _basicAuthHeaderValue)
+            .WithFormData(GrantType, ClientCredentials)
+            .WithFormData(Scope, "read write")
+            .Respond(Application.Json,
+                JsonSerializer.Serialize(new AccessToken { Token = "access-token", ExpiresInSeconds = 10 }));
+
+        // Act
+        await _authorizer.GetAccessTokenAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        _mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
     public async Task Authorizer_GetAccessTokenWithException_ShouldReturnNull()
     {
         Assert.SkipWhen(_mockHttp is null, "MockHttpMessageHandler is not available");
