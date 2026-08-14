@@ -3,16 +3,22 @@
 OAuth 1.0 / OAuth 2.0 authorized `HttpClient`, friendly with `HttpClientFactory`. Published as 4 NuGet packages:
 `GSS.Authorization.OAuth`, `GSS.Authorization.OAuth.HttpClient`, `GSS.Authorization.OAuth2`, `GSS.Authorization.OAuth2.HttpClient`.
 
-See [README.md](README.md) for usage/samples and [CONTRIBUTING.md](CONTRIBUTING.md) for the PR workflow.
-
-When opening or updating a PR, satisfy [the release-label check](.github/workflows/release-label.yml); do not merge until it passes.
-
 ## Commands
 
 - Build: `dotnet build -c Release`
 - Test (all): `dotnet test`
 - Test (single): `dotnet test --filter "FullyQualifiedName~ClassName.MethodName"`
-- Coverage (as run in CI): `dotnet test --collect:"XPlat Code Coverage" && dotnet tool restore && dotnet tool run reportgenerator`
+- Coverage (CI): `dotnet test --collect:"XPlat Code Coverage" && dotnet tool restore && dotnet tool run reportgenerator`
+
+## Pointers
+
+- Usage and samples: @README.md
+- PR workflow and guidelines: @CONTRIBUTING.md
+- Release label validation: @.github/workflows/release-label.yml
+- Code style and analyzer rules: @.editorconfig
+- Central package management: @Directory.Packages.props
+- Global build and audit configuration: @Directory.Build.props
+- Dependabot configuration: @.github/dependabot.yml
 
 ## Architecture
 
@@ -21,10 +27,6 @@ When opening or updating a PR, satisfy [the release-label check](.github/workflo
 - `src/GSS.Authorization.OAuth{,2}.HttpClient` — `DelegatingHandler` + `HttpClientFactory` integration; `ProjectReference`s the matching core lib above.
 - `test/*.Tests` mirrors each `src` project 1:1, targets `net8.0;net10.0`, uses xunit v3.
 - `samples/` — runnable console samples, one per package.
-
-## Code Style
-
-Conventions are enforced via `.editorconfig` and analyzers (`Nullable` enabled, file-scoped namespaces, `var` preferred) — follow it rather than restating rules here.
 
 ## Dependency & Package-Version Compatibility Policy
 
@@ -37,9 +39,12 @@ This is a published-library repo, so the version chosen in `Directory.Packages.p
 - `.github/dependabot.yml` encodes this split: the production-floor packages above are grouped separately and major/minor version updates are `ignore`d (patch and GitHub security-advisory updates still flow through); test/build-only tooling (`xunit.*`, `coverlet.collector`, `Microsoft.NET.Test.Sdk`, `Microsoft.SourceLink.GitHub`) has no restriction and auto-tracks latest since it never reaches consumers.
 - For the `netcoreapp3.1` TFM, prefer `<FrameworkReference Include="Microsoft.AspNetCore.App" />` over an explicit `PackageReference` when the API already ships in the ASP.NET Core shared framework (see `GSS.Authorization.OAuth.csproj` / `GSS.Authorization.OAuth2.csproj`) — this avoids adding an extra floor package for that TFM.
 
+## Self-Reflection
+
+- **Candidate**: Distill a non-obvious gotcha into ≤ 2 context-tagged bullets. Propose it before writing.
+- **Promote**: On confirmation, write it to a dedicated file — merge an existing topic doc, else `docs/<topic>.md`, else `docs/lessons-learned.md`. Add or update one `@path` line under Pointers.
+- **Prune**: Drop entries once stale (obsolete version, now enforced, duplicated, or a transcript) — not by a fixed count.
+
 ## Claude Code Compatibility
 
-> [!NOTE]
-> This repository maintains compatibility with Claude Code. The file `CLAUDE.md` is a symbolic link pointing to `AGENTS.md`.
-> All commands, style guides, and workflows defined in `AGENTS.md` apply to both other agentic assistants and Claude Code.
-> **DO NOT** delete the `CLAUDE.md` symbolic link or edit it independently; all guidelines must be updated directly in `AGENTS.md`.
+`CLAUDE.md` is a symbolic link pointing to `AGENTS.md`. Edit `AGENTS.md` directly.
