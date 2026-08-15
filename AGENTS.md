@@ -7,8 +7,8 @@ OAuth 1.0 / OAuth 2.0 authorized `HttpClient`, friendly with `HttpClientFactory`
 
 - Build: `dotnet build -c Release`
 - Test (all): `dotnet test`
-- Test (single): `dotnet test --filter "FullyQualifiedName~ClassName.MethodName"`
-- Coverage (CI): `dotnet test --collect:"XPlat Code Coverage" && dotnet tool restore && dotnet tool run reportgenerator`
+- Test (single): `dotnet test --filter "FullyQualifiedName~ClassName.MethodName" --ignore-exit-code 8`
+- Coverage (CI): `dotnet test --coverage --coverage-output-format cobertura && dotnet tool restore && dotnet tool run reportgenerator`
 
 ## Pointers
 
@@ -36,7 +36,7 @@ This is a published-library repo, so the version chosen in `Directory.Packages.p
 - **Plain version numbers are intentional** (e.g. `Version="8.0.2"`, no `[8.0.2]` brackets). NuGet packs this as a *minimum* dependency, not an exact pin — consumers can still resolve to a newer compatible version. Don't add exact-version brackets.
 - The `netstandard2.0`-conditioned `PackageVersion` group (`Microsoft.AspNetCore.WebUtilities`, `Microsoft.Extensions.*`, `System.ComponentModel.Annotations`, `System.Text.Encodings.Web`, `System.Text.Json`, `System.Threading.Tasks.Extensions`) is the production compatibility floor. Only raise one of these when actually required — a security advisory, an out-of-support runtime (e.g. a [dotnet/announcements](https://github.com/dotnet/announcements) EOL notice), or a new API the code needs. Do not bump it just because a newer version is available.
 - `Directory.Build.props` sets `NuGetAuditMode=all` / `NuGetAuditLevel=moderate`, which surfaces known vulnerabilities at restore time — that's the real trigger for a floor bump, not Dependabot's weekly cadence.
-- `.github/dependabot.yml` encodes this split: the production-floor packages above are grouped separately and major/minor version updates are `ignore`d (patch and GitHub security-advisory updates still flow through); test/build-only tooling (`xunit.*`, `coverlet.collector`, `Microsoft.NET.Test.Sdk`, `Microsoft.SourceLink.GitHub`) has no restriction and auto-tracks latest since it never reaches consumers.
+- `.github/dependabot.yml` encodes this split: the production-floor packages above are grouped separately and major/minor version updates are `ignore`d (patch and GitHub security-advisory updates still flow through); test/build-only tooling (`xunit.*`, `Microsoft.Testing.Extensions.CodeCoverage`, `Microsoft.NET.Test.Sdk`, `Microsoft.SourceLink.GitHub`) has no restriction and auto-tracks latest since it never reaches consumers.
 - For the `netcoreapp3.1` TFM, prefer `<FrameworkReference Include="Microsoft.AspNetCore.App" />` over an explicit `PackageReference` when the API already ships in the ASP.NET Core shared framework (see `GSS.Authorization.OAuth.csproj` / `GSS.Authorization.OAuth2.csproj`) — this avoids adding an extra floor package for that TFM.
 
 ## Self-Reflection

@@ -32,7 +32,7 @@ jobs:
           dotnet build -c Release
       - name: Test
         run: |
-          dotnet test --collect:"XPlat Code Coverage"
+          dotnet test --coverage --coverage-output-format cobertura
           dotnet tool restore
           dotnet tool run reportgenerator
           [[ -f "./coverage/Summary.txt" ]] && cat "./coverage/Summary.txt"
