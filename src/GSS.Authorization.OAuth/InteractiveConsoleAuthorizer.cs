@@ -24,7 +24,14 @@ public class InteractiveConsoleAuthorizer(
     {
         if (authorizationUri == null)
             throw new ArgumentNullException(nameof(authorizationUri));
-        BrowserLauncher(authorizationUri);
+        // Printed whether or not the browser opens: it may land in the wrong profile, on the
+        // wrong display, or nowhere at all in a container.
+        Console.WriteLine($"Open this URL to authorize: {authorizationUri.AbsoluteUri}");
+        if (!Console.IsInputRedirected)
+        {
+            // Redirected input means a script is driving this, so nobody is watching a browser.
+            BrowserLauncher(authorizationUri);
+        }
         while (true)
         {
             Console.Write("Please complete login and authorization in browser and paste the verification code: ");
@@ -59,10 +66,9 @@ public class InteractiveConsoleAuthorizer(
             }
             catch (Exception exception)
             {
-                // No browser and no xdg-open, which is normal in a container. The authorization
-                // URI is still needed, so print it rather than ending the grant.
+                // No browser and no xdg-open, which is normal in a container. The caller has
+                // already printed the URI, so the grant can still continue.
                 Console.WriteLine($"Could not open a browser ({exception.Message}).");
-                Console.WriteLine($"Open this URL to authorize: {uri.AbsoluteUri}");
             }
         }
     }

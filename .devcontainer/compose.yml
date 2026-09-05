@@ -1,0 +1,14 @@
+# The dev container itself. The OAuth servers live in ../compose.yml so they
+# can be started without one.
+services:
+  dev:
+    image: mcr.microsoft.com/devcontainers/dotnet:1-10.0
+    volumes:
+      - ..:/workspace:cached
+      # xdg-open prints the URL instead of opening a browser, so the
+      # interactive sample works in a container with no display.
+      - ./xdg-open:/usr/local/bin/xdg-open:ro
+    command: sleep infinity
+    depends_on:
+      - oauth1
+      - oauth2
