@@ -101,6 +101,30 @@ public class OAuth2HttpHandlerTests
         Assert.All(innerHandler.Authorizations, authorization => Assert.Equal("Bearer access-token", authorization));
     }
 
+    [Fact]
+    public async Task SendAsync_WithConcurrentUnauthorized_ShouldRenewAccessTokenOnce()
+    {
+        // Arrange
+        var authorizerCalls = 0;
+        using var client = CreateClient(
+            new OAuth2HttpHandlerOptions(),
+            async cancellationToken =>
+            {
+                var call = Interlocked.Increment(ref authorizerCalls);
+                await Task.Delay(50, cancellationToken);
+                return new AccessToken { Token = $"token-{call}", ExpiresInSeconds = 60 };
+            },
+            new ExpiredTokenHandler("Bearer token-1"));
+
+        // Act
+        await Task.WhenAll(Enumerable.Range(0, 5).Select(index =>
+            client.GetAsync($"https://example.com/resource/{index}", TestContext.Current.CancellationToken)));
+
+        // Assert
+        // One call to obtain the initial token, one to renew it for the whole batch of 401s.
+        Assert.Equal(2, authorizerCalls);
+    }
+
     private static System.Net.Http.HttpClient CreateClient(
         OAuth2HttpHandlerOptions options,
         Func<CancellationToken, Task<AccessToken>> getAccessToken,
@@ -121,6 +145,23 @@ public class OAuth2HttpHandlerTests
         public Task<AccessToken> GetAccessTokenAsync(CancellationToken cancellationToken = default)
         {
             return getAccessToken(cancellationToken);
+        }
+    }
+
+    private sealed class ExpiredTokenHandler(string expiredAuthorization) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            if (request.Headers.Authorization?.ToString() != expiredAuthorization)
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+            }
+
+            var response = new HttpResponseMessage(HttpStatusCode.Unauthorized);
+            response.Headers.WwwAuthenticate.Add(new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer"));
+            return Task.FromResult(response);
         }
     }
 
