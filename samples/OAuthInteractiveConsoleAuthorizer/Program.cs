@@ -5,6 +5,7 @@ using GSS.Authorization.OAuth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddOptions<AuthorizerOptions>()
@@ -21,7 +22,10 @@ builder.Services.AddOptions<AuthorizerOptions>()
         options.TokenRequestUri = builder.Configuration.GetValue<Uri>("OAuth:TokenRequestUri")!;
     })
     .PostConfigure(options => Validator.ValidateObject(options, new ValidationContext(options), true));
-builder.Services.AddSingleton<IRequestSigner, HmacSha1RequestSigner>();
+// The signer must hold the same OAuthOptions as the caller, or the signature base string and
+// the authorization header would be percent-encoded differently.
+builder.Services.AddSingleton<IRequestSigner>(resolver =>
+    new HmacSha1RequestSigner(resolver.GetRequiredService<IOptions<AuthorizerOptions>>().Value));
 builder.Services.AddHttpClient<InteractiveConsoleAuthorizer>()
     .ConfigureHttpClient(client =>
     {

@@ -16,7 +16,7 @@ public abstract class RequestSignerBase(OAuthOptions options) : IRequestSigner
     {
     }
 
-    protected OAuthOptions Options { get; } = options;
+    protected internal OAuthOptions Options { get; } = options;
 
     public abstract string MethodName { get; }
 

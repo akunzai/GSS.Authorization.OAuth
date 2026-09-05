@@ -67,6 +67,18 @@ public static class RequestSignerExtensions
             throw new ArgumentNullException(nameof(signer));
         if (options == null)
             throw new ArgumentNullException(nameof(options));
+        // Only the signer's own PercentEncoder reaches the signature base string and the HMAC key,
+        // while the one below formats the header. Two different encoders would sign the request with
+        // one encoding and send it with another, and the server could not reconstruct the base string.
+        // Signers that do not derive from RequestSignerBase cannot be inspected; see IRequestSigner.
+        if (signer is RequestSignerBase signerBase &&
+            !signerBase.Options.PercentEncoder.Equals(options.PercentEncoder))
+        {
+            throw new InvalidOperationException(
+                $"The request signer holds a different {nameof(OAuthOptions.PercentEncoder)} than the " +
+                $"{nameof(OAuthOptions)} supplied here. Construct the signer with the same {nameof(OAuthOptions)}.");
+        }
+
         parameters ??= new Dictionary<string, StringValues>();
         if (tokenCredentials != null && !string.IsNullOrWhiteSpace(tokenCredentials.Value.Key))
         {

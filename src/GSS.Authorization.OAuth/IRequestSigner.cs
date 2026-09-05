@@ -5,6 +5,14 @@ using Microsoft.Extensions.Primitives;
 
 namespace GSS.Authorization.OAuth;
 
+/// <remarks>
+/// An implementation that percent-encodes while computing the signature must use the same
+/// <see cref="OAuthOptions.PercentEncoder" /> as the <see cref="OAuthOptions" /> its callers pass to
+/// <see cref="RequestSignerExtensions" />. The signature base string and the authorization header are
+/// encoded separately, and two different encoders yield a signature the server cannot reconstruct.
+/// Implementations deriving from <see cref="RequestSignerBase" /> are checked at signing time; others
+/// cannot be inspected and are trusted to honour this.
+/// </remarks>
 public interface IRequestSigner
 {
     string MethodName { get; }
