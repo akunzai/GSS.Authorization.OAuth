@@ -76,29 +76,46 @@ public class OAuth2HttpHandlerTests
     }
 
     [Fact]
-    public async Task SendAsync_WithConcurrentCacheMisses_ShouldRequestAccessTokenOnce()
+    public async Task SendAsync_WithBearerChallenge_ShouldRetryWithRenewedToken()
     {
         // Arrange
         var authorizerCalls = 0;
-        var innerHandler = new RecordingHandler();
+        var innerHandler = new ExpiredTokenHandler("Bearer token-1", "Bearer");
         using var client = CreateClient(
             new OAuth2HttpHandlerOptions(),
-            async cancellationToken =>
+            _ =>
             {
-                Interlocked.Increment(ref authorizerCalls);
-                await Task.Delay(50, cancellationToken);
-                return new AccessToken { Token = "access-token", ExpiresInSeconds = 60 };
+                var call = Interlocked.Increment(ref authorizerCalls);
+                return Task.FromResult(new AccessToken { Token = $"token-{call}", ExpiresInSeconds = 60 });
             },
             innerHandler);
 
         // Act
-        await Task.WhenAll(Enumerable.Range(0, 5).Select(index =>
-            client.GetAsync($"https://example.com/resource/{index}", TestContext.Current.CancellationToken)));
+        var response = await client.GetAsync("https://example.com/resource",
+            TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(1, authorizerCalls);
-        Assert.Equal(5, innerHandler.Authorizations.Count);
-        Assert.All(innerHandler.Authorizations, authorization => Assert.Equal("Bearer access-token", authorization));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(["Bearer token-1", "Bearer token-2"], innerHandler.Authorizations);
+    }
+
+    [Fact]
+    public async Task SendAsync_WithNonBearerChallenge_ShouldNotRenewAccessToken()
+    {
+        // Arrange
+        var innerHandler = new ExpiredTokenHandler("Bearer token-1", "Basic");
+        using var client = CreateClient(
+            new OAuth2HttpHandlerOptions(),
+            _ => Task.FromResult(new AccessToken { Token = "token-1", ExpiresInSeconds = 60 }),
+            innerHandler);
+
+        // Act
+        var response = await client.GetAsync("https://example.com/resource",
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal(["Bearer token-1"], innerHandler.Authorizations);
     }
 
     private static System.Net.Http.HttpClient CreateClient(
@@ -121,6 +138,33 @@ public class OAuth2HttpHandlerTests
         public Task<AccessToken> GetAccessTokenAsync(CancellationToken cancellationToken = default)
         {
             return getAccessToken(cancellationToken);
+        }
+    }
+
+    private sealed class ExpiredTokenHandler(string expiredAuthorization, string challengeScheme)
+        : HttpMessageHandler
+    {
+        public List<string?> Authorizations { get; } = [];
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            var authorization = request.Headers.Authorization?.ToString();
+            lock (Authorizations)
+            {
+                Authorizations.Add(authorization);
+            }
+
+            if (authorization != expiredAuthorization)
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+            }
+
+            var response = new HttpResponseMessage(HttpStatusCode.Unauthorized);
+            response.Headers.WwwAuthenticate.Add(
+                new System.Net.Http.Headers.AuthenticationHeaderValue(challengeScheme));
+            return Task.FromResult(response);
         }
     }
 

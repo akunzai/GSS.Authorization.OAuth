@@ -18,4 +18,8 @@
     <ProjectReference Include="..\GSS.Authorization.OAuth2\GSS.Authorization.OAuth2.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(Configuration)' != 'Release' ">
+    <InternalsVisibleTo Include="$(MSBuildProjectName).Tests" />
+  </ItemGroup>
+
 </Project>
