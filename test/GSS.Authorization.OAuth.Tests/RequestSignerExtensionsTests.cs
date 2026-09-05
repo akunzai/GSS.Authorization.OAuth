@@ -19,6 +19,58 @@ public class RequestSignerExtensionsTests
     };
 
     [Fact]
+    public void AppendAuthorizationParameters_WithMismatchedPercentEncoder_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        // The signer keeps its own OAuthOptions, and only its copy of PercentEncoder reaches the
+        // signature base string and the HMAC key; the caller's copy formats the header. Two
+        // different encoders produce a signature the server cannot reconstruct.
+        var uri = new Uri("http://photos.example.net/photos");
+        var signerWithDefaultEncoder = new HmacSha1RequestSigner();
+        var callerOptions = new OAuthOptions
+        {
+            ClientCredentials = new OAuthCredential("dpf43f3p2l4k3l03", "kd94hf93k423kf44"),
+            NonceProvider = () => "kllo9940pd9333jh",
+            TimestampProvider = () => "1191242096",
+            PercentEncoder = value => Uri.EscapeDataString(value).ToUpperInvariant()
+        };
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() =>
+            signerWithDefaultEncoder.AppendAuthorizationParameters(Get, uri, callerOptions));
+    }
+
+    [Fact]
+    public void AppendAuthorizationParameters_WithMatchingPercentEncoder_ShouldReachTheSignature()
+    {
+        // Arrange
+        var uri = new Uri("http://photos.example.net/photos");
+        var defaultOptions = CreateOptions(Uri.EscapeDataString);
+        var customOptions = CreateOptions(value => Uri.EscapeDataString(value).ToUpperInvariant());
+
+        // Act
+        var withDefault = new HmacSha1RequestSigner(defaultOptions)
+            .AppendAuthorizationParameters(Get, uri, defaultOptions);
+        var withCustom = new HmacSha1RequestSigner(customOptions)
+            .AppendAuthorizationParameters(Get, uri, customOptions);
+
+        // Assert
+        // A custom encoder that only the caller held would leave the signature untouched.
+        Assert.NotEqual(withDefault[OAuthSignature].ToString(), withCustom[OAuthSignature].ToString());
+    }
+
+    private static OAuthOptions CreateOptions(Func<string, string> percentEncoder)
+    {
+        return new OAuthOptions
+        {
+            ClientCredentials = new OAuthCredential("dpf43f3p2l4k3l03", "kd94hf93k423kf44"),
+            NonceProvider = () => "kllo9940pd9333jh",
+            TimestampProvider = () => "1191242096",
+            PercentEncoder = percentEncoder
+        };
+    }
+
+    [Fact]
     public void GetAuthorizationHeader_WithNullOptions_ShouldThrowArgumentNullException()
     {
         // Arrange
