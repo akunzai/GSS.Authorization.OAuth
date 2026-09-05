@@ -133,3 +133,17 @@ services.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("ingest",
 ```
 
 Without `configureHandler` a client reads the unnamed `OAuth2HttpHandlerOptions`, as before.
+
+## Access Token Caching
+
+Each OAuth 2.0 client name keeps one access token, obtained on first use and reused until it
+expires. The token belongs to the registration rather than to an individual handler, so it
+survives the handler rotation `HttpClientFactory` performs instead of being re-fetched every couple
+of minutes.
+
+Concurrent requests that find no cached token share a single request to the authorization server,
+and so do concurrent requests rejected with `401` and a `Bearer` challenge: the token is renewed
+once for the whole batch rather than once per request.
+
+Handlers constructed by hand — `new OAuth2HttpHandler(options, authorizer, memoryCache)` — keep
+their token to themselves, as before.

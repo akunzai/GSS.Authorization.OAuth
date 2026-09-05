@@ -18,6 +18,10 @@ public static class ServiceCollectionExtensions
     /// The first registration is also bound to the unnamed <see cref="IOptions{TOptions}" /> and to the container
     /// registration of <typeparamref name="TAuthorizer" />, so resolving those yields the configuration of the
     /// first registered client.
+    /// <para>
+    /// The access token is cached per HttpClient name for the lifetime of the registration, so it survives
+    /// handler rotation, and concurrent callers share a single request to the authorization server.
+    /// </para>
     /// </remarks>
     /// <typeparam name="TClient">The type of the typed client.</typeparam>
     /// <typeparam name="TAuthorizer">The type of the authorizer.</typeparam>
@@ -63,6 +67,10 @@ public static class ServiceCollectionExtensions
     /// The first registration is also bound to the unnamed <see cref="IOptions{TOptions}" /> and to the container
     /// registration of <typeparamref name="TAuthorizer" />, so resolving those yields the configuration of the
     /// first registered client.
+    /// <para>
+    /// The access token is cached per HttpClient name for the lifetime of the registration, so it survives
+    /// handler rotation, and concurrent callers share a single request to the authorization server.
+    /// </para>
     /// </remarks>
     /// <param name="services">The <see cref="IServiceCollection" />.</param>
     /// <param name="name">The logical name of the <see cref="System.Net.Http.HttpClient" /> to configure.</param>
