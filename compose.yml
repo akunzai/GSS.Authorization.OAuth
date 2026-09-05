@@ -1,0 +1,29 @@
+# OAuth servers for exercising the samples end to end. Both verify what the
+# client sends, so a wrong signature or a misplaced token fails here the same
+# way it would against a real provider.
+#
+#   docker compose up -d
+#
+# The dev container in .devcontainer/ builds on this file, but it works on its
+# own too.
+services:
+  oauth1:
+    # flask-oauthlib, so signatures are checked by oauthlib rather than by this
+    # repository's own signer - an independent reading of RFC 5849.
+    image: ghcr.io/beryju/oauth1-test-server:v1.1
+    environment:
+      OAUTH1_CLIENT_ID: dpf43f3p2l4k3l03
+      OAUTH1_CLIENT_SECRET: kd94hf93k423kf44
+      # 'oob' is what the client sends when no callback is configured, and it
+      # has to appear in the client's registered redirect URIs to pass
+      # validation. Authorizing then returns the verifier in the response body
+      # instead of redirecting.
+      OAUTH1_REDIRECT_URI: oob
+    ports:
+      # 5000 on the host is taken by AirPlay Receiver on macOS.
+      - "5001:5000"
+
+  oauth2:
+    image: ghcr.io/navikt/mock-oauth2-server:6.0.2
+    ports:
+      - "8080:8080"

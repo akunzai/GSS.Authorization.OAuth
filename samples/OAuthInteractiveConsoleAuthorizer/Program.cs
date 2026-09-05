@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Net.Http.Headers;
 using System.Reflection;
 using GSS.Authorization.OAuth;
@@ -48,5 +48,10 @@ var tokenCredentials = await authorizer.GrantAccessAsync().ConfigureAwait(false)
 Console.WriteLine("Token Credentials ...");
 Console.WriteLine($"Key: {tokenCredentials.Key}");
 Console.WriteLine($"Secret: {tokenCredentials.Secret}");
-Console.WriteLine("Press any key to exit...");
-Console.ReadKey();
+// Skip the pause when stdin is redirected: ReadKey throws there, and a script driving
+// this sample feeds the verification code through stdin.
+if (!Console.IsInputRedirected)
+{
+    Console.WriteLine("Press any key to exit...");
+    Console.ReadKey();
+}

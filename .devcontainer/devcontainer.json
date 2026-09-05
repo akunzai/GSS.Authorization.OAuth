@@ -1,0 +1,12 @@
+{
+  "name": "GSS.Authorization.OAuth",
+  "dockerComposeFile": ["../compose.yml", "compose.yml"],
+  "service": "dev",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-dotnettools.csdevkit"]
+    }
+  },
+  "postCreateCommand": "dotnet restore"
+}

@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# There is no browser in the dev container, so print the URL for the human to
+# open on the host. InteractiveConsoleAuthorizer falls back to xdg-open when
+# Process.Start cannot launch a browser; without this it would throw.
+printf '\n  Open this in your browser:\n  %s\n\n' "$1"
