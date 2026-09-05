@@ -27,7 +27,11 @@ public class InteractiveConsoleAuthorizer(
         // Printed whether or not the browser opens: it may land in the wrong profile, on the
         // wrong display, or nowhere at all in a container.
         Console.WriteLine($"Open this URL to authorize: {authorizationUri.AbsoluteUri}");
-        BrowserLauncher(authorizationUri);
+        if (!Console.IsInputRedirected)
+        {
+            // Redirected input means a script is driving this, so nobody is watching a browser.
+            BrowserLauncher(authorizationUri);
+        }
         while (true)
         {
             Console.Write("Please complete login and authorization in browser and paste the verification code: ");

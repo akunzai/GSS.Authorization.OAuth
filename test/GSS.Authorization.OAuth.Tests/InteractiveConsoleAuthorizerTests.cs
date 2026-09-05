@@ -54,6 +54,37 @@ public class InteractiveConsoleAuthorizerTests
         }
     }
 
+    [Fact]
+    public async Task GetVerificationCodeAsync_ShouldPrintTheUriAndOnlyOpenABrowserForAHuman()
+    {
+        // Arrange
+        var launched = 0;
+        var authorizer = CreateAuthorizer();
+        authorizer.BrowserLauncher = _ => launched++;
+        var output = new StringWriter();
+        var originalIn = Console.In;
+        var originalOut = Console.Out;
+        Console.SetIn(new StringReader("verifier\n"));
+        Console.SetOut(output);
+        try
+        {
+            // Act
+            await authorizer.GetVerificationCodeAsync(new Uri("https://example.com/authorize?oauth_token=abc"),
+                TestContext.Current.CancellationToken);
+        }
+        finally
+        {
+            Console.SetIn(originalIn);
+            Console.SetOut(originalOut);
+        }
+
+        // Assert
+        // The URI is always printed, so a script can read it and a human can copy it.
+        Assert.Contains("https://example.com/authorize?oauth_token=abc", output.ToString(), StringComparison.Ordinal);
+        // Redirected input means a script is driving this and no one is watching a browser.
+        Assert.Equal(Console.IsInputRedirected ? 0 : 1, launched);
+    }
+
     private static InteractiveConsoleAuthorizer CreateAuthorizer()
     {
         return new InteractiveConsoleAuthorizer(
