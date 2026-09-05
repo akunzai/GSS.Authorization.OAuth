@@ -1,0 +1,94 @@
+#nullable enable
+abstract GSS.Authorization.OAuth.AuthorizerBase.GetVerificationCodeAsync(System.Uri! authorizationUri, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<string!>!
+abstract GSS.Authorization.OAuth.RequestSignerBase.GetSignature(System.Net.Http.HttpMethod! method, System.Uri! uri, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>>! parameters, string! consumerSecret, string? tokenSecret = null) -> string!
+abstract GSS.Authorization.OAuth.RequestSignerBase.MethodName.get -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.OAuthCallback = "oauth_callback" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.OAuthConsumerKey = "oauth_consumer_key" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.OAuthNonce = "oauth_nonce" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.OAuthParametersAbsent = "oauth_parameters_absent" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.OAuthPrefix = "oauth_" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.OAuthProblem = "oauth_problem" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.OAuthScheme = "OAuth" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.OAuthSignature = "oauth_signature" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.OAuthSignatureMethod = "oauth_signature_method" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.OAuthTimestamp = "oauth_timestamp" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.OAuthToken = "oauth_token" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.OAuthTokenSecret = "oauth_token_secret" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.OAuthVerifier = "oauth_verifier" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.OAuthVersion = "oauth_version" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.OutOfBand = "oob" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.ParameterAbsent = "parameter_absent" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.Realm = "realm" -> string!
+const GSS.Authorization.OAuth.OAuthDefaults.Version1 = "1.0" -> string!
+GSS.Authorization.OAuth.AuthorizerBase
+GSS.Authorization.OAuth.AuthorizerBase.AuthorizerBase(Microsoft.Extensions.Options.IOptions<GSS.Authorization.OAuth.AuthorizerOptions!>! options, System.Net.Http.HttpClient! httpClient, GSS.Authorization.OAuth.IRequestSigner! signer) -> void
+GSS.Authorization.OAuth.AuthorizerBase.GrantAccessAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<GSS.Authorization.OAuth.OAuthCredential>!
+GSS.Authorization.OAuth.AuthorizerOptions
+GSS.Authorization.OAuth.AuthorizerOptions.AuthorizerOptions() -> void
+GSS.Authorization.OAuth.AuthorizerOptions.CallBack.get -> System.Uri?
+GSS.Authorization.OAuth.AuthorizerOptions.CallBack.set -> void
+GSS.Authorization.OAuth.AuthorizerOptions.ResourceOwnerAuthorizeUri.get -> System.Uri!
+GSS.Authorization.OAuth.AuthorizerOptions.ResourceOwnerAuthorizeUri.set -> void
+GSS.Authorization.OAuth.AuthorizerOptions.TemporaryCredentialRequestUri.get -> System.Uri!
+GSS.Authorization.OAuth.AuthorizerOptions.TemporaryCredentialRequestUri.set -> void
+GSS.Authorization.OAuth.AuthorizerOptions.TokenRequestUri.get -> System.Uri!
+GSS.Authorization.OAuth.AuthorizerOptions.TokenRequestUri.set -> void
+GSS.Authorization.OAuth.HmacSha1RequestSigner
+GSS.Authorization.OAuth.HmacSha1RequestSigner.HmacSha1RequestSigner() -> void
+GSS.Authorization.OAuth.HmacSha1RequestSigner.HmacSha1RequestSigner(GSS.Authorization.OAuth.OAuthOptions! options) -> void
+GSS.Authorization.OAuth.IAuthorizer
+GSS.Authorization.OAuth.IAuthorizer.GrantAccessAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<GSS.Authorization.OAuth.OAuthCredential>!
+GSS.Authorization.OAuth.InteractiveConsoleAuthorizer
+GSS.Authorization.OAuth.InteractiveConsoleAuthorizer.InteractiveConsoleAuthorizer(Microsoft.Extensions.Options.IOptions<GSS.Authorization.OAuth.AuthorizerOptions!>! options, System.Net.Http.HttpClient! httpClient, GSS.Authorization.OAuth.IRequestSigner! signer) -> void
+GSS.Authorization.OAuth.IRequestSigner
+GSS.Authorization.OAuth.IRequestSigner.GetSignature(System.Net.Http.HttpMethod! method, System.Uri! uri, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>>! parameters, string! consumerSecret, string? tokenSecret = null) -> string!
+GSS.Authorization.OAuth.IRequestSigner.MethodName.get -> string!
+GSS.Authorization.OAuth.OAuthCredential
+GSS.Authorization.OAuth.OAuthCredential.Equals(GSS.Authorization.OAuth.OAuthCredential other) -> bool
+GSS.Authorization.OAuth.OAuthCredential.Key.get -> string!
+GSS.Authorization.OAuth.OAuthCredential.OAuthCredential() -> void
+GSS.Authorization.OAuth.OAuthCredential.OAuthCredential(string! key, string! secret) -> void
+GSS.Authorization.OAuth.OAuthCredential.Secret.get -> string!
+GSS.Authorization.OAuth.OAuthDefaults
+GSS.Authorization.OAuth.OAuthException
+GSS.Authorization.OAuth.OAuthException.OAuthException() -> void
+GSS.Authorization.OAuth.OAuthException.OAuthException(string! message) -> void
+GSS.Authorization.OAuth.OAuthException.OAuthException(string! message, System.Exception! innerException) -> void
+GSS.Authorization.OAuth.OAuthOptions
+GSS.Authorization.OAuth.OAuthOptions.ClientCredentials.get -> GSS.Authorization.OAuth.OAuthCredential
+GSS.Authorization.OAuth.OAuthOptions.ClientCredentials.set -> void
+GSS.Authorization.OAuth.OAuthOptions.NonceProvider.get -> System.Func<string!>!
+GSS.Authorization.OAuth.OAuthOptions.NonceProvider.set -> void
+GSS.Authorization.OAuth.OAuthOptions.OAuthOptions() -> void
+GSS.Authorization.OAuth.OAuthOptions.PercentEncoder.get -> System.Func<string!, string!>!
+GSS.Authorization.OAuth.OAuthOptions.PercentEncoder.set -> void
+GSS.Authorization.OAuth.OAuthOptions.ProvideVersion.get -> bool
+GSS.Authorization.OAuth.OAuthOptions.ProvideVersion.set -> void
+GSS.Authorization.OAuth.OAuthOptions.Realm.get -> string?
+GSS.Authorization.OAuth.OAuthOptions.Realm.set -> void
+GSS.Authorization.OAuth.OAuthOptions.TimestampProvider.get -> System.Func<string!>!
+GSS.Authorization.OAuth.OAuthOptions.TimestampProvider.set -> void
+GSS.Authorization.OAuth.PlainTextRequestSigner
+GSS.Authorization.OAuth.PlainTextRequestSigner.PlainTextRequestSigner() -> void
+GSS.Authorization.OAuth.RequestSignerBase
+GSS.Authorization.OAuth.RequestSignerBase.GetBaseString(System.Net.Http.HttpMethod! method, System.Uri! uri, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>>! parameters) -> string!
+GSS.Authorization.OAuth.RequestSignerBase.Options.get -> GSS.Authorization.OAuth.OAuthOptions!
+GSS.Authorization.OAuth.RequestSignerBase.RequestSignerBase() -> void
+GSS.Authorization.OAuth.RequestSignerBase.RequestSignerBase(GSS.Authorization.OAuth.OAuthOptions! options) -> void
+GSS.Authorization.OAuth.RequestSignerExtensions
+override GSS.Authorization.OAuth.HmacSha1RequestSigner.GetSignature(System.Net.Http.HttpMethod! method, System.Uri! uri, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>>! parameters, string! consumerSecret, string? tokenSecret = null) -> string!
+override GSS.Authorization.OAuth.HmacSha1RequestSigner.MethodName.get -> string!
+override GSS.Authorization.OAuth.InteractiveConsoleAuthorizer.GetVerificationCodeAsync(System.Uri! authorizationUri, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<string!>!
+override GSS.Authorization.OAuth.OAuthCredential.Equals(object? obj) -> bool
+override GSS.Authorization.OAuth.OAuthCredential.GetHashCode() -> int
+override GSS.Authorization.OAuth.PlainTextRequestSigner.GetSignature(System.Net.Http.HttpMethod! method, System.Uri! uri, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>>! parameters, string! consumerSecret, string? tokenSecret = null) -> string!
+override GSS.Authorization.OAuth.PlainTextRequestSigner.MethodName.get -> string!
+static GSS.Authorization.OAuth.OAuthCredential.operator !=(GSS.Authorization.OAuth.OAuthCredential left, GSS.Authorization.OAuth.OAuthCredential right) -> bool
+static GSS.Authorization.OAuth.OAuthCredential.operator ==(GSS.Authorization.OAuth.OAuthCredential left, GSS.Authorization.OAuth.OAuthCredential right) -> bool
+static GSS.Authorization.OAuth.RequestSignerBase.GetBaseStringUri(System.Uri! uri) -> string!
+static GSS.Authorization.OAuth.RequestSignerBase.PadNumbers(string! input) -> string!
+static GSS.Authorization.OAuth.RequestSignerExtensions.AppendAuthorizationParameters(this GSS.Authorization.OAuth.IRequestSigner! signer, System.Net.Http.HttpMethod! method, System.Uri! uri, GSS.Authorization.OAuth.OAuthOptions! options, System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Primitives.StringValues>? parameters = null, GSS.Authorization.OAuth.OAuthCredential? tokenCredentials = null) -> System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Primitives.StringValues>!
+static GSS.Authorization.OAuth.RequestSignerExtensions.GetAuthorizationHeader(this GSS.Authorization.OAuth.IRequestSigner! signer, System.Net.Http.HttpMethod! method, System.Uri! uri, GSS.Authorization.OAuth.OAuthOptions! options, System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Primitives.StringValues>? parameters = null, GSS.Authorization.OAuth.OAuthCredential? tokenCredentials = null) -> System.Net.Http.Headers.AuthenticationHeaderValue!
+virtual GSS.Authorization.OAuth.AuthorizerBase.GetTemporaryCredentialAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<GSS.Authorization.OAuth.OAuthCredential>!
+virtual GSS.Authorization.OAuth.AuthorizerBase.GetTokenCredentialAsync(GSS.Authorization.OAuth.OAuthCredential temporaryCredentials, string! verificationCode, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<GSS.Authorization.OAuth.OAuthCredential>!
+virtual GSS.Authorization.OAuth.AuthorizerBase.HandleOAuthException(System.Net.Http.HttpResponseMessage! request, System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Primitives.StringValues>! formData) -> void

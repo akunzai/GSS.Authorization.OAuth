@@ -1,0 +1,16 @@
+#nullable enable
+GSS.Authorization.OAuth2.OAuth2HttpClient
+GSS.Authorization.OAuth2.OAuth2HttpClient.HttpClient.get -> System.Net.Http.HttpClient!
+GSS.Authorization.OAuth2.OAuth2HttpClient.OAuth2HttpClient(System.Net.Http.HttpClient! httpClient) -> void
+GSS.Authorization.OAuth2.OAuth2HttpHandler
+GSS.Authorization.OAuth2.OAuth2HttpHandler.OAuth2HttpHandler(Microsoft.Extensions.Options.IOptions<GSS.Authorization.OAuth2.OAuth2HttpHandlerOptions!>! options, GSS.Authorization.OAuth2.IAuthorizer! authorizer, Microsoft.Extensions.Caching.Memory.IMemoryCache! memoryCache) -> void
+GSS.Authorization.OAuth2.OAuth2HttpHandlerOptions
+GSS.Authorization.OAuth2.OAuth2HttpHandlerOptions.OAuth2HttpHandlerOptions() -> void
+GSS.Authorization.OAuth2.OAuth2HttpHandlerOptions.SendAccessTokenInBody.get -> bool
+GSS.Authorization.OAuth2.OAuth2HttpHandlerOptions.SendAccessTokenInBody.set -> void
+GSS.Authorization.OAuth2.OAuth2HttpHandlerOptions.SendAccessTokenInQuery.get -> bool
+GSS.Authorization.OAuth2.OAuth2HttpHandlerOptions.SendAccessTokenInQuery.set -> void
+GSS.Authorization.OAuth2.ServiceCollectionExtensions
+override GSS.Authorization.OAuth2.OAuth2HttpHandler.SendAsync(System.Net.Http.HttpRequestMessage! request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+static GSS.Authorization.OAuth2.ServiceCollectionExtensions.AddOAuth2HttpClient<TAuthorizer>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! name, System.Action<System.IServiceProvider!, GSS.Authorization.OAuth2.AuthorizerOptions!>! configureOptions, System.Action<Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!>? configureAuthorizer = null) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static GSS.Authorization.OAuth2.ServiceCollectionExtensions.AddOAuth2HttpClient<TClient, TAuthorizer>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<System.IServiceProvider!, GSS.Authorization.OAuth2.AuthorizerOptions!>! configureOptions, System.Action<Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!>? configureAuthorizer = null) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
