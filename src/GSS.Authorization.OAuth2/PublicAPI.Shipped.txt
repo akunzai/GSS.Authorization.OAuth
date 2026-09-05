@@ -1,0 +1,58 @@
+#nullable enable
+abstract GSS.Authorization.OAuth2.AccessTokenAuthorizerBase.PrepareFormData(System.Collections.Generic.IDictionary<string!, string!>! formData) -> void
+abstract GSS.Authorization.OAuth2.Authorizer.GetAccessTokenAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<GSS.Authorization.OAuth2.AccessToken!>!
+const GSS.Authorization.OAuth2.AuthorizerDefaults.AccessToken = "access_token" -> string!
+const GSS.Authorization.OAuth2.AuthorizerDefaults.Basic = "Basic" -> string!
+const GSS.Authorization.OAuth2.AuthorizerDefaults.Bearer = "Bearer" -> string!
+const GSS.Authorization.OAuth2.AuthorizerDefaults.ClientCredentials = "client_credentials" -> string!
+const GSS.Authorization.OAuth2.AuthorizerDefaults.ClientId = "client_id" -> string!
+const GSS.Authorization.OAuth2.AuthorizerDefaults.ClientSecret = "client_secret" -> string!
+const GSS.Authorization.OAuth2.AuthorizerDefaults.GrantType = "grant_type" -> string!
+const GSS.Authorization.OAuth2.AuthorizerDefaults.Password = "password" -> string!
+const GSS.Authorization.OAuth2.AuthorizerDefaults.Scope = "scope" -> string!
+const GSS.Authorization.OAuth2.AuthorizerDefaults.ScopeSeparator = " " -> string!
+const GSS.Authorization.OAuth2.AuthorizerDefaults.Username = "username" -> string!
+GSS.Authorization.OAuth2.AccessToken
+GSS.Authorization.OAuth2.AccessToken.AccessToken() -> void
+GSS.Authorization.OAuth2.AccessToken.ExpiresIn.get -> System.TimeSpan
+GSS.Authorization.OAuth2.AccessToken.ExpiresInSeconds.get -> int
+GSS.Authorization.OAuth2.AccessToken.ExpiresInSeconds.set -> void
+GSS.Authorization.OAuth2.AccessToken.RefreshToken.get -> string?
+GSS.Authorization.OAuth2.AccessToken.RefreshToken.set -> void
+GSS.Authorization.OAuth2.AccessToken.Token.get -> string!
+GSS.Authorization.OAuth2.AccessToken.Token.set -> void
+GSS.Authorization.OAuth2.AccessToken.TokenType.get -> string?
+GSS.Authorization.OAuth2.AccessToken.TokenType.set -> void
+GSS.Authorization.OAuth2.AccessTokenAuthorizerBase
+GSS.Authorization.OAuth2.AccessTokenAuthorizerBase.AccessTokenAuthorizerBase(System.Net.Http.HttpClient! client, Microsoft.Extensions.Options.IOptions<GSS.Authorization.OAuth2.AuthorizerOptions!>! options) -> void
+GSS.Authorization.OAuth2.AccessTokenAuthorizerBase.Options.get -> GSS.Authorization.OAuth2.AuthorizerOptions!
+GSS.Authorization.OAuth2.Authorizer
+GSS.Authorization.OAuth2.Authorizer.Authorizer(System.Net.Http.HttpClient! client) -> void
+GSS.Authorization.OAuth2.Authorizer.Client.get -> System.Net.Http.HttpClient!
+GSS.Authorization.OAuth2.AuthorizerDefaults
+GSS.Authorization.OAuth2.AuthorizerOptions
+GSS.Authorization.OAuth2.AuthorizerOptions.AccessTokenEndpoint.get -> System.Uri!
+GSS.Authorization.OAuth2.AuthorizerOptions.AccessTokenEndpoint.set -> void
+GSS.Authorization.OAuth2.AuthorizerOptions.AuthorizerOptions() -> void
+GSS.Authorization.OAuth2.AuthorizerOptions.ClientId.get -> string!
+GSS.Authorization.OAuth2.AuthorizerOptions.ClientId.set -> void
+GSS.Authorization.OAuth2.AuthorizerOptions.ClientSecret.get -> string!
+GSS.Authorization.OAuth2.AuthorizerOptions.ClientSecret.set -> void
+GSS.Authorization.OAuth2.AuthorizerOptions.Credentials.get -> System.Net.NetworkCredential?
+GSS.Authorization.OAuth2.AuthorizerOptions.Credentials.set -> void
+GSS.Authorization.OAuth2.AuthorizerOptions.OnError.get -> System.Action<System.Net.HttpStatusCode, string!>?
+GSS.Authorization.OAuth2.AuthorizerOptions.OnError.set -> void
+GSS.Authorization.OAuth2.AuthorizerOptions.Scopes.get -> System.Collections.Generic.IEnumerable<string!>?
+GSS.Authorization.OAuth2.AuthorizerOptions.Scopes.set -> void
+GSS.Authorization.OAuth2.AuthorizerOptions.SendClientCredentialsInRequestBody.get -> bool
+GSS.Authorization.OAuth2.AuthorizerOptions.SendClientCredentialsInRequestBody.set -> void
+GSS.Authorization.OAuth2.ClientCredentialsAuthorizer
+GSS.Authorization.OAuth2.ClientCredentialsAuthorizer.ClientCredentialsAuthorizer(System.Net.Http.HttpClient! client, Microsoft.Extensions.Options.IOptions<GSS.Authorization.OAuth2.AuthorizerOptions!>! options) -> void
+GSS.Authorization.OAuth2.IAuthorizer
+GSS.Authorization.OAuth2.IAuthorizer.GetAccessTokenAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<GSS.Authorization.OAuth2.AccessToken!>!
+GSS.Authorization.OAuth2.ResourceOwnerCredentialsAuthorizer
+GSS.Authorization.OAuth2.ResourceOwnerCredentialsAuthorizer.ResourceOwnerCredentialsAuthorizer(System.Net.Http.HttpClient! client, Microsoft.Extensions.Options.IOptions<GSS.Authorization.OAuth2.AuthorizerOptions!>! options) -> void
+override GSS.Authorization.OAuth2.AccessTokenAuthorizerBase.GetAccessTokenAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<GSS.Authorization.OAuth2.AccessToken!>!
+override GSS.Authorization.OAuth2.ClientCredentialsAuthorizer.PrepareFormData(System.Collections.Generic.IDictionary<string!, string!>! formData) -> void
+override GSS.Authorization.OAuth2.ResourceOwnerCredentialsAuthorizer.PrepareFormData(System.Collections.Generic.IDictionary<string!, string!>! formData) -> void
+static readonly GSS.Authorization.OAuth2.AccessToken.Empty -> GSS.Authorization.OAuth2.AccessToken!

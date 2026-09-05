@@ -181,3 +181,10 @@ dotnet_diagnostic.CA1308.severity = none
 
 # CA1303: Do not pass literals as localized parameters
 dotnet_diagnostic.CA1303.severity = none
+
+# RS0026/RS0027: the public API analyzer groups overloads by method name, so the typed and named
+# AddOAuth*HttpClient families are treated as one overload set. Both families need optional
+# parameters, which these two rules cannot express; 2.7.2 already had that shape. RS0016 and RS0017
+# still fail the build when the public surface changes without being declared.
+dotnet_diagnostic.RS0026.severity = none
+dotnet_diagnostic.RS0027.severity = none

@@ -1,0 +1,26 @@
+#nullable enable
+GSS.Authorization.OAuth.OAuthHttpClient
+GSS.Authorization.OAuth.OAuthHttpClient.HttpClient.get -> System.Net.Http.HttpClient!
+GSS.Authorization.OAuth.OAuthHttpClient.OAuthHttpClient(System.Net.Http.HttpClient! httpClient) -> void
+GSS.Authorization.OAuth.OAuthHttpHandler
+GSS.Authorization.OAuth.OAuthHttpHandler.OAuthHttpHandler(Microsoft.Extensions.Options.IOptions<GSS.Authorization.OAuth.OAuthHttpHandlerOptions!>! options, GSS.Authorization.OAuth.IRequestSigner! signer) -> void
+GSS.Authorization.OAuth.OAuthHttpHandlerOptions
+GSS.Authorization.OAuth.OAuthHttpHandlerOptions.OAuthHttpHandlerOptions() -> void
+GSS.Authorization.OAuth.OAuthHttpHandlerOptions.SignedAsBody.get -> bool
+GSS.Authorization.OAuth.OAuthHttpHandlerOptions.SignedAsBody.set -> void
+GSS.Authorization.OAuth.OAuthHttpHandlerOptions.SignedAsQuery.get -> bool
+GSS.Authorization.OAuth.OAuthHttpHandlerOptions.SignedAsQuery.set -> void
+GSS.Authorization.OAuth.OAuthHttpHandlerOptions.TokenCredentialProvider.get -> System.Func<System.Net.Http.HttpRequestMessage!, System.Threading.Tasks.ValueTask<GSS.Authorization.OAuth.OAuthCredential>>!
+GSS.Authorization.OAuth.OAuthHttpHandlerOptions.TokenCredentialProvider.set -> void
+GSS.Authorization.OAuth.OAuthHttpHandlerOptions.TokenCredentials.get -> GSS.Authorization.OAuth.OAuthCredential
+GSS.Authorization.OAuth.OAuthHttpHandlerOptions.TokenCredentials.set -> void
+GSS.Authorization.OAuth.ServiceCollectionExtensions
+override GSS.Authorization.OAuth.OAuthHttpHandler.SendAsync(System.Net.Http.HttpRequestMessage! request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+static GSS.Authorization.OAuth.ServiceCollectionExtensions.AddOAuthHttpClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! name, System.Action<System.IServiceProvider!, GSS.Authorization.OAuth.OAuthHttpHandlerOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static GSS.Authorization.OAuth.ServiceCollectionExtensions.AddOAuthHttpClient<TClient, TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<System.IServiceProvider!, TOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static GSS.Authorization.OAuth.ServiceCollectionExtensions.AddOAuthHttpClient<TClient, TRequestSigner, TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<System.IServiceProvider!, TOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static GSS.Authorization.OAuth.ServiceCollectionExtensions.AddOAuthHttpClient<TClient, TRequestSigner>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<System.IServiceProvider!, GSS.Authorization.OAuth.OAuthHttpHandlerOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static GSS.Authorization.OAuth.ServiceCollectionExtensions.AddOAuthHttpClient<TClient>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<System.IServiceProvider!, GSS.Authorization.OAuth.OAuthHttpHandlerOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static GSS.Authorization.OAuth.ServiceCollectionExtensions.AddOAuthHttpClient<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! name, System.Action<System.IServiceProvider!, TOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static GSS.Authorization.OAuth.ServiceCollectionExtensions.AddOAuthHttpClient<TRequestSigner, TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! name, System.Action<System.IServiceProvider!, TOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static GSS.Authorization.OAuth.ServiceCollectionExtensions.AddOAuthHttpClient<TRequestSigner>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! name, System.Action<System.IServiceProvider!, GSS.Authorization.OAuth.OAuthHttpHandlerOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
