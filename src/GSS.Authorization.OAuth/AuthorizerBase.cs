@@ -51,36 +51,19 @@ public abstract class AuthorizerBase : IAuthorizer
             .ConfigureAwait(false);
     }
 
-    protected internal virtual async Task<OAuthCredential> GetTemporaryCredentialAsync(
+    protected internal virtual Task<OAuthCredential> GetTemporaryCredentialAsync(
         CancellationToken cancellationToken = default)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, _options.TemporaryCredentialRequestUri);
-        request.Headers.Authorization = _signer.GetAuthorizationHeader(
-            request.Method,
-            request.RequestUri.IsAbsoluteUri
-                ? request.RequestUri
-                : new Uri(_httpClient.BaseAddress, request.RequestUri),
-            _options,
+        return RequestCredentialAsync(
+            _options.TemporaryCredentialRequestUri,
             new Dictionary<string, StringValues>
             {
                 [OAuthDefaults.OAuthCallback] = _options.CallBack == null
                     ? OAuthDefaults.OutOfBand
                     : _options.CallBack.AbsoluteUri
-            });
-        using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-        if (!string.Equals(response.Content.Headers?.ContentType?.MediaType, _urlEncodedContentType.MediaType,
-                StringComparison.OrdinalIgnoreCase))
-        {
-            throw new HttpRequestException(
-                $"Invalid response with media-type: {response.Content.Headers?.ContentType?.MediaType}");
-        }
-
-        var urlEncoded = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        var formData = QueryHelpers.ParseQuery(urlEncoded);
-        HandleOAuthException(response, formData);
-        return new OAuthCredential(formData[OAuthDefaults.OAuthToken].ToString(),
-            formData[OAuthDefaults.OAuthTokenSecret].ToString());
+            },
+            null,
+            cancellationToken);
     }
 
     /// <summary>
@@ -93,21 +76,38 @@ public abstract class AuthorizerBase : IAuthorizer
         Uri authorizationUri,
         CancellationToken cancellationToken = default);
 
-    protected internal virtual async Task<OAuthCredential> GetTokenCredentialAsync(
+    protected internal virtual Task<OAuthCredential> GetTokenCredentialAsync(
         OAuthCredential temporaryCredentials,
         string verificationCode,
         CancellationToken cancellationToken = default)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, _options.TokenRequestUri);
+        return RequestCredentialAsync(
+            _options.TokenRequestUri,
+            new Dictionary<string, StringValues> { [OAuthDefaults.OAuthVerifier] = verificationCode },
+            temporaryCredentials,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Posts a signed request to a credential endpoint and reads the form-encoded credential back,
+    /// see https://www.rfc-editor.org/rfc/rfc5849#section-2.1 and #section-2.3
+    /// </summary>
+    private async Task<OAuthCredential> RequestCredentialAsync(
+        Uri credentialRequestUri,
+        IDictionary<string, StringValues> parameters,
+        OAuthCredential? tokenCredentials,
+        CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, credentialRequestUri);
         request.Headers.Authorization = _signer.GetAuthorizationHeader(
             request.Method,
             request.RequestUri.IsAbsoluteUri
                 ? request.RequestUri
                 : new Uri(_httpClient.BaseAddress, request.RequestUri),
             _options,
-            new Dictionary<string, StringValues> { [OAuthDefaults.OAuthVerifier] = verificationCode },
-            temporaryCredentials);
-        var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            parameters,
+            tokenCredentials);
+        using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
         if (!string.Equals(response.Content.Headers?.ContentType?.MediaType, _urlEncodedContentType.MediaType,
                 StringComparison.OrdinalIgnoreCase))
