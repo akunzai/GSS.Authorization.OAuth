@@ -96,3 +96,40 @@ services.AddOAuth2HttpClient<OAuth2HttpClient, ResourceOwnerCredentialsAuthorize
     options.Scopes = configuration.GetSection("OAuth2:Scopes").Get<IEnumerable<string>>();
 });
 ```
+
+## Multiple Clients
+
+Each client name gets its own options, request signer or authorizer, and credential. Registering
+two clients no longer lets the second one overwrite the first:
+
+```csharp
+services.AddOAuthHttpClient("reporting", (_, options) =>
+{
+    options.ClientCredentials = new OAuthCredential("reporting-id", "reporting-secret");
+    options.TokenCredentials = new OAuthCredential("reporting-token", "reporting-token-secret");
+});
+
+services.AddOAuthHttpClient("ingest", (_, options) =>
+{
+    options.ClientCredentials = new OAuthCredential("ingest-id", "ingest-secret");
+    options.TokenCredentials = new OAuthCredential("ingest-token", "ingest-token-secret");
+});
+```
+
+For a typed client the name is the one `HttpClientFactory` derives, e.g. `OAuthHttpClient`.
+
+The first client registered also keeps the unnamed `IOptions<T>` and the container registration of
+the request signer or authorizer, so resolving those directly still yields that client's
+configuration. Options of any later client are only reachable through
+`IOptionsMonitor<T>.Get(name)`, and they are validated when that client is first created rather
+than at registration time.
+
+OAuth 2.0 clients can also configure where the access token is sent, per client:
+
+```csharp
+services.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("ingest",
+    configureOptions: (_, options) => { /* ... */ },
+    configureHandler: (_, options) => options.SendAccessTokenInQuery = true);
+```
+
+Without `configureHandler` a client reads the unnamed `OAuth2HttpHandlerOptions`, as before.
