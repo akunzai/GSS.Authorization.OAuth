@@ -16,7 +16,8 @@ OAuth 1.0 / OAuth 2.0 authorized `HttpClient`, friendly with `HttpClientFactory`
 - Domain docs consumer rules: @docs/agents/domain.md
 - Issue tracker (GitHub): @docs/agents/issue-tracker.md
 - Triage labels: @docs/agents/triage-labels.md
-- Usage and samples: @README.md
+- Usage guide: @docs/usage.md
+- Overview and installation: @README.md
 - PR workflow and guidelines: @CONTRIBUTING.md
 - Release label validation: @.github/workflows/release-label.yml
 - Code style and analyzer rules: @.editorconfig

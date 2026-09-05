@@ -1,2 +1,1 @@
 #nullable enable
-GSS.Authorization.OAuth.PlainTextRequestSigner.PlainTextRequestSigner(GSS.Authorization.OAuth.OAuthOptions! options) -> void

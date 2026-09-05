@@ -70,6 +70,7 @@ GSS.Authorization.OAuth.OAuthOptions.TimestampProvider.get -> System.Func<string
 GSS.Authorization.OAuth.OAuthOptions.TimestampProvider.set -> void
 GSS.Authorization.OAuth.PlainTextRequestSigner
 GSS.Authorization.OAuth.PlainTextRequestSigner.PlainTextRequestSigner() -> void
+GSS.Authorization.OAuth.PlainTextRequestSigner.PlainTextRequestSigner(GSS.Authorization.OAuth.OAuthOptions! options) -> void
 GSS.Authorization.OAuth.RequestSignerBase
 GSS.Authorization.OAuth.RequestSignerBase.GetBaseString(System.Net.Http.HttpMethod! method, System.Uri! uri, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>>! parameters) -> string!
 GSS.Authorization.OAuth.RequestSignerBase.Options.get -> GSS.Authorization.OAuth.OAuthOptions!
