@@ -11,6 +11,14 @@ namespace GSS.Authorization.OAuth;
 /// </summary>
 public class PlainTextRequestSigner : RequestSignerBase
 {
+    public PlainTextRequestSigner(OAuthOptions options) : base(options)
+    {
+    }
+
+    public PlainTextRequestSigner()
+    {
+    }
+
     public override string MethodName => "PLAINTEXT";
 
     public override string GetSignature(HttpMethod method,

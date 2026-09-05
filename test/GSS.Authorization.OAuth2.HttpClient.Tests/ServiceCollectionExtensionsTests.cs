@@ -267,27 +267,44 @@ public class ServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void AddOAuth2HttpClients_WithSameAuthorizer_ShouldNotThrows()
+    public async Task AddOAuth2HttpClients_WithSameAuthorizer_ShouldRequestOwnAccessTokenEndpoint()
     {
         // Arrange
+        using var mockHttp = new MockHttpMessageHandler();
+        mockHttp.Expect(HttpMethod.Post, "https://example.com/token1")
+            .Respond("application/json", "{\"access_token\":\"token-1\"}");
+        mockHttp.Expect(HttpMethod.Post, "https://example.com/token2")
+            .Respond("application/json", "{\"access_token\":\"token-2\"}");
+        mockHttp.Expect(HttpMethod.Get, "https://example.com/resource")
+            .WithHeaders("Authorization", "Bearer token-1").Respond(HttpStatusCode.OK);
+        mockHttp.Expect(HttpMethod.Get, "https://example.com/resource")
+            .WithHeaders("Authorization", "Bearer token-2").Respond(HttpStatusCode.OK);
         var collection = new ServiceCollection();
         var services = collection.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("client1", (_, options) =>
-        {
-            options.AccessTokenEndpoint = new Uri("https://example.com");
-            options.ClientId = "foo";
-            options.ClientSecret = "bar";
-        }).Services.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("client2", (_, options) =>
-        {
-            options.AccessTokenEndpoint = new Uri("https://example.com");
-            options.ClientId = "foo";
-            options.ClientSecret = "bar";
-        }).Services.BuildServiceProvider();
+            {
+                options.AccessTokenEndpoint = new Uri("https://example.com/token1");
+                options.ClientId = "foo";
+                options.ClientSecret = "bar";
+            }, authorizer => authorizer.ConfigurePrimaryHttpMessageHandler(_ => mockHttp))
+            .ConfigurePrimaryHttpMessageHandler(_ => mockHttp)
+            .Services.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("client2", (_, options) =>
+            {
+                options.AccessTokenEndpoint = new Uri("https://example.com/token2");
+                options.ClientId = "foo";
+                options.ClientSecret = "bar";
+            }, authorizer => authorizer.ConfigurePrimaryHttpMessageHandler(_ => mockHttp))
+            .ConfigurePrimaryHttpMessageHandler(_ => mockHttp)
+            .Services.BuildServiceProvider();
+        var factory = services.GetRequiredService<IHttpClientFactory>();
 
         // Act
-        var authorizer = services.GetService<ClientCredentialsAuthorizer>();
+        await factory.CreateClient("client1")
+            .GetAsync("https://example.com/resource", TestContext.Current.CancellationToken);
+        await factory.CreateClient("client2")
+            .GetAsync("https://example.com/resource", TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(authorizer);
+        mockHttp.VerifyNoOutstandingExpectation();
     }
 
     private class DemoOAuthClient(System.Net.Http.HttpClient client)

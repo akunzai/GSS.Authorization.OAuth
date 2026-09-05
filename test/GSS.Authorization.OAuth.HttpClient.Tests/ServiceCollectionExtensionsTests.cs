@@ -327,6 +327,55 @@ public class ServiceCollectionExtensionsTests
         Assert.NotNull(signer2);
     }
 
+    [Fact]
+    public async Task AddNamedOAuthHttpClients_WithDifferentClientCredentials_ShouldSignWithOwnCredentials()
+    {
+        // Arrange
+        var recorder1 = new RecordingHandler();
+        var recorder2 = new RecordingHandler();
+        var services = new ServiceCollection()
+            .AddOAuthHttpClient("client1", (_, options) =>
+            {
+                options.ClientCredentials = new OAuthCredential("client-1-key", "client-1-secret");
+                options.TokenCredentials = new OAuthCredential("token-1-key", "token-1-secret");
+            })
+            .ConfigurePrimaryHttpMessageHandler(_ => recorder1)
+            .Services
+            .AddOAuthHttpClient("client2", (_, options) =>
+            {
+                options.ClientCredentials = new OAuthCredential("client-2-key", "client-2-secret");
+                options.TokenCredentials = new OAuthCredential("token-2-key", "token-2-secret");
+            })
+            .ConfigurePrimaryHttpMessageHandler(_ => recorder2)
+            .Services.BuildServiceProvider();
+        var factory = services.GetRequiredService<IHttpClientFactory>();
+
+        // Act
+        await factory.CreateClient("client1")
+            .GetAsync("https://example.com/resource", TestContext.Current.CancellationToken);
+        await factory.CreateClient("client2")
+            .GetAsync("https://example.com/resource", TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Contains("oauth_consumer_key=\"client-1-key\"", recorder1.Authorization);
+        Assert.Contains("oauth_token=\"token-1-key\"", recorder1.Authorization);
+        Assert.Contains("oauth_consumer_key=\"client-2-key\"", recorder2.Authorization);
+        Assert.Contains("oauth_token=\"token-2-key\"", recorder2.Authorization);
+    }
+
+    private sealed class RecordingHandler : HttpMessageHandler
+    {
+        public string Authorization { get; private set; } = string.Empty;
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            Authorization = request.Headers.Authorization?.ToString() ?? string.Empty;
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK));
+        }
+    }
+
     private class DemoOAuthClient
     {
 #pragma warning disable IDE0052 // Remove unread private members
