@@ -26,7 +26,7 @@ public class OAuth2HttpHandler : DelegatingHandler
         IAuthorizer authorizer,
         IMemoryCache memoryCache)
         // Handlers built by hand keep the access token to themselves, as they always have.
-        : this(options, new AccessTokenCache(authorizer, memoryCache, Guid.NewGuid().ToString()))
+        : this(options, new AccessTokenCache(() => authorizer, memoryCache, Guid.NewGuid().ToString()))
     {
     }
 

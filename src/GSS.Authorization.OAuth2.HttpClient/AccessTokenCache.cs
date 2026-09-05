@@ -11,7 +11,10 @@ namespace GSS.Authorization.OAuth2;
 /// </summary>
 internal sealed class AccessTokenCache
 {
-    private readonly IAuthorizer _authorizer;
+    // A factory, not an instance: the authorizer holds an HttpClient from IHttpClientFactory, and
+    // this cache outlives the handlers it serves. Holding one would pin a single HttpClient past
+    // its rotation.
+    private readonly Func<IAuthorizer> _authorizer;
     private readonly string _cacheKey;
     private readonly IMemoryCache _memoryCache;
 
@@ -20,7 +23,7 @@ internal sealed class AccessTokenCache
     // WaitAsync/Release, so there is nothing to release.
     private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
-    public AccessTokenCache(IAuthorizer authorizer, IMemoryCache memoryCache, string key)
+    public AccessTokenCache(Func<IAuthorizer> authorizer, IMemoryCache memoryCache, string key)
     {
         _authorizer = authorizer;
         _memoryCache = memoryCache;
@@ -82,7 +85,7 @@ internal sealed class AccessTokenCache
 
     private async Task<AccessToken> AuthorizeAsync(CancellationToken cancellationToken)
     {
-        var accessToken = await _authorizer.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
+        var accessToken = await _authorizer().GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(accessToken.Token))
         {
             return accessToken;

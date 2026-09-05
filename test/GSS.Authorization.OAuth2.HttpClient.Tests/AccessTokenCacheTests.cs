@@ -132,8 +132,9 @@ public class AccessTokenCacheTests
 
     private static AccessTokenCache CreateCache(Func<CancellationToken, Task<AccessToken>> getAccessToken)
     {
+        var authorizer = new StubAuthorizer(getAccessToken);
         return new AccessTokenCache(
-            new StubAuthorizer(getAccessToken),
+            () => authorizer,
             new MemoryCache(new MemoryCacheOptions()),
             "test");
     }

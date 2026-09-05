@@ -131,10 +131,14 @@ public static class ServiceCollectionExtensions
                 .Configure<IServiceProvider>((options, resolver) => configureHandler(resolver, options));
         }
 
+        // One cache per client name, so the access token and its single-flight guarantee survive the
+        // handler rotation HttpClientFactory performs.
+        var accessTokens = new AccessTokenCacheHolder(builder.Name);
+
         return builder.AddHttpMessageHandler(resolver => new OAuth2HttpHandler(
             ResolveHandlerOptions(resolver, builder.Name, configureHandler != null),
-            ResolveAuthorizer<TAuthorizer>(resolver, optionsName, authorizerClientName, isFirstClient),
-            resolver.GetRequiredService<IMemoryCache>()));
+            accessTokens.Get(resolver,
+                () => ResolveAuthorizer<TAuthorizer>(resolver, optionsName, authorizerClientName, isFirstClient))));
     }
 
     private static IOptions<OAuth2HttpHandlerOptions> ResolveHandlerOptions(
@@ -164,5 +168,28 @@ public static class ServiceCollectionExtensions
         var options = resolver.GetRequiredService<IOptionsMonitor<AuthorizerOptions>>().Get(optionsName);
         var client = resolver.GetRequiredService<IHttpClientFactory>().CreateClient(authorizerClientName);
         return ActivatorUtilities.CreateInstance<TAuthorizer>(resolver, client, Options.Create(options));
+    }
+
+    /// <summary>
+    /// Holds the access token cache of a single HttpClient name.
+    /// </summary>
+    private sealed class AccessTokenCacheHolder(string name)
+    {
+        private readonly object _gate = new();
+        private AccessTokenCache? _cache;
+
+        public AccessTokenCache Get(IServiceProvider resolver, Func<IAuthorizer> authorizer)
+        {
+            if (_cache != null)
+            {
+                return _cache;
+            }
+
+            lock (_gate)
+            {
+                return _cache ??= new AccessTokenCache(
+                    authorizer, resolver.GetRequiredService<IMemoryCache>(), name);
+            }
+        }
     }
 }

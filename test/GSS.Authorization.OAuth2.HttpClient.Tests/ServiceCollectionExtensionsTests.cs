@@ -377,6 +377,54 @@ public class ServiceCollectionExtensionsTests
         mockHttp.VerifyNoOutstandingExpectation();
     }
 
+    [Fact]
+    public async Task AddOAuth2HttpClients_WithSameAuthorizer_ShouldCacheAccessTokenPerClientName()
+    {
+        // Arrange
+        var authorizations = new List<string?>();
+        using var mockHttp = new MockHttpMessageHandler();
+        var token1 = mockHttp.When(HttpMethod.Post, "https://example.com/token1")
+            .Respond("application/json", "{\"access_token\":\"token-1\",\"expires_in\":600}");
+        var token2 = mockHttp.When(HttpMethod.Post, "https://example.com/token2")
+            .Respond("application/json", "{\"access_token\":\"token-2\",\"expires_in\":600}");
+        mockHttp.When(HttpMethod.Get, "https://example.com/resource").Respond(request =>
+        {
+            authorizations.Add(request.Headers.Authorization?.ToString());
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+        var collection = new ServiceCollection();
+        var services = collection.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("client1", (_, options) =>
+            {
+                options.AccessTokenEndpoint = new Uri("https://example.com/token1");
+                options.ClientId = "foo";
+                options.ClientSecret = "bar";
+            }, authorizer => authorizer.ConfigurePrimaryHttpMessageHandler(_ => mockHttp))
+            .ConfigurePrimaryHttpMessageHandler(_ => mockHttp)
+            .Services.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("client2", (_, options) =>
+            {
+                options.AccessTokenEndpoint = new Uri("https://example.com/token2");
+                options.ClientId = "foo";
+                options.ClientSecret = "bar";
+            }, authorizer => authorizer.ConfigurePrimaryHttpMessageHandler(_ => mockHttp))
+            .ConfigurePrimaryHttpMessageHandler(_ => mockHttp)
+            .Services.BuildServiceProvider();
+        var factory = services.GetRequiredService<IHttpClientFactory>();
+
+        // Act
+        foreach (var name in new[] { "client1", "client2", "client1", "client2" })
+        {
+            await factory.CreateClient(name)
+                .GetAsync("https://example.com/resource", TestContext.Current.CancellationToken);
+        }
+
+        // Assert
+        Assert.Equal(1, mockHttp.GetMatchCount(token1));
+        Assert.Equal(1, mockHttp.GetMatchCount(token2));
+        Assert.Equal(
+            ["Bearer token-1", "Bearer token-2", "Bearer token-1", "Bearer token-2"],
+            authorizations);
+    }
+
     private class DemoOAuthClient(System.Net.Http.HttpClient client)
     {
         private readonly System.Net.Http.HttpClient _client = client;
