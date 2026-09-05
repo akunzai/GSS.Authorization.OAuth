@@ -132,6 +132,7 @@ OAuth 2.0 clients can also configure where the access token is sent, per client:
 ```csharp
 services.AddOAuth2HttpClient<ClientCredentialsAuthorizer>("ingest",
     configureOptions: (_, options) => { /* ... */ },
+    configureAuthorizer: null,
     configureHandler: (_, options) => options.SendAccessTokenInQuery = true);
 ```
 

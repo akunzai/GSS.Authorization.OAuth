@@ -31,9 +31,35 @@ public static class ServiceCollectionExtensions
     /// A delegate that is used to configure an
     /// <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> for the <see cref="Authorizer" />.
     /// </param>
+    /// <returns>
+    /// An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure
+    /// the client.
+    /// </returns>
+    public static IHttpClientBuilder AddOAuth2HttpClient<TClient, TAuthorizer>(
+        this IServiceCollection services,
+        Action<IServiceProvider, AuthorizerOptions> configureOptions,
+        Action<IHttpClientBuilder>? configureAuthorizer = null)
+        where TClient : class
+        where TAuthorizer : Authorizer
+    {
+        return services.AddOAuth2HttpClient<TClient, TAuthorizer>(configureOptions, configureAuthorizer, null);
+    }
+
+    /// <summary>
+    /// Add typed HttpClient with <see cref="OAuth2HttpHandler" /> and related services
+    /// </summary>
+    /// <inheritdoc cref="AddOAuth2HttpClient{TClient, TAuthorizer}(IServiceCollection, Action{IServiceProvider, AuthorizerOptions}, Action{IHttpClientBuilder})" path="/remarks" />
+    /// <typeparam name="TClient">The type of the typed client.</typeparam>
+    /// <typeparam name="TAuthorizer">The type of the authorizer.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection" />.</param>
+    /// <param name="configureOptions">A delegate that is used to configure an <see cref="AuthorizerOptions" />.</param>
+    /// <param name="configureAuthorizer">
+    /// A delegate that is used to configure an
+    /// <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> for the <see cref="Authorizer" />.
+    /// </param>
     /// <param name="configureHandler">
     /// A delegate that is used to configure an <see cref="OAuth2HttpHandlerOptions" /> for this client only.
-    /// When omitted, the client uses the unnamed <see cref="OAuth2HttpHandlerOptions" /> as before.
+    /// When <see langword="null" />, the client uses the unnamed <see cref="OAuth2HttpHandlerOptions" />.
     /// </param>
     /// <returns>
     /// An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure
@@ -42,8 +68,8 @@ public static class ServiceCollectionExtensions
     public static IHttpClientBuilder AddOAuth2HttpClient<TClient, TAuthorizer>(
         this IServiceCollection services,
         Action<IServiceProvider, AuthorizerOptions> configureOptions,
-        Action<IHttpClientBuilder>? configureAuthorizer = null,
-        Action<IServiceProvider, OAuth2HttpHandlerOptions>? configureHandler = null)
+        Action<IHttpClientBuilder>? configureAuthorizer,
+        Action<IServiceProvider, OAuth2HttpHandlerOptions>? configureHandler)
         where TClient : class
         where TAuthorizer : Authorizer
     {
@@ -80,9 +106,35 @@ public static class ServiceCollectionExtensions
     /// A delegate that is used to configure an
     /// <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> for the <see cref="Authorizer" />.
     /// </param>
+    /// <returns>
+    /// An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure
+    /// the client.
+    /// </returns>
+    public static IHttpClientBuilder AddOAuth2HttpClient<TAuthorizer>(
+        this IServiceCollection services,
+        string name,
+        Action<IServiceProvider, AuthorizerOptions> configureOptions,
+        Action<IHttpClientBuilder>? configureAuthorizer = null)
+        where TAuthorizer : Authorizer
+    {
+        return services.AddOAuth2HttpClient<TAuthorizer>(name, configureOptions, configureAuthorizer, null);
+    }
+
+    /// <summary>
+    /// Add named HttpClient with <see cref="OAuth2HttpHandler" /> and related services
+    /// </summary>
+    /// <inheritdoc cref="AddOAuth2HttpClient{TAuthorizer}(IServiceCollection, string, Action{IServiceProvider, AuthorizerOptions}, Action{IHttpClientBuilder})" path="/remarks" />
+    /// <param name="services">The <see cref="IServiceCollection" />.</param>
+    /// <param name="name">The logical name of the <see cref="System.Net.Http.HttpClient" /> to configure.</param>
+    /// <typeparam name="TAuthorizer">The type of the authorizer.</typeparam>
+    /// <param name="configureOptions">A delegate that is used to configure an <see cref="AuthorizerOptions" />.</param>
+    /// <param name="configureAuthorizer">
+    /// A delegate that is used to configure an
+    /// <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> for the <see cref="Authorizer" />.
+    /// </param>
     /// <param name="configureHandler">
     /// A delegate that is used to configure an <see cref="OAuth2HttpHandlerOptions" /> for this client only.
-    /// When omitted, the client uses the unnamed <see cref="OAuth2HttpHandlerOptions" /> as before.
+    /// When <see langword="null" />, the client uses the unnamed <see cref="OAuth2HttpHandlerOptions" />.
     /// </param>
     /// <returns>
     /// An <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder" /> that can be used to configure
@@ -92,8 +144,8 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         string name,
         Action<IServiceProvider, AuthorizerOptions> configureOptions,
-        Action<IHttpClientBuilder>? configureAuthorizer = null,
-        Action<IServiceProvider, OAuth2HttpHandlerOptions>? configureHandler = null)
+        Action<IHttpClientBuilder>? configureAuthorizer,
+        Action<IServiceProvider, OAuth2HttpHandlerOptions>? configureHandler)
         where TAuthorizer : Authorizer
     {
         if (services == null) throw new ArgumentNullException(nameof(services));
