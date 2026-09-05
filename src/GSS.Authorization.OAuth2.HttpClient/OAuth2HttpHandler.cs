@@ -12,19 +12,29 @@ using Microsoft.Extensions.Options;
 
 namespace GSS.Authorization.OAuth2;
 
-public class OAuth2HttpHandler(
-    IOptions<OAuth2HttpHandlerOptions> options,
-    IAuthorizer authorizer,
-    IMemoryCache memoryCache)
-    : DelegatingHandler
+public class OAuth2HttpHandler : DelegatingHandler
 {
     private static readonly MediaTypeHeaderValue _urlEncodedContentType =
         MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
 
-    private readonly string _cacheKey = Guid.NewGuid().ToString();
+    private readonly AccessTokenCache _accessTokens;
 
-    private readonly OAuth2HttpHandlerOptions _options = options.Value;
-    private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private readonly OAuth2HttpHandlerOptions _options;
+
+    public OAuth2HttpHandler(
+        IOptions<OAuth2HttpHandlerOptions> options,
+        IAuthorizer authorizer,
+        IMemoryCache memoryCache)
+        // Handlers built by hand keep the access token to themselves, as they always have.
+        : this(options, new AccessTokenCache(authorizer, memoryCache, Guid.NewGuid().ToString()))
+    {
+    }
+
+    internal OAuth2HttpHandler(IOptions<OAuth2HttpHandlerOptions> options, AccessTokenCache accessTokens)
+    {
+        _options = options.Value;
+        _accessTokens = accessTokens;
+    }
 
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
@@ -35,7 +45,7 @@ public class OAuth2HttpHandler(
         if (request.Headers.Authorization != null)
             return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-        var accessToken = await GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
+        var accessToken = await _accessTokens.GetAsync(cancellationToken).ConfigureAwait(false);
         await SendAccessTokenInRequestAsync(accessToken, request).ConfigureAwait(false);
         var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         // https://www.rfc-editor.org/rfc/rfc6750#section-3
@@ -43,44 +53,9 @@ public class OAuth2HttpHandler(
         if (response.StatusCode != HttpStatusCode.Unauthorized ||
             (challenges.Count != 0 && !challenges.Any(c => c.Scheme.Equals(AuthorizerDefaults.Bearer))))
             return response;
-        accessToken = await GetAccessTokenAsync(cancellationToken, true).ConfigureAwait(false);
+        accessToken = await _accessTokens.RenewAsync(accessToken, cancellationToken).ConfigureAwait(false);
         await SendAccessTokenInRequestAsync(accessToken, request).ConfigureAwait(false);
         return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-    }
-
-    private async ValueTask<AccessToken> GetAccessTokenAsync(
-        CancellationToken cancellationToken,
-        bool forceRenew = false)
-    {
-        if (!forceRenew && memoryCache.TryGetValue<AccessToken>(_cacheKey, out var accessTokenCache))
-        {
-            return accessTokenCache ?? AccessToken.Empty;
-        }
-
-        await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            if (!forceRenew && memoryCache.TryGetValue<AccessToken>(_cacheKey, out accessTokenCache))
-            {
-                return accessTokenCache!;
-            }
-
-            var accessToken = await authorizer.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
-            if (string.IsNullOrWhiteSpace(accessToken.Token)) return accessToken;
-            if (accessToken.ExpiresInSeconds > 0)
-            {
-                memoryCache.Set(_cacheKey, accessToken, accessToken.ExpiresIn);
-            }
-            else
-            {
-                memoryCache.Set(_cacheKey, accessToken);
-            }
-            return accessToken;
-        }
-        finally
-        {
-            _semaphore.Release();
-        }
     }
 
     private async Task SendAccessTokenInRequestAsync(
