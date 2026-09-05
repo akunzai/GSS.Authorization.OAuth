@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Security.Cryptography;
@@ -15,9 +15,12 @@ public class OAuthOptions
     [Required]
     public Func<string> NonceProvider { get; set; } = () =>
     {
-        var bytes = new byte[16];
+        // Hexadecimal rather than Base64: oauthlib, which backs a large share of OAuth 1.0
+        // servers, rejects a nonce containing anything but letters and digits, and accepts
+        // only 20 to 30 of them. Base64 fails on '+', '/' and '='.
+        var bytes = new byte[12];
         _randomNumberGenerator.GetNonZeroBytes(bytes);
-        return Convert.ToBase64String(bytes);
+        return BitConverter.ToString(bytes).Replace("-", string.Empty);
     };
 
     [Required]

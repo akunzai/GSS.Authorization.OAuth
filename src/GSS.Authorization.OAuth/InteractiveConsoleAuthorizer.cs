@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Runtime.InteropServices;
@@ -14,20 +14,34 @@ public class InteractiveConsoleAuthorizer(
     IRequestSigner signer)
     : AuthorizerBase(options, httpClient, signer)
 {
+    /// <summary>
+    /// Launches the browser. Replaceable in tests so they do not open one.
+    /// </summary>
+    internal Action<Uri> BrowserLauncher { get; set; } = OpenBrowser;
+
     public override Task<string> GetVerificationCodeAsync(Uri authorizationUri,
         CancellationToken cancellationToken = default)
     {
         if (authorizationUri == null)
             throw new ArgumentNullException(nameof(authorizationUri));
-        OpenBrowser(authorizationUri);
-        var verificationCode = string.Empty;
-        while (string.IsNullOrWhiteSpace(verificationCode))
+        BrowserLauncher(authorizationUri);
+        while (true)
         {
             Console.Write("Please complete login and authorization in browser and paste the verification code: ");
-            verificationCode = Console.ReadLine();
-        }
+            var verificationCode = Console.ReadLine();
+            if (verificationCode == null)
+            {
+                // Console.ReadLine returns null once standard input ends. Prompting again would
+                // spin forever, printing the prompt until something runs out of memory.
+                throw new InvalidOperationException(
+                    "Standard input ended before a verification code was entered.");
+            }
 
-        return Task.FromResult(verificationCode);
+            if (!string.IsNullOrWhiteSpace(verificationCode))
+            {
+                return Task.FromResult(verificationCode);
+            }
+        }
     }
 
     // https://github.com/dotnet/runtime/issues/17938
@@ -39,7 +53,17 @@ public class InteractiveConsoleAuthorizer(
         }
         catch when (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            Process.Start("xdg-open", uri.AbsoluteUri);
+            try
+            {
+                Process.Start("xdg-open", uri.AbsoluteUri);
+            }
+            catch (Exception exception)
+            {
+                // No browser and no xdg-open, which is normal in a container. The authorization
+                // URI is still needed, so print it rather than ending the grant.
+                Console.WriteLine($"Could not open a browser ({exception.Message}).");
+                Console.WriteLine($"Open this URL to authorize: {uri.AbsoluteUri}");
+            }
         }
     }
 }
