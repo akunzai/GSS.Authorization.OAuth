@@ -363,6 +363,114 @@ public class ServiceCollectionExtensionsTests
         Assert.Contains("oauth_token=\"token-2-key\"", recorder2.Authorization);
     }
 
+    [Fact]
+    public async Task AddNamedOAuthHttpClients_WithDifferentPercentEncoders_ShouldSignWithOwnEncoder()
+    {
+        // Arrange
+        var recorder1 = new RecordingHandler();
+        var recorder2 = new RecordingHandler();
+        var services = new ServiceCollection()
+            .AddOAuthHttpClient("client1", (_, options) => ConfigureFixedOptions(options, Uri.EscapeDataString))
+            .ConfigurePrimaryHttpMessageHandler(_ => recorder1)
+            .Services
+            .AddOAuthHttpClient("client2",
+                (_, options) => ConfigureFixedOptions(options, value => Uri.EscapeDataString(value).ToUpperInvariant()))
+            .ConfigurePrimaryHttpMessageHandler(_ => recorder2)
+            .Services.BuildServiceProvider();
+        var factory = services.GetRequiredService<IHttpClientFactory>();
+
+        // Act
+        await factory.CreateClient("client1")
+            .GetAsync("https://example.com/resource", TestContext.Current.CancellationToken);
+        await factory.CreateClient("client2")
+            .GetAsync("https://example.com/resource", TestContext.Current.CancellationToken);
+
+        // Assert
+        // Everything but the encoder is fixed, so a shared signer would produce identical signatures.
+        Assert.NotEqual(GetSignature(recorder1.Authorization), GetSignature(recorder2.Authorization));
+    }
+
+    [Fact]
+    public void AddNamedOAuthHttpClients_WithInvalidSecondClient_ShouldThrowWhenThatClientIsCreated()
+    {
+        // Arrange
+        var services = new ServiceCollection()
+            .AddOAuthHttpClient("client1", (_, options) =>
+            {
+                options.ClientCredentials = new OAuthCredential("client-1-key", "client-1-secret");
+                options.TokenCredentials = new OAuthCredential("token-1-key", "token-1-secret");
+            })
+            .Services
+            .AddOAuthHttpClient("client2", (_, _) => { })
+            .Services.BuildServiceProvider();
+        var factory = services.GetRequiredService<IHttpClientFactory>();
+
+        // Act & Assert
+        Assert.NotNull(factory.CreateClient("client1"));
+        Assert.Equal("client-1-key",
+            services.GetRequiredService<IOptions<OAuthHttpHandlerOptions>>().Value.ClientCredentials.Key);
+        var ex = Assert.Throws<ArgumentNullException>(() => factory.CreateClient("client2"));
+        Assert.Equal(
+            $"{nameof(OAuthHttpHandlerOptions.ClientCredentials)}.{nameof(OAuthHttpHandlerOptions.ClientCredentials.Key)}",
+            ex.ParamName);
+    }
+
+    [Fact]
+    public async Task AddOAuthHttpClient_WithSignerLackingOptionsConstructor_ShouldFallBackToSharedSigner()
+    {
+        // Arrange
+        var recorder = new RecordingHandler();
+        var services = new ServiceCollection()
+            .AddOAuthHttpClient<OptionsFreeRequestSigner>("client1",
+                (_, options) => ConfigureFixedOptions(options, Uri.EscapeDataString))
+            .ConfigurePrimaryHttpMessageHandler(_ => recorder)
+            .Services.BuildServiceProvider();
+        var factory = services.GetRequiredService<IHttpClientFactory>();
+
+        // Act
+        await factory.CreateClient("client1")
+            .GetAsync("https://example.com/resource", TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Same(services.GetRequiredService<OptionsFreeRequestSigner>(), OptionsFreeRequestSigner.LastUsed);
+        Assert.Contains("oauth_signature_method=\"OPTIONS-FREE\"", recorder.Authorization);
+    }
+
+    private static void ConfigureFixedOptions(OAuthHttpHandlerOptions options, Func<string, string> percentEncoder)
+    {
+        options.ClientCredentials = new OAuthCredential("client-key", "client-secret");
+        options.TokenCredentials = new OAuthCredential("token-key", "token-secret");
+        options.NonceProvider = () => "nonce";
+        options.TimestampProvider = () => "1234567890";
+        options.PercentEncoder = percentEncoder;
+    }
+
+    private static string GetSignature(string authorization)
+    {
+        var signature = authorization.Split(',')
+            .FirstOrDefault(part => part.TrimStart().StartsWith("oauth_signature=", StringComparison.OrdinalIgnoreCase));
+        Assert.NotNull(signature);
+        return signature;
+    }
+
+    private sealed class OptionsFreeRequestSigner : IRequestSigner
+    {
+        public static OptionsFreeRequestSigner? LastUsed { get; private set; }
+
+        public string MethodName => "OPTIONS-FREE";
+
+        public string GetSignature(
+            HttpMethod method,
+            Uri uri,
+            IEnumerable<KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>> parameters,
+            string consumerSecret,
+            string? tokenSecret = null)
+        {
+            LastUsed = this;
+            return "signature";
+        }
+    }
+
     private sealed class RecordingHandler : HttpMessageHandler
     {
         public string Authorization { get; private set; } = string.Empty;
