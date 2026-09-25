@@ -13,6 +13,6 @@ This is a published-library repo, so the version chosen in `Directory.Packages.p
 
 ## Related Pointers
 
-- Central package management: @Directory.Packages.props
-- Global build and audit configuration: @Directory.Build.props
-- Dependabot configuration: @.github/dependabot.yml
+- Central package management: `Directory.Packages.props`
+- Global build and audit configuration: `Directory.Build.props`
+- Dependabot configuration: `.github/dependabot.yml`

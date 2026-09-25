@@ -12,15 +12,15 @@ OAuth 1.0 / OAuth 2.0 authorized `HttpClient`, friendly with `HttpClientFactory`
 
 ## Pointers
 
-- Domain glossary: @CONTEXT.md
-- Domain docs consumer rules: @docs/agents/domain.md
-- Dependency policy: @docs/agents/dependencies.md
-- Issue tracker (GitHub): @docs/agents/issue-tracker.md
-- Triage labels: @docs/agents/triage-labels.md
-- Usage guide: @docs/usage.md
-- PR workflow and guidelines: @CONTRIBUTING.md
-- Release label validation: @.github/workflows/release-label.yml
-- Code style and analyzer rules: @.editorconfig
+- Domain glossary: `CONTEXT.md`
+- Domain docs consumer rules: `docs/agents/domain.md`
+- Dependency policy: `docs/agents/dependencies.md`
+- When filing or triaging an issue, read `docs/agents/issue-tracker.md`
+- Triage labels: `docs/agents/triage-labels.md`
+- Usage guide: `docs/usage.md`
+- PR workflow and guidelines: `CONTRIBUTING.md`
+- Release label validation: `.github/workflows/release-label.yml`
+- Code style and analyzer rules: `.editorconfig`
 
 ## Architecture
 
@@ -33,9 +33,5 @@ OAuth 1.0 / OAuth 2.0 authorized `HttpClient`, friendly with `HttpClientFactory`
 ## Prevent Recurrence
 
 - **Candidate**: Name who hits this again, in which file, on what change. No such scenario, nothing to propose.
-- **Promote**: Offer the first tier that reaches them and only that one, pending confirmation — enforce it (assert/type/test) with its size quoted, else a comment at that site, else an agent-facing doc (`docs/agents/<topic>.md`, else `docs/agents/lessons-learned.md`) with one `@path` line under Pointers and one sentence on why the tiers above cannot hold it. Never two places at once.
+- **Promote**: Offer the first tier that reaches them and only that one, pending confirmation — enforce it (assert/type/test) with its size quoted, else a comment at that site, else an agent-facing doc (`docs/agents/<topic>.md`, else `docs/agents/lessons-learned.md`) with one backtick-path line under Pointers and one sentence on why the tiers above cannot hold it. Never two places at once.
 - **Prune**: When adding to a file, audit the rest of it in the same pass. Drop entries once stale (obsolete version, now enforced, duplicated, or a transcript) — not by a fixed count.
-
-## Claude Code Compatibility
-
-`CLAUDE.md` is a symbolic link pointing to `AGENTS.md`. Edit `AGENTS.md` directly.
