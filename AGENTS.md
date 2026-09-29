@@ -12,7 +12,7 @@ OAuth 1.0 / OAuth 2.0 authorized `HttpClient`, friendly with `HttpClientFactory`
 
 ## Pointers
 
-- Domain glossary: `CONTEXT.md`
+- Domain glossary: `GLOSSARY.md`
 - Domain docs consumer rules: `docs/agents/domain.md`
 - Dependency policy: `docs/agents/dependencies.md`
 - When filing or triaging an issue, read `docs/agents/issue-tracker.md`
