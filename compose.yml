@@ -24,6 +24,6 @@ services:
       - "5001:5000"
 
   oauth2:
-    image: ghcr.io/navikt/mock-oauth2-server:6.0.3
+    image: ghcr.io/navikt/mock-oauth2-server:6.0.4
     ports:
       - "8080:8080"
