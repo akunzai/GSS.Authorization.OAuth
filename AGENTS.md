@@ -8,7 +8,7 @@ OAuth 1.0 / OAuth 2.0 authorized `HttpClient`, friendly with `HttpClientFactory`
 - Build: `dotnet build -c Release`
 - Test (all): `dotnet test`
 - Test (single): `dotnet test --filter "FullyQualifiedName~ClassName.MethodName" --ignore-exit-code 8`
-- Coverage (CI): `dotnet test --coverage --coverage-output-format cobertura && dotnet tool restore && dotnet tool run reportgenerator`
+- Coverage: `dotnet test --coverage --coverage-output-format cobertura`
 
 ## Pointers
 
