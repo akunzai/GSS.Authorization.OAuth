@@ -33,9 +33,6 @@ jobs:
       - name: Test
         run: |
           dotnet test --coverage --coverage-output-format cobertura
-          dotnet tool restore
-          dotnet tool run reportgenerator
-          [[ -f "./coverage/Summary.txt" ]] && cat "./coverage/Summary.txt"
       - uses: codecov/codecov-action@v7
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
