@@ -27,7 +27,7 @@ OAuth 1.0 / OAuth 2.0 authorized `HttpClient`, friendly with `HttpClientFactory`
 - `OAuth.slnx` — solution file (slnx format, not `.sln`).
 - `src/GSS.Authorization.OAuth{,2}` — core signer/authorizer (`netstandard2.0;netcoreapp3.1`).
 - `src/GSS.Authorization.OAuth{,2}.HttpClient` — `DelegatingHandler` + `HttpClientFactory` integration; `ProjectReference`s the matching core lib above.
-- `test/*.Tests` mirrors each `src` project 1:1, targets `net8.0;net10.0`, uses xunit v3.
+- `test/*.Tests` mirrors each `src` project 1:1, targets `net10.0`, uses xunit v3.
 - `samples/` — runnable console samples, one per package.
 
 ## Prevent Recurrence
