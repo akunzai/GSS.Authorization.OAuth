@@ -2,7 +2,7 @@
 # can be started without one.
 services:
   dev:
-    image: mcr.microsoft.com/devcontainers/dotnet:1-10.0
+    image: mcr.microsoft.com/devcontainers/dotnet:2-11.0
     volumes:
       - ..:/workspace:cached
       # xdg-open prints the URL instead of opening a browser, so the

@@ -5,7 +5,7 @@ Thank you for your interest in contributing to GSS.Authorization.OAuth! We welco
 ## Development Setup
 
 To build and test the project locally, you will need:
-* [.NET SDK](https://dotnet.microsoft.com/download) (latest version supporting .NET 8.0/10.0)
+- [.NET SDK 10.0+](https://dotnet.microsoft.com/download) (11.0 recommended)
 
 ### Clone the Repository
 ```bash
